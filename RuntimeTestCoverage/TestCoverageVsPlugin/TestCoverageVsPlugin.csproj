@@ -48,11 +48,11 @@
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Scripting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Piotr\Downloads\Microsoft.CodeAnalysis.Scripting.dll</HintPath>
+      <HintPath>..\lib\Microsoft.CodeAnalysis.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Scripting.CSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\Piotr\Downloads\Microsoft.CodeAnalysis.Scripting.CSharp.dll</HintPath>
+      <HintPath>..\lib\Microsoft.CodeAnalysis.Scripting.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility" />
     <Reference Include="Microsoft.VisualStudio.Text.Data" />

@@ -13,7 +13,7 @@ namespace TestCoverageConsole
     {
         static void Main(string[] args)
         {            
-            const string solutionPath = @"C:\projects\RuntimeTestCoverage\TestSolution\TestSolution.sln";
+            const string solutionPath = @"../../../../TestSolution/TestSolution.sln";
 
             var rewritter=new SolutionRewritter();
             Stopwatch stopwatch = Stopwatch.StartNew();
