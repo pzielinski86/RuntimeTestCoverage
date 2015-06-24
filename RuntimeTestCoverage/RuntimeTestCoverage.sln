@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage", "TestCoverage\TestCoverage.csproj", "{4F81EDF0-7537-427A-A093-668E2123DECF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageConsole", "TestCoverageConsole\TestCoverageConsole.csproj", "{CE123755-F631-4245-B9E5-73860F18080C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin", "TestCoverageVsPlugin\TestCoverageVsPlugin.csproj", "{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F81EDF0-7537-427A-A093-668E2123DECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F81EDF0-7537-427A-A093-668E2123DECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F81EDF0-7537-427A-A093-668E2123DECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F81EDF0-7537-427A-A093-668E2123DECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE123755-F631-4245-B9E5-73860F18080C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE123755-F631-4245-B9E5-73860F18080C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE123755-F631-4245-B9E5-73860F18080C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE123755-F631-4245-B9E5-73860F18080C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
