@@ -32,7 +32,7 @@ namespace TestCoverageConsole
             lineCoverageCalc.CalculateForAllTests(solutionPath,rewriteResult);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
-            RunTest(rewriteResult, "MathHelperTests.cs");
+            RunTest(rewriteResult, "MathHelperTests.cs", solutionPath);
         }
 
         private static void DisplayRewrittenItem(RewrittenItemInfo item)
@@ -44,7 +44,7 @@ namespace TestCoverageConsole
             Console.WriteLine("END---------------------END\n");
         }
 
-        private static void RunTest(RewriteResult rewriteResult, string documentName)
+        private static void RunTest(RewriteResult rewriteResult, string documentName, string solutionPath)
         {
             Console.WriteLine("Rewriting {0}",documentName);
 
@@ -54,6 +54,10 @@ namespace TestCoverageConsole
             var rewritter = new SolutionRewritter();
             var item = rewritter.RewriteTestClass(rewriteResult, documentName);
             DisplayRewrittenItem(item);
+
+            var lineCoverageCalc = new LineCoverageCalc();
+            lineCoverageCalc.CalculateForTest(rewriteResult, solutionPath, documentName, "MathHelperTests",
+                "DivideTestZero");
 
             Console.WriteLine("Time:{0}",stopwatch.ElapsedMilliseconds);
         }
