@@ -8,21 +8,16 @@ using Microsoft.CodeAnalysis;
 namespace TestCoverage
 {
     public class AuditVariablesMap
-    {        
-        private readonly Dictionary<string, int> _map = new Dictionary<string, int>();  
+    {
+        private readonly Dictionary<string, int> _map = new Dictionary<string, int>();
 
-        public string AddVariable(int position,SyntaxNode node)
+        public string AddVariable(int position, string documentName, SyntaxNode node)
         {
-            string varName = "a" + _map.Count;
+            string varName = string.Format("{0}_{1}", documentName, _map.Count);
 
             _map[varName] = position;
 
             return varName;
-        }
-
-        private string GetNodePath(SyntaxNode node)
-        {
-            return node.Span.Start.ToString();
         }
 
         public override string ToString()
@@ -50,12 +45,26 @@ namespace TestCoverage
 
             classBuilder.AppendLine(string.Format("public static class {0}", AuditVariablesClassName));
             classBuilder.AppendLine("{");
-            
+
             classBuilder.AppendLine(string.Format("\tpublic static System.Collections.Generic.Dictionary<string,bool> {0} = new  System.Collections.Generic.Dictionary<string,bool>();", AuditVariablesDictionaryName));
 
             classBuilder.AppendLine("}");
 
             return classBuilder.ToString();
+        }
+
+        public void ClearByDocumentName(string documentName)
+        {
+            var keysToRemove = new List<string>();
+
+            foreach (string key in _map.Keys)
+            {
+                if (key.StartsWith(documentName))
+                    keysToRemove.Remove(key);
+            }
+
+            foreach (string key in keysToRemove)
+                _map.Remove(key);
         }
     }
 }

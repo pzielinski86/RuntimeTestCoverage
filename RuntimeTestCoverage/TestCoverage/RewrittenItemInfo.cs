@@ -5,23 +5,20 @@ namespace TestCoverage
 {
     public class RewrittenItemInfo
     {
-        private readonly string _documentName;
-        private readonly SyntaxTree _syntaxTree;
+        private readonly Document _document;
 
-        public RewrittenItemInfo(string documentName, SyntaxTree syntaxTree)
-        {
-            _documentName = documentName;
-            _syntaxTree = syntaxTree;
+        public RewrittenItemInfo( Document document, SyntaxTree syntaxTree)
+        {     
+            SyntaxTree = syntaxTree;
+            _document = document;
         }
 
-        public SyntaxTree Tree
+        public Document Document
         {
-            get { return _syntaxTree; }
+            get { return _document; }
         }
 
-        public string DocumentName
-        {
-            get { return _documentName; }
-        }
+        public SyntaxTree SyntaxTree { get; set; }
+
     }
 }

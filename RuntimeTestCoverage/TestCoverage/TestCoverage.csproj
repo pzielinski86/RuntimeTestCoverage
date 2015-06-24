@@ -106,6 +106,7 @@
     <Compile Include="AuditVariablesMap.cs" />
     <Compile Include="LineCoverageCalc.cs" />
     <Compile Include="LineCoverageRewriter.cs" />
+    <Compile Include="LineCoverageWalker.cs" />
     <Compile Include="RewriteResult.cs" />
     <Compile Include="SolutionRewritter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

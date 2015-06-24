@@ -21,7 +21,7 @@ namespace TestCoverage
         public int[] CalculateForAllTests(string solutionPath, RewriteResult rewriteResult)
         {
             SyntaxTree auditVariablesTree = CSharpSyntaxTree.ParseText(rewriteResult.AuditVariablesMap.ToString());
-            SyntaxTree[] allTrees = rewriteResult.Items.Select(i => i.Tree).ToArray();
+            SyntaxTree[] allTrees = rewriteResult.Items.Select(i => i.SyntaxTree).ToArray();
             SyntaxNode[] testClasses = GetTestClasses(rewriteResult);
 
             CSharpCompilation compilation = Compile(allTrees, auditVariablesTree,GetAllReferences(solutionPath));
@@ -102,7 +102,7 @@ namespace TestCoverage
 
         private static SyntaxNode[] GetTestClasses(RewriteResult rewriteResult)
         {
-            IEnumerable<SyntaxNode> allNodes = rewriteResult.Items.Select(i => i.Tree.GetRoot());
+            IEnumerable<SyntaxNode> allNodes = rewriteResult.Items.Select(i => i.SyntaxTree.GetRoot());
 
             return allNodes.SelectMany(
                         t => t.DescendantNodes()
