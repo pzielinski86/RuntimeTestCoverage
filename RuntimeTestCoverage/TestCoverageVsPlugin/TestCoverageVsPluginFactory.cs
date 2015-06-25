@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.Composition;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 
@@ -17,9 +19,21 @@ namespace TestCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
+        private DocumentTestCoverage _documentTestCoverage;
+           
+        [ImportingConstructor]
+        public MarginFactory([Import]SVsServiceProvider serviceProvider)
+        {
+            DTE dte = (DTE)serviceProvider.GetService(typeof(DTE));
+
+            string solutionPath = dte.Solution.FullName;
+            _documentTestCoverage = new DocumentTestCoverage(solutionPath);
+        }        
+        
+
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
-            return new TestCoverageVsPlugin(textViewHost.TextView);
+            return new TestCoverageVsPlugin(_documentTestCoverage, textViewHost.TextView);
         }
     }
     #endregion

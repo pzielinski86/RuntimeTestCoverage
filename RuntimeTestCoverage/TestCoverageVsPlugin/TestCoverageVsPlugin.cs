@@ -17,17 +17,21 @@ namespace TestCoverageVsPlugin
     class TestCoverageVsPlugin : Canvas, IWpfTextViewMargin
     {
         public const string MarginName = "TestCoverageVsPlugin";
+        private readonly DocumentTestCoverage _documentTestCoverage;
         private IWpfTextView _textView;
         private bool _isDisposed = false;
         private Canvas _canvas;
-        private static int[] _coveredPaths;
+        private int[] _coveredPaths;
+        
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
         /// </summary>
+        /// <param name="documentTestCoverage"></param>
         /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
-        public TestCoverageVsPlugin(IWpfTextView textView)
+        public TestCoverageVsPlugin(DocumentTestCoverage documentTestCoverage, IWpfTextView textView)
         {
             _canvas = new Canvas();
+            _documentTestCoverage = documentTestCoverage;
             _textView = textView;
             _textView.ViewportHeightChanged += _textView_ViewportHeightChanged;
             _textView.LayoutChanged += _textView_LayoutChanged;
@@ -35,18 +39,26 @@ namespace TestCoverageVsPlugin
             this.ClipToBounds = true;
             this.Background = new SolidColorBrush(Colors.LightGreen);
             Children.Add(_canvas);
+            textView.TextBuffer.Changing += TextBuffer_Changing;
+        }
 
-            if (_coveredPaths != null)
-                return;
+        void TextBuffer_Changing(object sender, TextContentChangingEventArgs e)
+        {
+            string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
+            int carretPos = _textView.Caret.Position.BufferPosition;
+            _coveredPaths=_documentTestCoverage.CalculateForDocument(GetDocumentName(), documentContent,carretPos);
+            Redraw();
+        }
 
-            const string solutionPath = @"C:\projects\RuntimeTestCoverage\TestSolution\TestSolution.sln";
+        private string GetDocumentName()
+        {
+            ITextDocument textDocument = GetTextDocument(_textView.TextBuffer);
 
-            var rewritter = new SolutionRewritter();
-            RewriteResult rewriteResult = rewritter.RewriteAllClasses(solutionPath);
-
-            var lineCoverageCalc = new LineCoverageCalc();
-            _coveredPaths=lineCoverageCalc.CalculateForAllTests(solutionPath, rewriteResult);
-
+            return System.IO.Path.GetFileName(textDocument.FilePath);
+        }
+        private ITextDocument GetTextDocument(ITextBuffer textBuffer)
+        {
+            return textBuffer.Properties.GetProperty<ITextDocument>(typeof(ITextDocument));
         }
 
         private void _textView_LayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
@@ -61,9 +73,12 @@ namespace TestCoverageVsPlugin
 
         private void Redraw()
         {
+            if (_coveredPaths == null)
+                return;
+
             _canvas.Children.Clear();
 
-            string text=_textView.TextBuffer.CurrentSnapshot.GetText();
+            string text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
             for (int i = 0; i < _textView.TextViewLines.Count; i++)
             {
@@ -73,7 +88,7 @@ namespace TestCoverageVsPlugin
                     break;
 
                 string currentLineText =
-                    _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber-1).GetText();
+                    _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
 
                 int spanStart = text.IndexOf(currentLineText.Trim());
 

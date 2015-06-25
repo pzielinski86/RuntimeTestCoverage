@@ -37,7 +37,6 @@ namespace TestCoverage
                 statements.Add(statement);
             }
 
-
             return base.VisitBlock(SyntaxFactory.Block(statements));
         }
 

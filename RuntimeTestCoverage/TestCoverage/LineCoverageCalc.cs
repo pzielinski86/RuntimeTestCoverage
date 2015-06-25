@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -97,7 +98,8 @@ namespace TestCoverage
 
         private static Assembly SaveTestCoverageDll(CSharpCompilation compilation)
         {
-            using (var stream = new FileStream("TestCoverageCalculation.dll", FileMode.Create))
+            string dllName = Guid.NewGuid().ToString();
+            using (var stream = new FileStream(dllName, FileMode.Create))
             {
                 EmitResult emitResult = compilation.Emit(stream);
 
@@ -108,7 +110,7 @@ namespace TestCoverage
                 }
             }
 
-            return Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), "TestCoverageCalculation.dll"));
+            return Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), dllName));
         }
 
         private static CSharpCompilation Compile(SyntaxTree[] allTrees, SyntaxTree auditVariablesTree, MetadataReference[] references)
