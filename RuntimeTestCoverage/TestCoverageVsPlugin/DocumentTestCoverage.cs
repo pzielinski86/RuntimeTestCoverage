@@ -18,11 +18,8 @@ namespace TestCoverageVsPlugin
 
         public int[] CalculateForAllDocuments()
         {
-            var rewritter = new SolutionRewritter();
-            _allDDocumentsRewrite = rewritter.RewriteAllClasses(_solutionPath);
-
-            var lineCoverageCalc = new LineCoverageCalc();
-            return lineCoverageCalc.CalculateForAllTests(_solutionPath, _allDDocumentsRewrite);
+            LineCoverageEngine engine=new LineCoverageEngine();            
+            return engine.CalculateForAllDocuments(_solutionPath);
         }
 
         public int[] CalculateForDocument(string documentName, string documentContent, int selectedPosition)
@@ -32,15 +29,12 @@ namespace TestCoverageVsPlugin
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
-
-            var rewritter = new SolutionRewritter();
-            rewritter.RewriteTestClass(_allDDocumentsRewrite, documentName);
-
-            var lineCoverageCalc = new LineCoverageCalc();
+            
             string selectedClassName = GetSelectedClass(syntaxNode, selectedPosition);
             string methodName = GetSelectedMethod(syntaxNode, selectedPosition);
 
-            int[] coverage = lineCoverageCalc.CalculateForTest(_allDDocumentsRewrite, _solutionPath, documentName, selectedClassName, methodName);
+            LineCoverageEngine engine = new LineCoverageEngine();
+            int[] coverage = engine.CalculateForTest(_solutionPath, documentName, selectedClassName, methodName);
 
             return coverage;
         }

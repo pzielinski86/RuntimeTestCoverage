@@ -1,30 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace TestCoverage
 {
     public class SolutionRewritter
     {
-        public RewrittenItemInfo RewriteTestClass(RewriteResult rewriteResult, string documentName)
+        public Tuple<AuditVariablesMap, SyntaxTree> RewriteTestClass(string documentName, string documentContent)
         {
-            RewrittenItemInfo rewrittenItem = rewriteResult.Items.Single(i => i.Document.Name == documentName);
-            rewriteResult.AuditVariablesMap.ClearByDocumentName(documentName);
+            AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
             var walker = new LineCoverageWalker();
-            SyntaxNode syntaxNode = rewrittenItem.Document.GetSyntaxRootAsync().Result;
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
+            SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
             walker.Visit(syntaxNode);
 
-            var lineCoverageRewriter = new LineCoverageRewriter(rewriteResult.AuditVariablesMap, documentName, walker.AuditVariablePositions);
+            var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, documentName, walker.AuditVariablePositions);
             SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
 
-            rewrittenItem.SyntaxTree = rewrittenNode.SyntaxTree;
-
-            return rewrittenItem;
+            return new Tuple<AuditVariablesMap, SyntaxTree>(auditVariablesMap, rewrittenNode.SyntaxTree);
         }
         public RewriteResult RewriteAllClasses(string pathToSolution)
         {
@@ -33,24 +33,38 @@ namespace TestCoverage
             var rewrittenItems = new List<RewrittenItemInfo>();
             var auditVariablesMap = new AuditVariablesMap();
 
+
+            foreach (Document document in GetDocuments(pathToSolution))
+
+            {
+                var walker = new LineCoverageWalker();
+                SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
+
+                walker.Visit(syntaxNode);
+
+                var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, document.Name, walker.AuditVariablePositions);
+                SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
+
+                rewrittenItems.Add(new RewrittenItemInfo(document, rewrittenNode.SyntaxTree));
+            }
+
+            return new RewriteResult(rewrittenItems.ToArray(), auditVariablesMap);
+        }
+
+        public IEnumerable<Document> GetDocuments(string solutionPath)
+        {
+            Project[] allProjects = GetProjects(solutionPath);
+
+
             foreach (Project project in allProjects)
             {
                 foreach (Document document in GetAcceptableDocuments(project.Documents))
 
                 {
-                    var walker = new LineCoverageWalker();
-                    SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
-
-                    walker.Visit(syntaxNode);
-
-                    var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, document.Name, walker.AuditVariablePositions);
-                    SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
-
-                    rewrittenItems.Add(new RewrittenItemInfo(document, rewrittenNode.SyntaxTree));
+                    yield return document;
                 }
             }
 
-            return new RewriteResult(rewrittenItems.ToArray(), auditVariablesMap);
         }
 
         private IEnumerable<Document> GetAcceptableDocuments(IEnumerable<Document> documents)

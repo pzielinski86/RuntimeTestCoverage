@@ -10,7 +10,7 @@ namespace Math.Tests
     [TestFixture]
     public class MathHelperTests2
     {
-        [Test]
+       
         public void Test()
         {
 
@@ -42,8 +42,7 @@ namespace Math.Tests
 
     [TestFixture]
     public class MathHelperTests1
-    {
-        [Test]
+    {        
         public void Test()
         {
             

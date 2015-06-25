@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="AuditVariablesMap.cs" />
     <Compile Include="LineCoverageCalc.cs" />
+    <Compile Include="LineCoverageEngine.cs" />
     <Compile Include="LineCoverageRewriter.cs" />
     <Compile Include="LineCoverageWalker.cs" />
     <Compile Include="RewriteResult.cs" />

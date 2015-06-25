@@ -21,23 +21,25 @@ namespace TestCoverage
             SyntaxNode[] testClasses = GetTestClasses(rewriteResult);
 
             CSharpCompilation compilation = Compile(allTrees, auditVariablesTree, GetAllReferences(solutionPath));
-            Assembly assembly = SaveTestCoverageDll(compilation);
+
+            List<int> allPositions = new List<int>();
 
             foreach (SyntaxNode testClass in testClasses)
             {
-                return RunAllTests(testClass, compilation, assembly, rewriteResult.AuditVariablesMap);
+                int[] positions = RunAllTests(testClass, compilation, rewriteResult.AuditVariablesMap);
+                allPositions.AddRange(positions);
             }
 
-            return new int[0];
+            return allPositions.ToArray();
         }
 
-        public int[] CalculateForTest(RewriteResult rewriteResult,string solutionPath, string documentName, string className, string methodName)
+        public int[] CalculateForTest(SyntaxTree[] allTrees, AuditVariablesMap auditVariablesMap, string solutionPath, string documentContent, string className, string methodName)
         {
-            SyntaxTree auditVariablesTree = CSharpSyntaxTree.ParseText(rewriteResult.AuditVariablesMap.ToString());
-            SyntaxTree[] allTrees = rewriteResult.Items.Select(i => i.SyntaxTree).ToArray();
-            var rewrittenItem = rewriteResult.Items.Single(i => i.Document.Name == documentName);
+            SyntaxTree auditVariablesTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 
-            ClassDeclarationSyntax classNode = rewrittenItem.SyntaxTree.GetRoot()
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
+
+            ClassDeclarationSyntax classNode = syntaxTree.GetRoot()
                 .DescendantNodes()
                 .OfType<ClassDeclarationSyntax>()
                 .Single(d => d.Identifier.Text == className);
@@ -47,14 +49,13 @@ namespace TestCoverage
                     .OfType<MethodDeclarationSyntax>()
                     .Single(d => d.Identifier.Text == methodName);
 
+
             CSharpCompilation compilation = Compile(allTrees, auditVariablesTree, GetAllReferences(solutionPath));
-            Assembly assembly = SaveTestCoverageDll(compilation);
+            TestExecutorScriptEngine executor = new TestExecutorScriptEngine();
 
+            Dictionary<string, bool> setVariables = executor.RunTest(compilation, className, methodNode, auditVariablesMap.AuditVariablesClassName, auditVariablesMap.AuditVariablesDictionaryName);
 
-            var testExecutorScriptEngine=new TestExecutorScriptEngine();
-            Dictionary<string, bool> setVariables = testExecutorScriptEngine.RunTest(compilation, assembly, className, methodNode, rewriteResult.AuditVariablesMap);
-
-            return setVariables.Select(x => rewriteResult.AuditVariablesMap.Map[x.Key]).ToArray();
+            return setVariables.Select(x => auditVariablesMap.Map[x.Key]).ToArray();
         }
 
         private static MetadataReference[] GetAllReferences(string solutionPath)
@@ -65,18 +66,18 @@ namespace TestCoverage
 
             return allReferences;
         }
-        private static int[] RunAllTests(SyntaxNode testClass, Compilation compilation, Assembly assembly, AuditVariablesMap auditVariablesMap)
+        private static int[] RunAllTests(SyntaxNode testClass, Compilation compilation, AuditVariablesMap auditVariablesMap)
         {
             string className = testClass.ChildTokens().Single(t => t.Kind() == SyntaxKind.IdentifierToken).ValueText;
             SyntaxNode[] testMethods = GetTestMethods(testClass);
 
-            var testExecutorScriptEngine = new TestExecutorScriptEngine();
+            var executor = new TestExecutorScriptEngine();
 
             List<int> variables = new List<int>();
 
             foreach (SyntaxNode testMethod in testMethods)
             {
-                Dictionary<string, bool> setVariables = testExecutorScriptEngine.RunTest(compilation, assembly, className, testMethod, auditVariablesMap);
+                Dictionary<string, bool> setVariables = executor.RunTest(compilation, className, testMethod, auditVariablesMap.AuditVariablesClassName, auditVariablesMap.AuditVariablesDictionaryName);
 
                 variables.AddRange(setVariables.Select(x => auditVariablesMap.Map[x.Key]).ToArray());
             }
@@ -94,23 +95,6 @@ namespace TestCoverage
                         .Select(a => a.Parent.Parent)).ToArray();
 
             return testMethods;
-        }
-
-        private static Assembly SaveTestCoverageDll(CSharpCompilation compilation)
-        {
-            string dllName = Guid.NewGuid().ToString();
-            using (var stream = new FileStream(dllName, FileMode.Create))
-            {
-                EmitResult emitResult = compilation.Emit(stream);
-
-                if (!emitResult.Success)
-                {
-                    throw new TestCoverageCompilationException(
-                        emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
-                }
-            }
-
-            return Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(), dllName));
         }
 
         private static CSharpCompilation Compile(SyntaxTree[] allTrees, SyntaxTree auditVariablesTree, MetadataReference[] references)

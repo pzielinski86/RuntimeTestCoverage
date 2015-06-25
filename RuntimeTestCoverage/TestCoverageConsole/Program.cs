@@ -9,57 +9,38 @@ using TestCoverage;
 
 namespace TestCoverageConsole
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
-        {            
+        private static void Main(string[] args)
+        {
             const string solutionPath = @"../../../../TestSolution/TestSolution.sln";
 
-            var rewritter=new SolutionRewritter();
+            var domain = AppDomain.CreateDomain("coverage");
+            var engine =
+                (LineCoverageEngine)
+                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof(LineCoverageEngine).FullName);
+
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            RewriteResult rewriteResult = rewritter.RewriteAllClasses(solutionPath);
+            int[] positions = engine.CalculateForAllDocuments(solutionPath);
 
-            foreach (RewrittenItemInfo item in rewriteResult.Items)
-            {             
-                DisplayRewrittenItem(item);
-            }
-
-            Console.WriteLine(rewriteResult.AuditVariablesMap.ToString());
-            
-
-            var lineCoverageCalc=new LineCoverageCalc();
-            lineCoverageCalc.CalculateForAllTests(solutionPath,rewriteResult);
+            Console.WriteLine("Positions: {0}", positions.Length);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
-            RunTest(rewriteResult, "MathHelperTests.cs", solutionPath);
-        }
+            AppDomain.Unload(domain);
+            domain = AppDomain.CreateDomain("coverage");
+            engine =
+   (LineCoverageEngine)
+       domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof(LineCoverageEngine).FullName);
 
-        private static void DisplayRewrittenItem(RewrittenItemInfo item)
-        {
-            Console.WriteLine("Syntax tree for {0}:", item.Document.Name);
-            Console.WriteLine(item.SyntaxTree.ToString());
+            stopwatch = Stopwatch.StartNew();
 
-            Console.WriteLine("Audit variable mapping:");
-            Console.WriteLine("END---------------------END\n");
-        }
-
-        private static void RunTest(RewriteResult rewriteResult, string documentName, string solutionPath)
-        {
-            Console.WriteLine("Rewriting {0}",documentName);
-
-            Stopwatch stopwatch=Stopwatch.StartNew();
-
-
-            var rewritter = new SolutionRewritter();
-            var item = rewritter.RewriteTestClass(rewriteResult, documentName);
-            DisplayRewrittenItem(item);
-
-            var lineCoverageCalc = new LineCoverageCalc();
-            lineCoverageCalc.CalculateForTest(rewriteResult, solutionPath, documentName, "MathHelperTests",
+            int[] documentPositions = engine.CalculateForTest(solutionPath, "MathHelperTests.cs", "MathHelperTests",
                 "DivideTestZero");
 
-            Console.WriteLine("Time:{0}",stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Positions: {0}", documentPositions.Length);
+            Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
+
         }
     }
 }

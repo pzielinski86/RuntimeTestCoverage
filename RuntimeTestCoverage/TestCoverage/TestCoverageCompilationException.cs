@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 
-namespace TestCoverage
+namespace TestCoverageSandbox
 {
     [Serializable]
     public class TestCoverageCompilationException : Exception
