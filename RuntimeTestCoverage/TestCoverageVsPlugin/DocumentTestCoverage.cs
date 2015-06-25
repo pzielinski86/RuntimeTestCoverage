@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,29 +16,47 @@ namespace TestCoverageVsPlugin
         public DocumentTestCoverage(string solutionPath)
         {
             _solutionPath = solutionPath;
+
         }
 
         public int[] CalculateForAllDocuments()
         {
-            LineCoverageEngine engine=new LineCoverageEngine();            
-            return engine.CalculateForAllDocuments(_solutionPath);
+            var domain = AppDomain.CreateDomain("coverage");
+            var engine =
+                (LineCoverageEngine)
+                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof(LineCoverageEngine).FullName);
+
+            var positions= engine.CalculateForAllDocuments(_solutionPath);
+
+            AppDomain.Unload(domain);
+
+            return positions;
         }
 
         public int[] CalculateForDocument(string documentName, string documentContent, int selectedPosition)
         {
-            if (_allDDocumentsRewrite == null)
-                return CalculateForAllDocuments();
-
+        
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
             
             string selectedClassName = GetSelectedClass(syntaxNode, selectedPosition);
             string methodName = GetSelectedMethod(syntaxNode, selectedPosition);
 
-            LineCoverageEngine engine = new LineCoverageEngine();
+            var domain = AppDomain.CreateDomain("coverage");
+            
+            var engine =
+                (LineCoverageEngine)
+                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof(LineCoverageEngine).FullName);
+
             int[] coverage = engine.CalculateForTest(_solutionPath, documentName, selectedClassName, methodName);
 
+            AppDomain.Unload(domain);
             return coverage;
+        }
+
+        private void Domain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        {
+            
         }
 
         private string GetSelectedMethod(SyntaxNode syntaxNode, int selectedPosition)

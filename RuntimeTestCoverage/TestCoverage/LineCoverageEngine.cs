@@ -25,7 +25,7 @@ namespace TestCoverage
             var rewriteResult = rewritter.RewriteTestClass(documentName, documentContent);
 
             var lineCoverageCalc = new LineCoverageCalc();
-            SyntaxTree[] allTrees = allDocuments.Select(d => d.GetSyntaxTreeAsync().Result).ToArray();
+            SyntaxTree[] allTrees = allDocuments.Except(new [] { document}).Select(d => d.GetSyntaxTreeAsync().Result).Union(new[] {rewriteResult.Item2}).ToArray();
             return lineCoverageCalc.CalculateForTest(allTrees,rewriteResult.Item1 ,solutionPath, documentContent, className, methodName);
 
         }
