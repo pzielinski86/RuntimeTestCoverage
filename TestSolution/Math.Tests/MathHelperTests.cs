@@ -23,7 +23,7 @@ namespace Math.Tests
         [Test]
         public void DivideTest()
         {
-            //
+            ///////a
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 2);
 
@@ -32,11 +32,19 @@ namespace Math.Tests
 
         [Test]
         public void DivideTestZero()
-        {//
+        {////////////////////ph//ghgjj4
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 0);
 
-            Assert.That(result, Is.EqualTo(5));
+           //// Assert.That(result, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void DoSOmethingTest()
+        {
+            ////
+            MathHelper helper = new MathHelper();
+            helper.DoSomething(50);
         }
     }
 

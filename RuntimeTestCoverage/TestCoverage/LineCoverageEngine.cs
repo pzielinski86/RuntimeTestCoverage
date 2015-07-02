@@ -1,32 +1,40 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.SqlServer.Server;
 
 namespace TestCoverage
 {
-    public class LineCoverageEngine :MarshalByRefObject
+    public class LineCoverageEngine : MarshalByRefObject
     {
-        public int[] CalculateForAllDocuments(string solutionPath)
-        {
-            var rewritter=new SolutionRewritter();
-            RewriteResult rewriteResult = rewritter.RewriteAllClasses(solutionPath);  
-
-            var lineCoverageCalc = new LineCoverageCalc();
-            return lineCoverageCalc.CalculateForAllTests(solutionPath, rewriteResult);            
-            
-        }
-
-        public int[] CalculateForTest(string solutionPath, string documentName, string className, string methodName)
+        public LineCoverage[] CalculateForAllDocuments(string solutionPath)
         {
             var rewritter = new SolutionRewritter();
-            Document[] allDocuments = rewritter.GetDocuments(solutionPath).ToArray();
-            var document = allDocuments.Single(d => d.Name == documentName);
-            string documentContent = document.GetTextAsync().Result.ToString();
-            var rewriteResult = rewritter.RewriteTestClass(documentName, documentContent);
+            RewriteResult rewriteResult = rewritter.RewriteAllClasses(solutionPath);
 
-            var lineCoverageCalc = new LineCoverageCalc();
-            SyntaxTree[] allTrees = allDocuments.Except(new [] { document}).Select(d => d.GetSyntaxTreeAsync().Result).Union(new[] {rewriteResult.Item2}).ToArray();
-            return lineCoverageCalc.CalculateForTest(allTrees,rewriteResult.Item1 ,solutionPath, documentContent, className, methodName);
+            var solutionExplorer = new SolutionExplorer(solutionPath);
+            solutionExplorer.Open();
+
+            var lineCoverageCalc = new LineCoverageCalc(solutionExplorer);
+            return lineCoverageCalc.CalculateForAllTests(solutionPath, rewriteResult);
+
+        }
+
+        public LineCoverage[] CalculateForTest(string solutionPath, string documentPath, string documentContent, string className, string methodName)
+        {
+            var solutionExplorer = new SolutionExplorer(solutionPath);
+            solutionExplorer.Open();
+
+            var rewritter = new SolutionRewritter();
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(documentPath, documentContent);
+
+            var lineCoverageCalc = new LineCoverageCalc(solutionExplorer);        
+
+            return lineCoverageCalc.CalculateForTest(rewrittenDocument, className, methodName);
 
         }
     }

@@ -8,18 +8,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestCoverage
 {
-    public class LineCoverageRewriter : CSharpSyntaxRewriter
+    internal class LineCoverageRewriter : CSharpSyntaxRewriter
     {
         private readonly AuditVariablesMap _auditVariableMapping;
-        private readonly string _documentName;
-        private readonly int[] _auditVariableNames;
-        private int _auditIndex = 0;
+        private readonly AuditVariablePlaceholder[] _auditVariablePlaceholders;
+        private int _auditIndex;
 
-        public LineCoverageRewriter(AuditVariablesMap auditVariableMapping, string documentName,int[] auditVariableNames)
+        public LineCoverageRewriter(AuditVariablesMap auditVariableMapping, AuditVariablePlaceholder[] auditVariablePlaceholders)
         {
             _auditVariableMapping = auditVariableMapping;
-            _documentName = documentName;
-            _auditVariableNames = auditVariableNames;
+            _auditVariablePlaceholders = auditVariablePlaceholders;
         }
 
         public AuditVariablesMap AuditVariableMapping
@@ -41,13 +39,15 @@ namespace TestCoverage
         }
 
         private StatementSyntax CreateLineAuditNdoe(SyntaxNode node)
-        {
-            string varName = AuditVariableMapping.AddVariable(_auditVariableNames[_auditIndex],_documentName, node);
+        {        
+            string varName = AuditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex].Path, _auditVariablePlaceholders[_auditIndex].SpanStart);
             _auditIndex++;
 
-            StatementSyntax newNode = SyntaxFactory.ParseStatement(string.Format("\t{0}.{1}[\"{2}\"]=true;\n", AuditVariableMapping.AuditVariablesClassName, AuditVariableMapping.AuditVariablesDictionaryName, varName));
+            StatementSyntax auditNode = SyntaxFactory.ParseStatement(string.Format("\t{0}.{1}[\"{2}\"]=true;\n", AuditVariableMapping.AuditVariablesClassName, AuditVariableMapping.AuditVariablesDictionaryName, varName));
 
-            return newNode;
+            SyntaxTriviaList comment = SyntaxFactory.ParseTrailingTrivia(string.Format("//{0}\n", AuditVariableMapping.Map[varName]));
+
+            return auditNode.WithTrailingTrivia(comment);
         }
     }
 }

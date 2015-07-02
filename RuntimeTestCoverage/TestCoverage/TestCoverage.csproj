@@ -103,12 +103,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuditVariablePlaceholder.cs" />
     <Compile Include="AuditVariablesMap.cs" />
+    <Compile Include="Compilation\CompilationItem.cs" />
+    <Compile Include="Compilation\CompiledItem.cs" />
+    <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="LineCoverage.cs" />
     <Compile Include="LineCoverageCalc.cs" />
     <Compile Include="LineCoverageEngine.cs" />
     <Compile Include="LineCoverageRewriter.cs" />
     <Compile Include="LineCoverageWalker.cs" />
+    <Compile Include="PathHelper.cs" />
     <Compile Include="RewriteResult.cs" />
+    <Compile Include="RewrittenDocument.cs" />
+    <Compile Include="SolutionExplorer.cs" />
     <Compile Include="SolutionRewritter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RewrittenItemInfo.cs" />

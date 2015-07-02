@@ -1,14 +1,17 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestCoverage
 {
-    public class LineCoverageWalker : CSharpSyntaxWalker
+    internal class LineCoverageWalker : CSharpSyntaxWalker
     {
-        private readonly List<int> _auditVariablePositions = new List<int>();
+        private readonly List<AuditVariablePlaceholder> _auditVariablePositions =new List<AuditVariablePlaceholder>();
 
-        public int[] AuditVariablePositions
+        public AuditVariablePlaceholder[] AuditVariablePlaceholderPositions
         {
             get { return _auditVariablePositions.ToArray(); }
         }
@@ -17,10 +20,35 @@ namespace TestCoverage
         {
             foreach (var statement in node.Statements)
             {
-                _auditVariablePositions.Add(statement.Span.Start);
+                _auditVariablePositions.Add(new AuditVariablePlaceholder(GetPath(statement),statement.Span.Start));
             }
 
             base.VisitBlock(node);
+        }
+
+        private string GetPath(SyntaxNode node)
+        {
+            var parent = node.Parent;
+            StringBuilder path = new StringBuilder();
+
+            while (parent != null)
+            {
+                var methodDeclarationSyntax = parent as MethodDeclarationSyntax;
+                if (methodDeclarationSyntax != null)
+                    path.Insert(0, methodDeclarationSyntax.Identifier.Text + ".");
+
+                var classDeclarationSyntax = parent as ClassDeclarationSyntax;
+                if (classDeclarationSyntax != null)
+                    path.Insert(0, classDeclarationSyntax.Identifier.Text + ".");
+
+                var namespaceDeclarationSyntax = parent as NamespaceDeclarationSyntax;
+                if (namespaceDeclarationSyntax != null)
+                    path.Insert(0, namespaceDeclarationSyntax.Name + ".");
+
+                parent = parent.Parent;
+            }
+
+            return path.ToString().TrimEnd('.');
         }
     }
 }

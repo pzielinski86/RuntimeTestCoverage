@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.MSBuild;
 
 namespace TestCoverage
 {
-    public class SolutionRewritter
+    internal class SolutionRewritter
     {
-        public Tuple<AuditVariablesMap, SyntaxTree> RewriteTestClass(string documentName, string documentContent)
+        public RewrittenDocument RewriteDocument(string documentPath, string documentContent)
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
@@ -21,68 +21,51 @@ namespace TestCoverage
 
             walker.Visit(syntaxNode);
 
-            var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, documentName, walker.AuditVariablePositions);
+            var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, walker.AuditVariablePlaceholderPositions);
             SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
 
-            return new Tuple<AuditVariablesMap, SyntaxTree>(auditVariablesMap, rewrittenNode.SyntaxTree);
-        }
+            File.WriteAllText(PathHelper.GetRewrittenFilePath(documentPath), rewrittenNode.ToString());
+
+            return new RewrittenDocument(auditVariablesMap, rewrittenNode.SyntaxTree);
+        }        
+
         public RewriteResult RewriteAllClasses(string pathToSolution)
         {
-            Project[] allProjects = GetProjects(pathToSolution);
-
-            var rewrittenItems = new List<RewrittenItemInfo>();
+            var rewrittenItems = new Dictionary<Project, List<RewrittenItemInfo>>();
             var auditVariablesMap = new AuditVariablesMap();
 
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            Solution solution = workspace.OpenSolutionAsync(pathToSolution).Result;
 
-            foreach (Document document in GetDocuments(pathToSolution))
-
+            foreach (Project project in solution.Projects)
             {
-                var walker = new LineCoverageWalker();
-                SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
-
-                walker.Visit(syntaxNode);
-
-                var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, document.Name, walker.AuditVariablePositions);
-                SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
-
-                rewrittenItems.Add(new RewrittenItemInfo(document, rewrittenNode.SyntaxTree));
-            }
-
-            return new RewriteResult(rewrittenItems.ToArray(), auditVariablesMap);
-        }
-
-        public IEnumerable<Document> GetDocuments(string solutionPath)
-        {
-            Project[] allProjects = GetProjects(solutionPath);
-
-
-            foreach (Project project in allProjects)
-            {
-                foreach (Document document in GetAcceptableDocuments(project.Documents))
-
+                foreach (Document document in project.Documents)
                 {
-                    yield return document;
+                    SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
+
+                    LineCoverageWalker walker=new LineCoverageWalker();
+                    walker.Visit(syntaxNode);
+
+                    var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, walker.AuditVariablePlaceholderPositions);
+                    SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);
+                    
+                    File.WriteAllText(PathHelper.GetRewrittenFilePath(document.FilePath), rewrittenNode.ToString());
+
+                    RewrittenItemInfo rewrittenItemInfo = new RewrittenItemInfo(document, rewrittenNode.SyntaxTree);
+
+                    if (!rewrittenItems.ContainsKey(document.Project))
+                    {
+                        rewrittenItems[document.Project] = new List<RewrittenItemInfo>();
+                    }
+
+                    rewrittenItems[document.Project].Add(rewrittenItemInfo);                    
                 }
             }
+    
 
+            return new RewriteResult(rewrittenItems, auditVariablesMap);
         }
-
-        private IEnumerable<Document> GetAcceptableDocuments(IEnumerable<Document> documents)
-        {
-            string[] excludedFiles = { "AssemblyInfo.cs" };
-
-            return
-                documents.Where(d => Regex.IsMatch(Path.GetFileNameWithoutExtension(d.Name), @"^[a-zA-Z0-9]+$"))
-                    .Where(d => !excludedFiles.Contains(d.Name));
-        }
-
-        private Project[] GetProjects(string pathToSolution)
-        {
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
-
-            Solution solutionToAnalyze = workspace.OpenSolutionAsync(pathToSolution).Result;
-
-            return solutionToAnalyze.Projects.ToArray();
-        }
+    
+ 
     }
 }

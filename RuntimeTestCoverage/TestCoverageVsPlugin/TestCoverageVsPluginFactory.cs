@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Composition;
+using System.Reflection;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
@@ -20,7 +22,25 @@ namespace TestCoverageVsPlugin
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
         private DocumentTestCoverage _documentTestCoverage;
-           
+
+        static MarginFactory()
+        {
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;   
+        }
+
+        private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            if (args.Name.Contains("TestCoverage"))
+            {
+                string path = Assembly.GetExecutingAssembly().Location;
+                path = System.IO.Path.GetDirectoryName(path);
+
+                return Assembly.LoadFrom(System.IO.Path.Combine(path, "TestCoverage.dll"));
+            }
+            return null;
+        }
+
         [ImportingConstructor]
         public MarginFactory([Import]SVsServiceProvider serviceProvider)
         {
@@ -28,6 +48,7 @@ namespace TestCoverageVsPlugin
 
             string solutionPath = dte.Solution.FullName;
             _documentTestCoverage = new DocumentTestCoverage(solutionPath);
+            _documentTestCoverage.CalculateForAllDocuments();
         }        
         
 

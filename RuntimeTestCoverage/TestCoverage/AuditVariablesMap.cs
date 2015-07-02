@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -11,9 +8,9 @@ namespace TestCoverage
     {
         private readonly Dictionary<string, int> _map = new Dictionary<string, int>();
 
-        public string AddVariable(int position, string documentName, SyntaxNode node)
+        public string AddVariable(string path, int position)
         {
-            string varName = string.Format("{0}_{1}", documentName, _map.Count);
+            string varName = string.Format("{0}_{1}", path, _map.Count);
 
             _map[varName] = position;
 
@@ -51,20 +48,6 @@ namespace TestCoverage
             classBuilder.AppendLine("}");
 
             return classBuilder.ToString();
-        }
-
-        public void ClearByDocumentName(string documentName)
-        {
-            var keysToRemove = new List<string>();
-
-            foreach (string key in _map.Keys)
-            {
-                if (key.StartsWith(documentName))
-                    keysToRemove.Remove(key);
-            }
-
-            foreach (string key in keysToRemove)
-                _map.Remove(key);
         }
     }
 }
