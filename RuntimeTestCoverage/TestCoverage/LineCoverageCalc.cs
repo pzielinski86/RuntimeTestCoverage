@@ -59,6 +59,8 @@ namespace TestCoverage
                     .OfType<MethodDeclarationSyntax>()
                     .Single(d => d.Identifier.Text == methodName);
 
+            Compiler compiler=new Compiler();
+
             var executor = new TestExecutorScriptEngine();
             var allReferences = _solutionExplorer.GetAllReferences().ToArray();
 

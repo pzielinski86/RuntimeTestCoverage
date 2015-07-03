@@ -29,27 +29,27 @@ namespace TestCoverageConsole
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            var positions = engine.CalculateForAllDocuments(solutionPath);
+            //var positions = engine.CalculateForAllDocuments(solutionPath);
 
-            Console.WriteLine("Positions: {0}", positions.Length);
-            Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+            //Console.WriteLine("Positions: {0}", positions.Length);
+            //Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
-            AppDomain.Unload(domain);
+            //AppDomain.Unload(domain);
    //         domain = AppDomain.CreateDomain("coverage");
    //         engine =
    //(LineCoverageEngine)
    //    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof(LineCoverageEngine).FullName);
 
-   //         engine = new LineCoverageEngine();
+            engine = new LineCoverageEngine();
 
-   //         stopwatch = Stopwatch.StartNew();
+            stopwatch = Stopwatch.StartNew();
 
-   //         string documentContent=File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
-   //         var documentPositions = engine.CalculateForTest(solutionPath , "MathHelperTests.cs", documentContent, "MathHelperTests",
-   //             "DivideTestZero");
+            string documentContent = File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
+            var documentPositions = engine.CalculateForTest(solutionPath, "MathHelperTests.cs", documentContent, "MathHelperTests",
+                "DivideTestZero");
 
-   //         Console.WriteLine("Positions: {0}", documentPositions.Length);
-   //         Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Positions: {0}", documentPositions.Length);
+            Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
 
         }
 

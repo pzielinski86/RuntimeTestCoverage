@@ -11,7 +11,7 @@ namespace TestCoverage.Compilation
         public CompiledItem[] Compile(CompilationItem[] allItems, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
-            CompiledItem compiledAudit = CompileAudit(auditVariablesMap);          
+            CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
 
             foreach (var compilationItem in allItems)
             {
@@ -23,15 +23,27 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
+        public CompiledItem[] Compile(CompilationItem item, AuditVariablesMap auditVariablesMap)
+        {
+            var compiledItems = new List<CompiledItem>();
+            CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
+
+            Compile(item, compiledAudit,new[]{item}, compiledItems);
+
+            compiledItems.Add(compiledAudit);
+
+            return compiledItems.ToArray();
+        }
+
         public CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
         {
             var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 
-            var references = new []{MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location)};
+            var references = new[] { MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location) };
 
-            CSharpCompilation compilation = Compile("Audit",new[] { auditTree }, references);
+            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
 
-            return new CompiledItem(null,compilation);
+            return new CompiledItem(null, compilation);
         }
 
         private void Compile(CompilationItem item, CompiledItem compiledAudit, CompilationItem[] allItems, List<CompiledItem> currentlyCompiledItems)
@@ -42,13 +54,13 @@ namespace TestCoverage.Compilation
             foreach (ProjectReference projectReference in item.Project.ProjectReferences)
             {
                 CompilationItem referencedItem = allItems.Single(i => i.Project.Id == projectReference.ProjectId);
-                Compile(referencedItem, compiledAudit,allItems, currentlyCompiledItems);
+                Compile(referencedItem, compiledAudit, allItems, currentlyCompiledItems);
             }
 
             MetadataReference[] projectReferences = GetProjectReferences(item.Project, currentlyCompiledItems);
-            MetadataReference[] auditReferences = {compiledAudit.Compilation.ToMetadataReference()};
+            MetadataReference[] auditReferences = { compiledAudit.Compilation.ToMetadataReference() };
             MetadataReference[] requiredReferences = projectReferences.Union(item.Project.MetadataReferences).Union(auditReferences).ToArray();
-            CSharpCompilation compilation = Compile(item.Project.Name,item.SyntaxTrees, requiredReferences);
+            CSharpCompilation compilation = Compile(item.Project.Name, item.SyntaxTrees, requiredReferences);
 
             currentlyCompiledItems.Add(new CompiledItem(item.Project, compilation));
         }
@@ -67,7 +79,7 @@ namespace TestCoverage.Compilation
             return metadataReferences.ToArray();
         }
 
-        private static CSharpCompilation Compile(string dllName,SyntaxTree[] allTrees, MetadataReference[] references)
+        private static CSharpCompilation Compile(string dllName, SyntaxTree[] allTrees, MetadataReference[] references)
         {
             CSharpCompilation compilation = CSharpCompilation.Create(
                 dllName,
