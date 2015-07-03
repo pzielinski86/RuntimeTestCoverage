@@ -45,7 +45,7 @@ namespace TestCoverageConsole
             stopwatch = Stopwatch.StartNew();
 
             string documentContent = File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
-            var documentPositions = engine.CalculateForTest(solutionPath, "MathHelperTests.cs", documentContent, "MathHelperTests",
+            var documentPositions = engine.CalculateForTest(solutionPath,"Math.Tests", "MathHelperTests.cs", documentContent, "MathHelperTests",
                 "DivideTestZero");
 
             Console.WriteLine("Positions: {0}", documentPositions.Length);

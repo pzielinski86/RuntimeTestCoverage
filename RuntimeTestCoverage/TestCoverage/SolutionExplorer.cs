@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -26,6 +27,8 @@ namespace TestCoverage
             _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
         }
 
+
+
         public AuditVariablesMap LoadRewritenAuditNodes(AuditVariablesMap auditVariablesMap)
         {
             foreach (var document in GetAllDocuments())
@@ -35,14 +38,28 @@ namespace TestCoverage
             }
 
             return auditVariablesMap;
-        }       
+        }
 
-        public Assembly[] LoadCompiledAssemblies()
+        public IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments)
+        {
+            foreach (var document in project.Documents)
+            {
+                if (excludedDocuments.Contains(document.FilePath))
+                    continue;
+
+                yield return document.GetSyntaxTreeAsync().Result;
+            }
+        }
+
+        public Assembly[] LoadCompiledAssemblies(params string[]excludedProjects)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
 
             foreach (Project project in Solution.Projects)
             {
+                if (excludedProjects.Contains(project.Name))
+                    continue;
+
                 Assembly assembly = Assembly.LoadFrom(PathHelper.GetCoverageDllName(project.Name));
                 allAssemblies.Add(assembly);
             }

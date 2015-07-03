@@ -26,7 +26,7 @@ namespace TestCoverage
 
             File.WriteAllText(PathHelper.GetRewrittenFilePath(documentPath), rewrittenNode.ToString());
 
-            return new RewrittenDocument(auditVariablesMap, rewrittenNode.SyntaxTree);
+            return new RewrittenDocument(auditVariablesMap, rewrittenNode.SyntaxTree,documentPath);
         }        
 
         public RewriteResult RewriteAllClasses(string pathToSolution)

@@ -24,7 +24,7 @@ namespace TestCoverage
 
         }
 
-        public LineCoverage[] CalculateForTest(string solutionPath, string documentPath, string documentContent, string className, string methodName)
+        public LineCoverage[] CalculateForTest(string solutionPath,string projectName, string documentPath, string documentContent, string className, string methodName)
         {
             var solutionExplorer = new SolutionExplorer(solutionPath);
             solutionExplorer.Open();
@@ -32,9 +32,10 @@ namespace TestCoverage
             var rewritter = new SolutionRewritter();
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(solutionExplorer);        
+            var lineCoverageCalc = new LineCoverageCalc(solutionExplorer);
 
-            return lineCoverageCalc.CalculateForTest(rewrittenDocument, className, methodName);
+            Project project = solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
+            return lineCoverageCalc.CalculateForTest(rewrittenDocument, project,className, methodName);
 
         }
     }
