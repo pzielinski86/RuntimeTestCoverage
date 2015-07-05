@@ -9,10 +9,11 @@ using TestCoverage.Compilation;
 
 namespace TestCoverage
 {
+
     public class SolutionExplorer
     {
         private readonly string _solutionPath;
-        private MSBuildWorkspace _workspace;
+        private readonly MSBuildWorkspace _workspace;
         private Solution _solution;
 
         public SolutionExplorer(string solutionPath)
@@ -81,6 +82,11 @@ namespace TestCoverage
         public Solution Solution
         {
             get { return _solution; }
+        }
+
+        public string SolutionPath
+        {
+            get { return _solutionPath; }
         }
 
         public IEnumerable<Document> GetAllDocuments()

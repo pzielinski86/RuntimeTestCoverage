@@ -23,13 +23,18 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        public CompiledItem[] Compile(CompilationItem item, AuditVariablesMap auditVariablesMap)
+        public CompiledItem[] Compile(CompilationItem item, Assembly[] references, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
 
-            Compile(item, compiledAudit,new[]{item}, compiledItems);
+            var requiredReferences =
+                item.Project.MetadataReferences.Union(
+                    references.Select(r => MetadataReference.CreateFromFile(r.Location)));
 
+            CSharpCompilation compiledDll = Compile(item.Project.Name, item.SyntaxTrees, requiredReferences.ToArray());
+
+            compiledItems.Add(new CompiledItem(item.Project,compiledDll));
             compiledItems.Add(compiledAudit);
 
             return compiledItems.ToArray();

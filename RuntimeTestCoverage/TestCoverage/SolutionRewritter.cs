@@ -11,6 +11,12 @@ namespace TestCoverage
 {
     internal class SolutionRewritter
     {
+        private readonly SolutionExplorer _solutionExplorer;
+        public SolutionRewritter(SolutionExplorer solutionExplorer)
+        {
+            _solutionExplorer = solutionExplorer;
+        }
+
         public RewrittenDocument RewriteDocument(string documentPath, string documentContent)
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
@@ -32,12 +38,9 @@ namespace TestCoverage
         public RewriteResult RewriteAllClasses(string pathToSolution)
         {
             var rewrittenItems = new Dictionary<Project, List<RewrittenItemInfo>>();
-            var auditVariablesMap = new AuditVariablesMap();
+            var auditVariablesMap = new AuditVariablesMap();           
 
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
-            Solution solution = workspace.OpenSolutionAsync(pathToSolution).Result;
-
-            foreach (Project project in solution.Projects)
+            foreach (Project project in _solutionExplorer.Solution.Projects)
             {
                 foreach (Document document in project.Documents)
                 {

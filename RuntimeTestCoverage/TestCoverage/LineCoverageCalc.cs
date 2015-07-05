@@ -62,7 +62,7 @@ namespace TestCoverage
                     .Single(d => d.Identifier.Text == methodName);
 
             var compiler=new Compiler();
-            CompiledItem[] compiledDocuments = compiler.Compile(new CompilationItem(project, projectTrees),rewrittenDocument.AuditVariablesMap);
+            CompiledItem[] compiledDocuments = compiler.Compile(new CompilationItem(project, projectTrees), assemblies.ToArray(),rewrittenDocument.AuditVariablesMap);
             assemblies.AddRange(compiledDocuments.Select(x => x.EmitAndSave()));
 
             var executor = new TestExecutorScriptEngine();
