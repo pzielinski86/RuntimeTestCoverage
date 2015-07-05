@@ -19,6 +19,7 @@ namespace TestCoverage
         {
             _solutionExplorer=new SolutionExplorer(solutionPath);
             _solutionExplorer.Open();
+                        
         }
 
         public LineCoverage[] CalculateForAllDocuments()

@@ -3,6 +3,12 @@
 
 # User-specific files
 *.suo
+*.cs_testcoverage
+*.jrs
+*.chk
+*.edb
+*.ide
+
 *.user
 *.userosscache
 *.sln.docstates

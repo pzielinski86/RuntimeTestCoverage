@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -21,7 +22,10 @@ namespace TestCoverageConsole
 
             const string solutionPath = @"../../../../TestSolution/TestSolution.sln";          
 
-            var domain = AppDomain.CreateDomain("coverage");
+            var appDomainSetup=new AppDomainSetup();
+            appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
+
+            var domain = AppDomain.CreateDomain("coverage",null, appDomainSetup);
             var engine =(LineCoverageEngine)domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (LineCoverageEngine).FullName);
             engine.Init(solutionPath);
 
@@ -34,7 +38,7 @@ namespace TestCoverageConsole
 
             AppDomain.Unload(domain);
 
-            domain = AppDomain.CreateDomain("coverage");
+            domain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
             engine =
                 (LineCoverageEngine)
                     domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (LineCoverageEngine).FullName);
