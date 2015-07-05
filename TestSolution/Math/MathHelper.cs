@@ -13,6 +13,7 @@ namespace Math
             if (b == 0)
             {
                 throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException();
             }
 
             return a / b;

@@ -10,7 +10,7 @@ namespace Math.Tests
     [TestFixture]
     public class MathHelperTests2
     {
-       
+
         public void Test()
         {
 
@@ -23,7 +23,7 @@ namespace Math.Tests
         [Test]
         public void DivideTest()
         {
-            ///////a
+            ///////ak
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 2);
 
@@ -32,11 +32,11 @@ namespace Math.Tests
 
         [Test]
         public void DivideTestZero()
-        {////////////////////ph//ghgjj4
+        {////////////////////ph//ghgjj
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 0);
 
-           //// Assert.That(result, Is.EqualTo(5));
+            //// Assert.That(result, Is.EqualTo(5));
         }
 
         [Test]
@@ -50,10 +50,10 @@ namespace Math.Tests
 
     [TestFixture]
     public class MathHelperTests1
-    {        
+    {
         public void Test()
         {
-            
+
         }
     }
 }

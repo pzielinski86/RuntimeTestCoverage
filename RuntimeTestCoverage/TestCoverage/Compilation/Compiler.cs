@@ -30,7 +30,8 @@ namespace TestCoverage.Compilation
 
             var requiredReferences =
                 item.Project.MetadataReferences.Union(
-                    references.Select(r => MetadataReference.CreateFromFile(r.Location)));
+                    references.Select(r => MetadataReference.CreateFromFile(r.Location))).ToList();
+            requiredReferences.Add(compiledAudit.Compilation.ToMetadataReference());
 
             CSharpCompilation compiledDll = Compile(item.Project.Name, item.SyntaxTrees, requiredReferences.ToArray());
 

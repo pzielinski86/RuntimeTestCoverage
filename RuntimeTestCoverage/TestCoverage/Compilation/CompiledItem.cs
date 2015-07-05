@@ -4,7 +4,6 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using TestCoverageSandbox;
 
 namespace TestCoverage.Compilation
 {
@@ -30,7 +29,7 @@ namespace TestCoverage.Compilation
 
             string dllName = PathHelper.GetCoverageDllName(Compilation.AssemblyName);
             var dllPath = Path.Combine(Directory.GetCurrentDirectory(), dllName);
-            
+           
             using (var stream = CreateAssemblyStream(dllPath))
             {
                 EmitResult emitResult = Compilation.Emit(stream);
@@ -40,7 +39,6 @@ namespace TestCoverage.Compilation
                     throw new TestCoverageCompilationException(
                         emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
                 }
-
             }
 
             Assembly = Assembly.LoadFile(dllPath);

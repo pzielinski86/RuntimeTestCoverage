@@ -21,7 +21,7 @@ namespace TestCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
-        private DocumentTestCoverage _documentTestCoverage;
+        private SolutionTestCoverage _solutionTestCoverage;
 
         static MarginFactory()
         {
@@ -47,14 +47,14 @@ namespace TestCoverageVsPlugin
             DTE dte = (DTE)serviceProvider.GetService(typeof(DTE));
 
             string solutionPath = dte.Solution.FullName;
-            _documentTestCoverage = new DocumentTestCoverage(solutionPath);
-            _documentTestCoverage.CalculateForAllDocuments();
+            _solutionTestCoverage = new SolutionTestCoverage(solutionPath,dte);
+            _solutionTestCoverage.CalculateForAllDocuments();
         }        
         
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
-            return new TestCoverageVsPlugin(_documentTestCoverage, textViewHost.TextView);
+            return new TestCoverageVsPlugin(_solutionTestCoverage, textViewHost.TextView);
         }
     }
     #endregion

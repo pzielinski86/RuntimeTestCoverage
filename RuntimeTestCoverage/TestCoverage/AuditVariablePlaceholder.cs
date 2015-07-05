@@ -1,13 +1,15 @@
 namespace TestCoverage
 {
-    internal class AuditVariablePlaceholder
+    public class AuditVariablePlaceholder
     {
-        public string Path { get; private set; }
+        public string DocumentPath { get; set; }
+        public string NodePath { get; private set; }
         public int SpanStart { get; private set; }
 
-        public AuditVariablePlaceholder(string path, int spanStart)
+        public AuditVariablePlaceholder(string documentPath,string nodePath, int spanStart)
         {
-            Path = path;
+            DocumentPath = documentPath;
+            NodePath = nodePath;
             SpanStart = spanStart;
         }
     }

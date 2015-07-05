@@ -22,7 +22,7 @@ namespace TestCoverage
                         
         }
 
-        public LineCoverage[] CalculateForAllDocuments()
+        public Dictionary<string,LineCoverage[]> CalculateForAllDocuments()
         {             
             var rewritter = new SolutionRewritter(_solutionExplorer);
             RewriteResult rewriteResult = rewritter.RewriteAllClasses(_solutionExplorer.SolutionPath);                                   
@@ -32,7 +32,7 @@ namespace TestCoverage
 
         }
 
-        public LineCoverage[] CalculateForTest(string projectName, string documentPath, string documentContent, string className, string methodName)
+        public Dictionary<string, LineCoverage[]> CalculateForTest(string projectName, string documentPath, string documentContent, string className, string methodName)
         {
             var rewritter = new SolutionRewritter(_solutionExplorer);
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(documentPath, documentContent);

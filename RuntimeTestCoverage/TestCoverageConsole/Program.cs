@@ -33,7 +33,7 @@ namespace TestCoverageConsole
 
             var positions = engine.CalculateForAllDocuments();
 
-            Console.WriteLine("Positions: {0}", positions.Length);
+            Console.WriteLine("Positions: {0}", positions.Count);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
             AppDomain.Unload(domain);
@@ -48,11 +48,11 @@ namespace TestCoverageConsole
             stopwatch = Stopwatch.StartNew();
 
             string documentContent = File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
-            var documentPositions = engine.CalculateForTest("Math.Tests", "MathHelperTests.cs",
+            var documentPositions = engine.CalculateForTest("Math.Tests", Path.GetFullPath(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs"),
                 documentContent, "MathHelperTests",
                 "DivideTestZero");
 
-            Console.WriteLine("Positions: {0}", documentPositions.Length);
+            Console.WriteLine("Positions: {0}", documentPositions.Count);
             Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
         }
 

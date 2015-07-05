@@ -23,9 +23,15 @@ namespace TestCoverage
 
             var walker = new LineCoverageWalker();
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
+            
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
             walker.Visit(syntaxNode);
+
+            foreach (var auditVariablePlaceholderPosition in walker.AuditVariablePlaceholderPositions)
+            {
+                auditVariablePlaceholderPosition.DocumentPath = documentPath;
+            }
 
             var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, walker.AuditVariablePlaceholderPositions);
             SyntaxNode rewrittenNode = lineCoverageRewriter.Visit(syntaxNode);

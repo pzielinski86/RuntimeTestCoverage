@@ -11,7 +11,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.CSharp;
 using Microsoft.CSharp;
-using TestCoverageSandbox;
 
 namespace TestCoverage
 {
@@ -37,7 +36,16 @@ namespace TestCoverage
             ScriptOptions options = new ScriptOptions();
             options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces("Math.Tests");
 
-            ScriptState state = CSharpScript.Run(scriptBuilder.ToString(), options);
+            ScriptState state;
+
+            try
+            {
+                state = CSharpScript.Run(scriptBuilder.ToString(), options);
+            }
+            catch (CompilationErrorException e)
+            {
+                throw new TestCoverageCompilationException(e.Diagnostics.Select(x=>x.GetMessage()).ToArray());
+            }
 
             var coverageAudit = (Dictionary<string, bool>) state.Variables["auditLog"].Value;
             return coverageAudit;

@@ -40,12 +40,12 @@ namespace TestCoverage
 
         private StatementSyntax CreateLineAuditNdoe(SyntaxNode node)
         {        
-            string varName = AuditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex].Path, _auditVariablePlaceholders[_auditIndex].SpanStart);
+            string varName = AuditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex]);
             _auditIndex++;
 
             StatementSyntax auditNode = SyntaxFactory.ParseStatement(string.Format("\t{0}.{1}[\"{2}\"]=true;\n", AuditVariableMapping.AuditVariablesClassName, AuditVariableMapping.AuditVariablesDictionaryName, varName));
 
-            SyntaxTriviaList comment = SyntaxFactory.ParseTrailingTrivia(string.Format("//{0}\n", AuditVariableMapping.Map[varName]));
+            SyntaxTriviaList comment = SyntaxFactory.ParseTrailingTrivia(string.Format("//{0}\n", AuditVariableMapping.Map[varName].DocumentPath));
 
             return auditNode.WithTrailingTrivia(comment);
         }

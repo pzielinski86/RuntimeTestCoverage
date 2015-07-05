@@ -52,7 +52,7 @@ namespace TestCoverage
             }
         }
 
-        public Assembly[] LoadCompiledAssemblies(params string[]excludedProjects)
+        public Assembly[] LoadCompiledAssemblies(params string[] excludedProjects)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
 
@@ -119,9 +119,10 @@ namespace TestCoverage
 
                 int startCommentPos = fullLine.IndexOf(@"//", 0);
 
-                int span = Int32.Parse(fullLine.Substring(startCommentPos + 2, fullLine.Length - startCommentPos - 2));
+                string documentPath = fullLine.Substring(startCommentPos + 2, fullLine.Length - startCommentPos - 2);
 
-                auditVariablesMap.Map.Add(varName, span);
+                var placeholder = new AuditVariablePlaceholder(documentPath, varName, AuditVariablesMap.ExtractSpanFromVariableName(varName));
+                auditVariablesMap.Map[varName] = placeholder;
 
                 auditVariablePos = endQuote + 1;
             }

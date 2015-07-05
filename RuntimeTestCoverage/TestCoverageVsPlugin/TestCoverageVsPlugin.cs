@@ -22,7 +22,9 @@ namespace TestCoverageVsPlugin
     class TestCoverageVsPlugin : Canvas, IWpfTextViewMargin
     {
         public const string MarginName = "TestCoverageVsPlugin";
-        private readonly DocumentTestCoverage _documentTestCoverage;
+        private string _documentPath;
+        private SyntaxTree _syntaxTree;
+        private readonly SolutionTestCoverage _solutionTestCoverage;
         private IWpfTextView _textView;
         private bool _isDisposed = false;
         private Canvas _canvas;
@@ -32,12 +34,12 @@ namespace TestCoverageVsPlugin
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
         /// </summary>
-        /// <param name="documentTestCoverage"></param>
+        /// <param name="solutionTestCoverage"></param>
         /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
-        public TestCoverageVsPlugin(DocumentTestCoverage documentTestCoverage, IWpfTextView textView)
+        public TestCoverageVsPlugin(SolutionTestCoverage solutionTestCoverage, IWpfTextView textView)
         {
             _canvas = new Canvas();
-            _documentTestCoverage = documentTestCoverage;
+            _solutionTestCoverage = solutionTestCoverage;
             _textView = textView;
             _textView.ViewportHeightChanged += _textView_ViewportHeightChanged;
             _textView.LayoutChanged += _textView_LayoutChanged;
@@ -48,7 +50,7 @@ namespace TestCoverageVsPlugin
             _timer = new Timer(3000);
             _timer.Elapsed += _timer_Elapsed;
             textView.TextBuffer.Changing += TextBuffer_Changing;
-            ExtractTypePaths();
+            _documentPath = GetTextDocument().FilePath;
         }
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -56,8 +58,7 @@ namespace TestCoverageVsPlugin
             _timer.Stop();            
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
             int carretPos = _textView.Caret.Position.BufferPosition;
-            _documentTestCoverage.CalculateForDocument(GetDocumentName(), documentContent, carretPos);
-            ExtractTypePaths();
+            _solutionTestCoverage.CalculateForDocument(GetTextDocument().FilePath, documentContent, carretPos);
             Redraw();
         }
 
@@ -65,52 +66,16 @@ namespace TestCoverageVsPlugin
         {
             _timer.Stop();
             _timer.Start();
-        }
-
-        private void ExtractTypePaths()
-        {
-            SyntaxTree node=CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
-            SyntaxNode root = node.GetRoot();
-
-            List<string> paths=new List<string>();
-
-            foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
-            {
-
-                SyntaxNode namespaceNode = method.Parent;
-                ClassDeclarationSyntax classNode = null;                
-
-                while (namespaceNode!=null&&!(namespaceNode is NamespaceDeclarationSyntax))
-                {
-                   
-                    if (namespaceNode is ClassDeclarationSyntax)
-                        classNode = (ClassDeclarationSyntax)namespaceNode;
-
-                    namespaceNode = namespaceNode.Parent;
-                }
-
-                string @namespace = null;
-
-
-                if (namespaceNode != null)
-                    @namespace = ((NamespaceDeclarationSyntax) namespaceNode).Name.ToString();
-
-                paths.Add(string.Format("{0}.{1}.{2}.", @namespace, classNode.Identifier.Text, method.Identifier.Text));
-
-            }
-
-            _paths = paths.ToArray();
-
-        }
+        }  
         private string GetDocumentName()
         {
-            ITextDocument textDocument = GetTextDocument(_textView.TextBuffer);
+            ITextDocument textDocument = GetTextDocument();
 
             return System.IO.Path.GetFileName(textDocument.FilePath);
         }
-        private ITextDocument GetTextDocument(ITextBuffer textBuffer)
+        private ITextDocument GetTextDocument()
         {
-            return textBuffer.Properties.GetProperty<ITextDocument>(typeof(ITextDocument));
+            return _textView.TextBuffer.Properties.GetProperty<ITextDocument>(typeof(ITextDocument));
         }
 
         private void _textView_LayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
@@ -125,17 +90,20 @@ namespace TestCoverageVsPlugin
 
         private void Redraw()
         {
-            var positions = _documentTestCoverage.GetPositions(_paths).ToArray();
+            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
-            if (positions.Length == 0)
-                return;
+            int currentMethodIndex = 0;
+            int currentSpan = 0;
+            MethodDeclarationSyntax[] allMethods = _syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
 
+            int[] positions=new int[0];
+
+            if(_solutionTestCoverage.SolutionCoverage.ContainsKey(_documentPath))
+                positions = _solutionTestCoverage.SolutionCoverage[_documentPath].Select(x => x.Span).ToArray();
 
             _canvas.Children.Clear();
 
-            int currentSpan = 0;
-
-            string text = _textView.TextBuffer.CurrentSnapshot.GetText();
+            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
             for (int i = 0; i < _textView.TextViewLines.Count; i++)
             {
@@ -145,14 +113,30 @@ namespace TestCoverageVsPlugin
                     break;
 
                 string currentLineText =
-                    _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
+      _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
 
-                int spanStart = text.IndexOf(currentLineText.Trim(), currentSpan);
-                currentSpan = spanStart + 1;
+           
+                MethodDeclarationSyntax currentMethod = allMethods[currentMethodIndex];
+                int s = currentSpan;
+
+                currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan+1) ;
+
+                if (currentSpan >= currentMethod.Span.End)
+                    currentMethodIndex++;
+
+                currentMethod = allMethods[currentMethodIndex];
+
+                if (currentSpan < currentMethod.Span.Start)
+                {
+                    //currentSpan = text.IndexOf(currentLineText, s);
+                    continue;
+                }
+                //currentSpan = text.IndexOf(currentLineText, s);
+
 
                 Ellipse ellipse = new Ellipse();
 
-                if (positions.Contains(spanStart))
+                if (positions.Contains(currentSpan-currentMethod.Span.Start))
                     ellipse.Fill = Brushes.Green;
                 else
                     ellipse.Fill = Brushes.Red;
@@ -162,6 +146,10 @@ namespace TestCoverageVsPlugin
                 SetTop(ellipse, _textView.TextViewLines[i].TextTop - _textView.ViewportTop);
 
                 _canvas.Children.Add(ellipse);
+
+             //   currentSpan = text.IndexOf(currentLineText, currentSpan);
+
+            
             }
         }
 

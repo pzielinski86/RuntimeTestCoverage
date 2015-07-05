@@ -113,6 +113,7 @@
     <Compile Include="LineCoverageEngine.cs" />
     <Compile Include="LineCoverageRewriter.cs" />
     <Compile Include="LineCoverageWalker.cs" />
+    <Compile Include="NodePathBuilder.cs" />
     <Compile Include="PathHelper.cs" />
     <Compile Include="RewriteResult.cs" />
     <Compile Include="RewrittenDocument.cs" />
