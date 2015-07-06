@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
-using TestCoverage.Compilation;
+using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-
-    public class SolutionExplorer
+    internal class SolutionExplorer
     {
         private readonly string _solutionPath;
         private readonly MSBuildWorkspace _workspace;
@@ -28,17 +26,13 @@ namespace TestCoverage
             _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
         }
 
-
-
-        public AuditVariablesMap LoadRewritenAuditNodes(AuditVariablesMap auditVariablesMap)
+        public void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap)
         {
             foreach (var document in GetAllDocuments())
             {
                 string content = File.ReadAllText(PathHelper.GetRewrittenFilePath(document.FilePath));
                 ExtractAuditVariables(auditVariablesMap, content);
             }
-
-            return auditVariablesMap;
         }
 
         public IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments)
@@ -70,13 +64,7 @@ namespace TestCoverage
 
         public IEnumerable<MetadataReference> GetAllReferences()
         {
-            foreach (var project in _solution.Projects)
-            {
-                foreach (var metadataReference in project.MetadataReferences)
-                {
-                    yield return metadataReference;
-                }
-            }
+            return _solution.Projects.SelectMany(project => project.MetadataReferences);
         }
 
         public Solution Solution
@@ -91,13 +79,7 @@ namespace TestCoverage
 
         public IEnumerable<Document> GetAllDocuments()
         {
-            foreach (var project in _solution.Projects)
-            {
-                foreach (var document in project.Documents)
-                {
-                    yield return document;
-                }
-            }
+            return _solution.Projects.SelectMany(project => project.Documents);
         }
 
         private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)

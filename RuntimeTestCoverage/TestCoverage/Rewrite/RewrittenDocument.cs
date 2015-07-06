@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
-    class RewrittenDocument
+    internal class RewrittenDocument
     {
         public AuditVariablesMap AuditVariablesMap { get; private set; }
         public SyntaxTree SyntaxTree { get; private set; }

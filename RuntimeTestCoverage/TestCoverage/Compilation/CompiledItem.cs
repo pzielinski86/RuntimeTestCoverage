@@ -1,13 +1,13 @@
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace TestCoverage.Compilation
 {
-    public class CompiledItem
+    internal class CompiledItem
     {
         public Project Project { get; private set; }
         public CSharpCompilation Compilation { get; private set; }

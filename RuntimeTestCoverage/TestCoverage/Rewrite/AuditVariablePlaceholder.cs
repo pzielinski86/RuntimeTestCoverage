@@ -1,6 +1,6 @@
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
-    public class AuditVariablePlaceholder
+    internal class AuditVariablePlaceholder
     {
         public string DocumentPath { get; set; }
         public string NodePath { get; private set; }

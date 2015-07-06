@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.MSBuild;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
     internal class SolutionRewritter
     {
         private readonly SolutionExplorer _solutionExplorer;
+
         public SolutionRewritter(SolutionExplorer solutionExplorer)
         {
             _solutionExplorer = solutionExplorer;
@@ -71,10 +68,7 @@ namespace TestCoverage
                 }
             }
     
-
             return new RewriteResult(rewrittenItems, auditVariablesMap);
-        }
-    
- 
+        }    
     }
 }

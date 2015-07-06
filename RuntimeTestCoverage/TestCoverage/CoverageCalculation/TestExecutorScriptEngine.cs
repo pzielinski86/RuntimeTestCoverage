@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.CSharp;
-using Microsoft.CSharp;
+using TestCoverage.Compilation;
+using TestCoverage.Rewrite;
 
-namespace TestCoverage
+namespace TestCoverage.CoverageCalculation
 {
-    public class TestExecutorScriptEngine : MarshalByRefObject
+    internal class TestExecutorScriptEngine : MarshalByRefObject
     {      
         public Dictionary<string, bool> RunTest(MetadataReference[] references,Assembly[] assemblies, string className, SyntaxNode method, AuditVariablesMap auditVariablesMap)
         {            

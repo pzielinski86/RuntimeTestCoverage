@@ -1,17 +1,13 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.SqlServer.Server;
+using TestCoverage.CoverageCalculation;
+using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-    public class LineCoverageEngine : MarshalByRefObject
+    public class SolutionCoverageEngine : MarshalByRefObject
     {
         private SolutionExplorer _solutionExplorer;        
 

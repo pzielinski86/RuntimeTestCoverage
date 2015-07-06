@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Timers;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Formatting;
-using TestCoverage;
+using System;
+using System.Linq;
+using System.Timers;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace TestCoverageVsPlugin
 {
@@ -22,14 +19,14 @@ namespace TestCoverageVsPlugin
     class TestCoverageVsPlugin : Canvas, IWpfTextViewMargin
     {
         public const string MarginName = "TestCoverageVsPlugin";
-        private string _documentPath;
+
+        private readonly string _documentPath;
         private SyntaxTree _syntaxTree;
         private readonly SolutionTestCoverage _solutionTestCoverage;
-        private IWpfTextView _textView;
+        private readonly IWpfTextView _textView;
         private bool _isDisposed = false;
-        private Canvas _canvas;
-        private Timer _timer;
-        private string[] _paths = new string[0];
+        private readonly Canvas _canvas;
+        private readonly Timer _timer;
 
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
@@ -41,24 +38,28 @@ namespace TestCoverageVsPlugin
             _canvas = new Canvas();
             _solutionTestCoverage = solutionTestCoverage;
             _textView = textView;
-            _textView.ViewportHeightChanged += _textView_ViewportHeightChanged;
-            _textView.LayoutChanged += _textView_LayoutChanged;
+            _textView.ViewportHeightChanged += TextViewViewportHeightChanged;
+            _textView.LayoutChanged += TextViewLayoutChanged;
             this.Width = 20;
             this.ClipToBounds = true;
-            this.Background = new SolidColorBrush(Colors.LightGreen);
+            this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
             _timer = new Timer(3000);
-            _timer.Elapsed += _timer_Elapsed;
+            _timer.Elapsed += RecalculateTimerElapsed;
             textView.TextBuffer.Changing += TextBuffer_Changing;
             _documentPath = GetTextDocument().FilePath;
+            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
-        private void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void RecalculateTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            _timer.Stop();            
+            _timer.Stop();
+            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
+
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
             int carretPos = _textView.Caret.Position.BufferPosition;
             _solutionTestCoverage.CalculateForDocument(GetTextDocument().FilePath, documentContent, carretPos);
+
             Redraw();
         }
 
@@ -66,40 +67,32 @@ namespace TestCoverageVsPlugin
         {
             _timer.Stop();
             _timer.Start();
-        }  
-        private string GetDocumentName()
-        {
-            ITextDocument textDocument = GetTextDocument();
-
-            return System.IO.Path.GetFileName(textDocument.FilePath);
         }
         private ITextDocument GetTextDocument()
         {
             return _textView.TextBuffer.Properties.GetProperty<ITextDocument>(typeof(ITextDocument));
         }
 
-        private void _textView_LayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        private void TextViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
             Redraw();
         }
 
-        private void _textView_ViewportHeightChanged(object sender, EventArgs e)
+        private void TextViewViewportHeightChanged(object sender, EventArgs e)
         {
             Redraw();
         }
 
         private void Redraw()
         {
-            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
-
             int currentMethodIndex = 0;
             int currentSpan = 0;
             MethodDeclarationSyntax[] allMethods = _syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
 
-            int[] positions=new int[0];
+            int[] coveragePositions = new int[0];
 
-            if(_solutionTestCoverage.SolutionCoverage.ContainsKey(_documentPath))
-                positions = _solutionTestCoverage.SolutionCoverage[_documentPath].Select(x => x.Span).ToArray();
+            if (_solutionTestCoverage.SolutionCoverage.ContainsKey(_documentPath))
+                coveragePositions = _solutionTestCoverage.SolutionCoverage[_documentPath].Select(x => x.Span).ToArray();
 
             _canvas.Children.Clear();
 
@@ -112,45 +105,33 @@ namespace TestCoverageVsPlugin
                 if (lineNumber > _textView.TextBuffer.CurrentSnapshot.LineCount)
                     break;
 
-                string currentLineText =
-      _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
+                string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
+                currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan + 1);
 
-           
-                MethodDeclarationSyntax currentMethod = allMethods[currentMethodIndex];
-                int s = currentSpan;
-
-                currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan+1) ;
-
-                if (currentSpan >= currentMethod.Span.End)
+                if (currentSpan >= allMethods[currentMethodIndex].Span.End)
                     currentMethodIndex++;
 
-                currentMethod = allMethods[currentMethodIndex];
-
-                if (currentSpan < currentMethod.Span.Start)
-                {
-                    //currentSpan = text.IndexOf(currentLineText, s);
+                if (currentSpan < allMethods[currentMethodIndex].Span.Start)
                     continue;
-                }
-                //currentSpan = text.IndexOf(currentLineText, s);
 
-
-                Ellipse ellipse = new Ellipse();
-
-                if (positions.Contains(currentSpan-currentMethod.Span.Start))
-                    ellipse.Fill = Brushes.Green;
-                else
-                    ellipse.Fill = Brushes.Red;
-
-                ellipse.Width = ellipse.Height = 15;
-
-                SetTop(ellipse, _textView.TextViewLines[i].TextTop - _textView.ViewportTop);
-
-                _canvas.Children.Add(ellipse);
-
-             //   currentSpan = text.IndexOf(currentLineText, currentSpan);
-
-            
+                AddDotCoverage(coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
             }
+        }
+
+        private void AddDotCoverage(int[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
+        {
+            Ellipse ellipse = new Ellipse();
+
+            if (coveragePositions.Contains(currentSpan - method.Span.Start))
+                ellipse.Fill = Brushes.Green;
+            else
+                ellipse.Fill = Brushes.Red;
+
+            ellipse.Width = ellipse.Height = 15;
+
+            SetTop(ellipse, wpfTextViewLine.TextTop - _textView.ViewportTop);
+
+            _canvas.Children.Add(ellipse);
         }
 
         private int GetLineNumber(int index)
@@ -158,7 +139,6 @@ namespace TestCoverageVsPlugin
             int position = _textView.TextViewLines[index].Start.Position;
             return _textView.TextViewLines[index].Start.Snapshot.GetLineNumberFromPosition(position) + 1;
         }
-
 
         private void ThrowIfDisposed()
         {

@@ -1,6 +1,6 @@
 using System;
 
-namespace TestCoverage
+namespace TestCoverage.CoverageCalculation
 {
     [Serializable]
     public class LineCoverage

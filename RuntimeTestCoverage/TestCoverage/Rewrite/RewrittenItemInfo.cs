@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
-    public class RewrittenItemInfo
+    internal class RewrittenItemInfo
     {
         private readonly Document _document;
 
-        public RewrittenItemInfo( Document document, SyntaxTree syntaxTree)
-        {     
+        public RewrittenItemInfo(Document document, SyntaxTree syntaxTree)
+        {
             SyntaxTree = syntaxTree;
             _document = document;
         }
@@ -19,6 +18,5 @@ namespace TestCoverage
         }
 
         public SyntaxTree SyntaxTree { get; set; }
-
     }
 }

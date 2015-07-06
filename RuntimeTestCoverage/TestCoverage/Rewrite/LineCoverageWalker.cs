@@ -1,16 +1,13 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
     internal class LineCoverageWalker : CSharpSyntaxWalker
     {
         private readonly List<AuditVariablePlaceholder> _auditVariablePositions =new List<AuditVariablePlaceholder>();
-        private int currentMethodSpan;
+        private int _currentMethodSpan;
 
         public AuditVariablePlaceholder[] AuditVariablePlaceholderPositions
         {
@@ -19,7 +16,7 @@ namespace TestCoverage
 
         public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
-            currentMethodSpan = node.Span.Start;
+            _currentMethodSpan = node.Span.Start;
             base.VisitMethodDeclaration(node);
         }
 
@@ -27,7 +24,7 @@ namespace TestCoverage
         {
             foreach (var statement in node.Statements)
             {
-                _auditVariablePositions.Add(new AuditVariablePlaceholder(node.SyntaxTree.FilePath,NodePathBuilder.BuildPath(statement), statement.Span.Start- currentMethodSpan));
+                _auditVariablePositions.Add(new AuditVariablePlaceholder(node.SyntaxTree.FilePath,NodePathBuilder.BuildPath(statement), statement.Span.Start- _currentMethodSpan));
             }
 
             base.VisitBlock(node);

@@ -1,10 +1,10 @@
-﻿using System;
-using System.ComponentModel.Composition;
-using System.Reflection;
-using EnvDTE;
+﻿using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
+using System;
+using System.ComponentModel.Composition;
+using System.Reflection;
 
 namespace TestCoverageVsPlugin
 {
@@ -21,7 +21,7 @@ namespace TestCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
-        private SolutionTestCoverage _solutionTestCoverage;
+        private readonly SolutionTestCoverage _solutionTestCoverage;
 
         static MarginFactory()
         {
@@ -29,14 +29,14 @@ namespace TestCoverageVsPlugin
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;   
         }
 
-        private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             if (args.Name.Contains("TestCoverage"))
             {
                 string path = Assembly.GetExecutingAssembly().Location;
                 path = System.IO.Path.GetDirectoryName(path);
 
-                return Assembly.LoadFrom(System.IO.Path.Combine(path, "TestCoverage.dll"));
+                return Assembly.LoadFrom(System.IO.Path.Combine(path, SolutionTestCoverage.TestcoverageDll));
             }
             return null;
         }
@@ -49,8 +49,7 @@ namespace TestCoverageVsPlugin
             string solutionPath = dte.Solution.FullName;
             _solutionTestCoverage = new SolutionTestCoverage(solutionPath,dte);
             _solutionTestCoverage.CalculateForAllDocuments();
-        }        
-        
+        }                
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {

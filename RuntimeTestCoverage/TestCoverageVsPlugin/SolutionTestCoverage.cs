@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using EnvDTE;
+﻿using EnvDTE;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TestCoverage;
+using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin
 {
@@ -16,14 +16,14 @@ namespace TestCoverageVsPlugin
         private readonly DTE _dte;
         private Dictionary<string, List<LineCoverage>> _solutionCoverage;
         private readonly AppDomainSetup _appDomainSetup;
-        private const string TestcoverageDll = "TestCoverage.dll";
+        public const string TestcoverageDll = "TestCoverage.dll";
+        public const string DomainName = "TestCoverage";
 
         public SolutionTestCoverage(string solutionPath, DTE dte)
         {
             _solutionPath = solutionPath;
             _dte = dte;
-            _appDomainSetup = new AppDomainSetup();
-            _appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
+            _appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
 
         }
 
@@ -35,67 +35,79 @@ namespace TestCoverageVsPlugin
 
         public void CalculateForAllDocuments()
         {
-            var domain = AppDomain.CreateDomain("coverage", null, _appDomainSetup);
+            AppDomain domain = null;
 
-            var engine =
-                (LineCoverageEngine)
-                    domain.CreateInstanceFromAndUnwrap(TestcoverageDll, typeof(LineCoverageEngine).FullName);
+            try
+            {
+                domain = AppDomain.CreateDomain(DomainName, null, _appDomainSetup);
 
-            engine.Init(_solutionPath);
-            var coverage = engine.CalculateForAllDocuments();
-            _solutionCoverage = coverage.ToDictionary(x => x.Key, x => x.Value.ToList());
+                var engine =
+                    (SolutionCoverageEngine)
+                        domain.CreateInstanceFromAndUnwrap(TestcoverageDll, typeof(SolutionCoverageEngine).FullName);
 
-            AppDomain.Unload(domain);
+                engine.Init(_solutionPath);
+
+                Dictionary<string, LineCoverage[]> coverage = engine.CalculateForAllDocuments();
+                _solutionCoverage = coverage.ToDictionary(x => x.Key, x => x.Value.ToList());
+            }
+            finally
+            {
+                if (domain != null)
+                    AppDomain.Unload(domain);
+            }
 
         }
 
         public void CalculateForDocument(string documentPath, string documentContent, int selectedPosition)
         {
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
-            SyntaxNode syntaxNode = syntaxTree.GetRoot();
+            SyntaxNode syntaxNode = CSharpSyntaxTree.ParseText(documentContent).GetRoot();
 
-            ClassDeclarationSyntax selectedClass = GetSelectedClass(syntaxNode, selectedPosition);
-            string methodName = GetSelectedMethod(syntaxNode, selectedPosition);
-
-            var domain = AppDomain.CreateDomain("coverage", null, _appDomainSetup);
-
-            var engine =
-                (LineCoverageEngine)
-                    domain.CreateInstanceFromAndUnwrap(TestcoverageDll, typeof(LineCoverageEngine).FullName);
-
-            engine.Init(_solutionPath);
-
-            object[] projects = (object[])_dte.ActiveSolutionProjects;
-
-            Project selectedProject = projects.OfType<Project>().Single();
+            ClassDeclarationSyntax selectedClass = GetSelectedClassNode(syntaxNode, selectedPosition);
+            string methodName = GetSelectedMethodName(syntaxNode, selectedPosition);
 
             Dictionary<string, LineCoverage[]> coverage;
 
+            AppDomain domain = null;
+
             try
             {
+                domain = AppDomain.CreateDomain(DomainName, null, _appDomainSetup);
+
+                var engine =
+                    (SolutionCoverageEngine)
+                        domain.CreateInstanceFromAndUnwrap(TestcoverageDll, typeof(SolutionCoverageEngine).FullName);
+
+                engine.Init(_solutionPath);
+
+                object[] projects = (object[])_dte.ActiveSolutionProjects;
+
+                Project selectedProject = projects.OfType<Project>().Single();
+
                 coverage = engine.CalculateForTest(selectedProject.Name, documentPath, documentContent,
                     selectedClass.Identifier.Text,
                     methodName);
             }
-            catch
-            {
-                return;
-            }
             finally
             {
-                AppDomain.Unload(domain);                
+                if (domain != null)
+                    AppDomain.Unload(domain);
             }
 
-            string path = string.Format("{0}.{1}.{2}", GetSelectedNamespace(selectedClass).Name,
+            string path = string.Format("{0}.{1}.{2}", GetSelectedNamespaceNode(selectedClass).Name,
                 selectedClass.Identifier.Text, methodName);
 
+            UpdateSolutionCoverage(coverage,path);
+        }
+
+        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage,string currentPath)
+        {
             foreach (string docPath in _solutionCoverage.Keys)
             {
-                var documentCoverage = _solutionCoverage[docPath];
+                List<LineCoverage> documentCoverage = _solutionCoverage[docPath];
 
                 for (int i = 0; i < documentCoverage.Count; i++)
                 {
-                    if (documentCoverage[i].TestPath == path || documentCoverage[i].Path == path)
+                    if (documentCoverage[i].TestPath == currentPath || documentCoverage[i].Path == currentPath)
                     {
                         documentCoverage.RemoveAt(i);
                         i--;
@@ -106,8 +118,8 @@ namespace TestCoverageVsPlugin
                     _solutionCoverage[docPath].AddRange(coverage[docPath]);
             }
         }
-
-        private string GetSelectedMethod(SyntaxNode syntaxNode, int selectedPosition)
+        
+        private string GetSelectedMethodName(SyntaxNode syntaxNode, int selectedPosition)
         {
             var method = syntaxNode.DescendantNodes().
                  OfType<MethodDeclarationSyntax>().Reverse().
@@ -116,7 +128,7 @@ namespace TestCoverageVsPlugin
             return method.Identifier.Text;
         }
 
-        private NamespaceDeclarationSyntax GetSelectedNamespace(SyntaxNode classNode)
+        private NamespaceDeclarationSyntax GetSelectedNamespaceNode(SyntaxNode classNode)
         {
             SyntaxNode parent = classNode;
 
@@ -128,7 +140,7 @@ namespace TestCoverageVsPlugin
             return (NamespaceDeclarationSyntax)parent;
         }
 
-        public ClassDeclarationSyntax GetSelectedClass(SyntaxNode syntaxNode, int selectedPosition)
+        private ClassDeclarationSyntax GetSelectedClassNode(SyntaxNode syntaxNode, int selectedPosition)
         {
             ClassDeclarationSyntax selectedClass = syntaxNode.DescendantNodes().
                 OfType<ClassDeclarationSyntax>().Reverse().

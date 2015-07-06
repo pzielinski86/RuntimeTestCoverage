@@ -1,8 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
-
+﻿
 namespace TestCoverage
 {
-    public static class PathHelper
+    internal static class PathHelper
     {
         public static string GetRewrittenFilePath(string documentPath)
         {

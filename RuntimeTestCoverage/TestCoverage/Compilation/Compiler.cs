@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using TestCoverage.Rewrite;
 
 namespace TestCoverage.Compilation
 {
-    public class Compiler
+    internal class Compiler
     {
-        public CompiledItem[] Compile(CompilationItem[] allItems, AuditVariablesMap auditVariablesMap)
+        public Assembly[] Compile(CompilationItem[] allItems, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
@@ -20,10 +21,10 @@ namespace TestCoverage.Compilation
 
             compiledItems.Add(compiledAudit);
 
-            return compiledItems.ToArray();
+            return compiledItems.Select(x=>x.EmitAndSave()).ToArray();
         }
 
-        public CompiledItem[] Compile(CompilationItem item, Assembly[] references, AuditVariablesMap auditVariablesMap)
+        public Assembly[] Compile(CompilationItem item, Assembly[] references, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
@@ -38,7 +39,7 @@ namespace TestCoverage.Compilation
             compiledItems.Add(new CompiledItem(item.Project,compiledDll));
             compiledItems.Add(compiledAudit);
 
-            return compiledItems.ToArray();
+            return compiledItems.Select(x => x.EmitAndSave()).ToArray();
         }
 
         public CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)

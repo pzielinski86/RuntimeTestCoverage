@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
 using TestCoverage;
 
 namespace TestCoverageConsole
@@ -26,7 +19,7 @@ namespace TestCoverageConsole
             appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
 
             var domain = AppDomain.CreateDomain("coverage",null, appDomainSetup);
-            var engine =(LineCoverageEngine)domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (LineCoverageEngine).FullName);
+            var engine =(SolutionCoverageEngine)domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
             engine.Init(solutionPath);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -40,8 +33,8 @@ namespace TestCoverageConsole
 
             domain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
             engine =
-                (LineCoverageEngine)
-                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (LineCoverageEngine).FullName);
+                (SolutionCoverageEngine)
+                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
 
             engine.Init(solutionPath);
 

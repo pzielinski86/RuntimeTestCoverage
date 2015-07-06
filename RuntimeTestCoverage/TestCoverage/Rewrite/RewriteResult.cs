@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
-    public class RewriteResult
+    internal class RewriteResult
     {
         private readonly Dictionary<Project, List<RewrittenItemInfo>> _items;
         private readonly AuditVariablesMap _auditVariablesMap;

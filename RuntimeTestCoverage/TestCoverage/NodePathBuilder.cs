@@ -1,10 +1,10 @@
-﻿using System.Text;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Text;
 
 namespace TestCoverage
 {
-    public static class NodePathBuilder
+    internal static class NodePathBuilder
     {
         public static string BuildPath(SyntaxNode node)
         {

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.CodeAnalysis;
 
-namespace TestCoverage
+namespace TestCoverage.Rewrite
 {
-    public class AuditVariablesMap
+    internal class AuditVariablesMap
     {
         private readonly Dictionary<string, AuditVariablePlaceholder> _map = new Dictionary<string, AuditVariablePlaceholder>();
-
 
         public string AddVariable(AuditVariablePlaceholder auditVariablePlaceholder)
         {
