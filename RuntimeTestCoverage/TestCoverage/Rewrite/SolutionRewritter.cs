@@ -14,11 +14,11 @@ namespace TestCoverage.Rewrite
             _solutionExplorer = solutionExplorer;
         }
 
-        public RewrittenDocument RewriteDocument(string documentPath, string documentContent)
+        public RewrittenDocument RewriteDocument(string projectName,string documentPath, string documentContent)
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
-            var walker = new LineCoverageWalker();
+            var walker = new LineCoverageWalker(projectName);
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
@@ -49,7 +49,7 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    LineCoverageWalker walker=new LineCoverageWalker();
+                    LineCoverageWalker walker=new LineCoverageWalker(project.Name);
                     walker.Visit(syntaxNode);
 
                     var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, walker.AuditVariablePlaceholderPositions);

@@ -23,7 +23,7 @@ namespace Math.Tests
         [Test]
         public void DivideTest()
         {
-            ///////ak
+            ///////ak55
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 2);
 
@@ -44,8 +44,11 @@ namespace Math.Tests
         {
             ////
             MathHelper helper = new MathHelper();
-            helper.DoSomething(50);
+            helper.DoSomething(9);
         }
+
+
+
     }
 
     [TestFixture]

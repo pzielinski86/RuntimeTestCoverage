@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
@@ -58,16 +59,31 @@ namespace TestCoverageVsPlugin
 
         }
 
-        public void CalculateForDocument(string documentPath, string documentContent, int selectedPosition)
+        public void CalculateForSelectedItem(string documentPath, string documentContent, int selectedPosition)
         {
             SyntaxNode syntaxNode = CSharpSyntaxTree.ParseText(documentContent).GetRoot();
 
             ClassDeclarationSyntax selectedClass = GetSelectedClassNode(syntaxNode, selectedPosition);
-            string methodName = GetSelectedMethodName(syntaxNode, selectedPosition);
+            if (selectedClass == null)
+            {
+                CalculateForDocument(documentPath, documentContent);
+                return;
+            }
+            MethodDeclarationSyntax methodNode = GetSelectedMethodNode(selectedClass, selectedPosition);
+
+            if (methodNode == null)
+            {
+                CalculateForDocument(documentPath, documentContent);
+                return;
+            }
 
             Dictionary<string, LineCoverage[]> coverage;
 
             AppDomain domain = null;
+
+            object[] projects = (object[])_dte.ActiveSolutionProjects;
+
+            Project selectedProject = projects.OfType<Project>().Single();
 
             try
             {
@@ -79,13 +95,10 @@ namespace TestCoverageVsPlugin
 
                 engine.Init(_solutionPath);
 
-                object[] projects = (object[])_dte.ActiveSolutionProjects;
 
-                Project selectedProject = projects.OfType<Project>().Single();
 
                 coverage = engine.CalculateForTest(selectedProject.Name, documentPath, documentContent,
-                    selectedClass.Identifier.Text,
-                    methodName);
+                    selectedClass.Identifier.Text, methodNode.Identifier.Text);
             }
             finally
             {
@@ -93,13 +106,48 @@ namespace TestCoverageVsPlugin
                     AppDomain.Unload(domain);
             }
 
-            string path = string.Format("{0}.{1}.{2}", GetSelectedNamespaceNode(selectedClass).Name,
-                selectedClass.Identifier.Text, methodName);
+            string path = string.Format("{0}.{1}.{2}.{3}.{4}", selectedProject.Name,
+                Path.GetFileNameWithoutExtension(documentPath), GetSelectedNamespaceNode(selectedClass).Name,
+                selectedClass.Identifier.Text, methodNode.Identifier.Text);
 
-            UpdateSolutionCoverage(coverage,path);
+            UpdateSolutionCoverage(coverage, path);
         }
 
-        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage,string currentPath)
+        private void CalculateForDocument(string documentPath, string documentContent)
+        {
+            Dictionary<string, LineCoverage[]> coverage;
+
+            AppDomain domain = null;
+
+            object[] projects = (object[])_dte.ActiveSolutionProjects;
+
+            Project selectedProject = projects.OfType<Project>().Single();
+
+            try
+            {
+                domain = AppDomain.CreateDomain(DomainName, null, _appDomainSetup);
+
+                var engine =
+                    (SolutionCoverageEngine)
+                        domain.CreateInstanceFromAndUnwrap(TestcoverageDll, typeof(SolutionCoverageEngine).FullName);
+
+                engine.Init(_solutionPath);
+
+                coverage = engine.CalculateForDocument(selectedProject.Name, documentPath, documentContent);
+            }
+            finally
+            {
+                if (domain != null)
+                    AppDomain.Unload(domain);
+            }
+
+            string path = string.Format("{0}.{1}", selectedProject.Name, Path.GetFileNameWithoutExtension(documentPath));
+
+            UpdateSolutionCoverage(coverage, path);
+
+        }
+
+        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage, string currentPath)
         {
             foreach (string docPath in _solutionCoverage.Keys)
             {
@@ -107,7 +155,8 @@ namespace TestCoverageVsPlugin
 
                 for (int i = 0; i < documentCoverage.Count; i++)
                 {
-                    if (documentCoverage[i].TestPath == currentPath || documentCoverage[i].Path == currentPath)
+                    if (documentCoverage[i].TestPath.StartsWith(currentPath) ||
+                        documentCoverage[i].Path.StartsWith(currentPath))
                     {
                         documentCoverage.RemoveAt(i);
                         i--;
@@ -119,13 +168,14 @@ namespace TestCoverageVsPlugin
             }
         }
         
-        private string GetSelectedMethodName(SyntaxNode syntaxNode, int selectedPosition)
+
+        private MethodDeclarationSyntax GetSelectedMethodNode(SyntaxNode syntaxNode, int selectedPosition)
         {
             var method = syntaxNode.DescendantNodes().
                  OfType<MethodDeclarationSyntax>().Reverse().
                  First(d => d.SpanStart <= selectedPosition);
 
-            return method.Identifier.Text;
+            return method;
         }
 
         private NamespaceDeclarationSyntax GetSelectedNamespaceNode(SyntaxNode classNode)

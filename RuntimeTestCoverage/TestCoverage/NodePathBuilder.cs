@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.IO;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text;
 
@@ -6,10 +7,10 @@ namespace TestCoverage
 {
     internal static class NodePathBuilder
     {
-        public static string BuildPath(SyntaxNode node)
+        public static string BuildPath(SyntaxNode node, string documentName, string projectName)
         {
             var parent = node;
-            StringBuilder path = new StringBuilder();
+            StringBuilder path = new StringBuilder();            
 
             while (parent != null)
             {
@@ -27,6 +28,9 @@ namespace TestCoverage
 
                 parent = parent.Parent;
             }
+
+            path.Insert(0, documentName + ".");
+            path.Insert(0, projectName + ".");            
 
             return path.ToString().TrimEnd('.');
         }

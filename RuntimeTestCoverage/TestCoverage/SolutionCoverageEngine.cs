@@ -28,10 +28,21 @@ namespace TestCoverage
 
         }
 
+        public Dictionary<string, LineCoverage[]> CalculateForDocument(string projectName, string documentPath, string documentContent)
+        {
+            var rewritter = new SolutionRewritter(_solutionExplorer);
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
+
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer);
+            Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
+            return lineCoverageCalc.CalculateForDocument(rewrittenDocument, project);
+
+        }
+
         public Dictionary<string, LineCoverage[]> CalculateForTest(string projectName, string documentPath, string documentContent, string className, string methodName)
         {
             var rewritter = new SolutionRewritter(_solutionExplorer);
-            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(documentPath, documentContent);
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer);
 

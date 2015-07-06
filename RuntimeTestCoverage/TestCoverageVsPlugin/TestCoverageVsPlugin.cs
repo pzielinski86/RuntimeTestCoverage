@@ -58,7 +58,7 @@ namespace TestCoverageVsPlugin
 
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
             int carretPos = _textView.Caret.Position.BufferPosition;
-            _solutionTestCoverage.CalculateForDocument(GetTextDocument().FilePath, documentContent, carretPos);
+            _solutionTestCoverage.CalculateForSelectedItem(GetTextDocument().FilePath, documentContent, carretPos);
 
             Redraw();
         }
@@ -109,7 +109,12 @@ namespace TestCoverageVsPlugin
                 currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan + 1);
 
                 if (currentSpan >= allMethods[currentMethodIndex].Span.End)
+                {
                     currentMethodIndex++;
+
+                    if (currentMethodIndex >= allMethods.Length)
+                        break;
+                }
 
                 if (currentSpan < allMethods[currentMethodIndex].Span.Start)
                     continue;
