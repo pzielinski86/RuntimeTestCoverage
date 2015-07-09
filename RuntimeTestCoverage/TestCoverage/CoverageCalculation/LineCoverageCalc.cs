@@ -125,11 +125,11 @@ namespace TestCoverage.CoverageCalculation
                 .Single(d => d.Identifier.Text == className);
         }
 
-        private LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap, string variableName, SyntaxNode methodNode, string projectName, string documentName)
+        private LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap, string variableName, SyntaxNode methodNode, string testProjectName, string testDocName)
         {
             LineCoverage lineCoverage = new LineCoverage
             {
-                TestPath = NodePathBuilder.BuildPath(methodNode, documentName, projectName),
+                TestPath = NodePathBuilder.BuildPath(methodNode, testDocName, testProjectName),
                 Path = auditVariablesMap.Map[variableName].NodePath,
                 Span = auditVariablesMap.Map[variableName].SpanStart
             };
@@ -154,13 +154,13 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, IEnumerable<string> variableNames, SyntaxNode testMethod, string projectName,string testDocumentName)
+        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, IEnumerable<string> variableNames, SyntaxNode testMethod, string testProjectName,string testDocumentName)
         {
             foreach (string varName in variableNames)
             {
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
-                LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, projectName, testDocumentName);
+                LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocumentName);
 
                 if (!coverageByDocument.ContainsKey(docPath))
                     coverageByDocument[docPath] = new List<LineCoverage>();
