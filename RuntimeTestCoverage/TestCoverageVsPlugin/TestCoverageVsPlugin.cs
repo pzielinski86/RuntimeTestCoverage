@@ -7,9 +7,12 @@ using Microsoft.VisualStudio.Text.Formatting;
 using System;
 using System.Linq;
 using System.Timers;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using EnvDTE;
 
 namespace TestCoverageVsPlugin
 {
@@ -26,7 +29,7 @@ namespace TestCoverageVsPlugin
         private readonly IWpfTextView _textView;
         private bool _isDisposed = false;
         private readonly Canvas _canvas;
-        private readonly Timer _timer;
+        private readonly DispatcherTimer _timer;
 
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
@@ -44,14 +47,15 @@ namespace TestCoverageVsPlugin
             this.ClipToBounds = true;
             this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
-            _timer = new Timer(3000);
-            _timer.Elapsed += RecalculateTimerElapsed;
+            _timer=new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(2);
+            _timer.Tick += RecalculateTimerElapsed;
             textView.TextBuffer.Changing += TextBuffer_Changing;
             _documentPath = GetTextDocument().FilePath;
             _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
-        private void RecalculateTimerElapsed(object sender, ElapsedEventArgs e)
+        private void RecalculateTimerElapsed(object sender, EventArgs eventArgs)
         {
             _timer.Stop();
             _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
@@ -88,6 +92,8 @@ namespace TestCoverageVsPlugin
             int currentMethodIndex = 0;
             int currentSpan = 0;
             MethodDeclarationSyntax[] allMethods = _syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
+            if (allMethods.Length == 0)
+                return;
 
             int[] coveragePositions = new int[0];
 
@@ -154,7 +160,7 @@ namespace TestCoverageVsPlugin
         #region IWpfTextViewMargin Members
 
         /// <summary>
-        /// The <see cref="Sytem.Windows.FrameworkElement"/> that implements the visual representation
+        /// The <see FrameworkElementlement"/> that implements the visual representation
         /// of the margin.
         /// </summary>
         public System.Windows.FrameworkElement VisualElement

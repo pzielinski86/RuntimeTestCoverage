@@ -9,14 +9,16 @@ namespace TestCoverage.Compilation
 {
     internal class Compiler
     {
-        public Assembly[] Compile(CompilationItem[] allItems, AuditVariablesMap auditVariablesMap)
+        public Assembly[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
         {
+            var allItemsArray = allItems.ToArray();
+
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
 
-            foreach (var compilationItem in allItems)
+            foreach (var compilationItem in allItemsArray)
             {
-                Compile(compilationItem, compiledAudit, allItems, compiledItems);
+                Compile(compilationItem, compiledAudit, allItemsArray, compiledItems);
             }
 
             compiledItems.Add(compiledAudit);
@@ -24,7 +26,7 @@ namespace TestCoverage.Compilation
             return compiledItems.Select(x=>x.EmitAndSave()).ToArray();
         }
 
-        public Assembly[] Compile(CompilationItem item, Assembly[] references, AuditVariablesMap auditVariablesMap)
+        public Assembly[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
@@ -53,7 +55,7 @@ namespace TestCoverage.Compilation
             return new CompiledItem(null, compilation);
         }
 
-        private void Compile(CompilationItem item, CompiledItem compiledAudit, CompilationItem[] allItems, List<CompiledItem> currentlyCompiledItems)
+        private void Compile(CompilationItem item, CompiledItem compiledAudit, IEnumerable<CompilationItem> allItems, List<CompiledItem> currentlyCompiledItems)
         {
             if (currentlyCompiledItems.Any(c => c.Project == item.Project))
                 return;
