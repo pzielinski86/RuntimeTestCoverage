@@ -13,7 +13,7 @@ namespace TestCoverageConsole
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            const string solutionPath = @"../../../../TestSolution/TestSolution.sln";          
+            const string solutionPath = @"../../../RuntimeTestCoverage.sln";          
 
             var appDomainSetup=new AppDomainSetup();
             appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
