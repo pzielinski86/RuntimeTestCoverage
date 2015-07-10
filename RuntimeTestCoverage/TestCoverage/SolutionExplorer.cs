@@ -8,7 +8,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-    internal class SolutionExplorer
+    public class SolutionExplorer
     {
         private readonly string _solutionPath;
         private readonly MSBuildWorkspace _workspace;
@@ -80,6 +80,11 @@ namespace TestCoverage
         public IEnumerable<Document> GetAllDocuments()
         {
             return _solution.Projects.SelectMany(project => project.Documents);
+        }
+
+        public Project GetProjectByDocument(string documentPath)
+        {
+            return _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
         }
 
         private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)

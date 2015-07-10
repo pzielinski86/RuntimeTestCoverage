@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Formatting;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TestCoverageVsPlugin
 {
@@ -27,20 +29,25 @@ namespace TestCoverageVsPlugin
         private SyntaxTree _syntaxTree;
         private readonly SolutionTestCoverage _solutionTestCoverage;
         private readonly IWpfTextView _textView;
+        private readonly IVsStatusbar _statusBar;
         private bool _isDisposed = false;
+        private bool _taskQueued;
         private readonly Canvas _canvas;
         private readonly DispatcherTimer _timer;
+        private Task _currentTask;
 
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
         /// </summary>
         /// <param name="solutionTestCoverage"></param>
         /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
-        public TestCoverageVsPlugin(SolutionTestCoverage solutionTestCoverage, IWpfTextView textView)
+        /// <param name="statusBar"></param>
+        public TestCoverageVsPlugin(SolutionTestCoverage solutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar)
         {
             _canvas = new Canvas();
             _solutionTestCoverage = solutionTestCoverage;
             _textView = textView;
+            _statusBar = statusBar;
             _textView.ViewportHeightChanged += TextViewViewportHeightChanged;
             _textView.LayoutChanged += TextViewLayoutChanged;
             this.Width = 20;
@@ -57,20 +64,39 @@ namespace TestCoverageVsPlugin
 
         private void RecalculateTimerElapsed(object sender, EventArgs eventArgs)
         {
+            if (_currentTask != null)
+                return;
+
             _timer.Stop();
+
+            string documentPath = GetTextDocument().FilePath;
+
+            _statusBar.SetText(string.Format("Calculating coverage for {0}",System.IO.Path.GetFileName(documentPath)));
+            
             _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
-            int carretPos = _textView.Caret.Position.BufferPosition;
-            _solutionTestCoverage.CalculateForSelectedItem(GetTextDocument().FilePath, documentContent, carretPos);
+            
+            _currentTask=_solutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
+            _currentTask.ContinueWith(CalculationsCompleted,null,TaskScheduler.FromCurrentSynchronizationContext());
+                
+        }
 
-            Redraw();
+        private void CalculationsCompleted(Task task, object o)
+        {
+            _taskQueued = false;
+            _statusBar.SetText("");
+            _currentTask = null;
+            Redraw();                        
         }
 
         private void TextBuffer_Changing(object sender, TextContentChangingEventArgs e)
         {
+            _taskQueued = true;
             _timer.Stop();
             _timer.Start();
+
+            Redraw();
         }
         private ITextDocument GetTextDocument()
         {
@@ -133,7 +159,9 @@ namespace TestCoverageVsPlugin
         {
             Ellipse ellipse = new Ellipse();
 
-            if (coveragePositions.Contains(currentSpan - method.Span.Start))
+            if (_taskQueued)
+                ellipse.Fill = Brushes.DarkGray;
+            else if (coveragePositions.Contains(currentSpan - method.Span.Start))
                 ellipse.Fill = Brushes.Green;
             else
                 ellipse.Fill = Brushes.Red;

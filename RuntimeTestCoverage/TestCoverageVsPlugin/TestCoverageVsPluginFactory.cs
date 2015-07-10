@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Utilities;
 using System;
 using System.ComponentModel.Composition;
 using System.Reflection;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TestCoverageVsPlugin
 {
@@ -22,6 +23,7 @@ namespace TestCoverageVsPlugin
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
         private readonly SolutionTestCoverage _solutionTestCoverage;
+        private IVsStatusbar _statusBar;
 
         static MarginFactory()
         {
@@ -45,16 +47,18 @@ namespace TestCoverageVsPlugin
         public MarginFactory([Import]SVsServiceProvider serviceProvider)
         {
             DTE dte = (DTE)serviceProvider.GetService(typeof(DTE));
+            _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
 
             string solutionPath = dte.Solution.FullName;
-            _solutionTestCoverage = new SolutionTestCoverage(solutionPath,dte);
+            _solutionTestCoverage = new SolutionTestCoverage(solutionPath, dte);
             _solutionTestCoverage.CalculateForAllDocuments();
         }                
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
-            return new TestCoverageVsPlugin(_solutionTestCoverage, textViewHost.TextView);
+            return new TestCoverageVsPlugin(_solutionTestCoverage, textViewHost.TextView,_statusBar);
         }
+   
     }
     #endregion
 }

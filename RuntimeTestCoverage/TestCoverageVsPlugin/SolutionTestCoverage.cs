@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using EnvDTE80;
+using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
@@ -13,6 +16,7 @@ namespace TestCoverageVsPlugin
 {
     public class SolutionTestCoverage
     {
+        private SolutionExplorer _solutionExplorer;
         private readonly string _solutionPath;
         private readonly DTE _dte;
         private Dictionary<string, List<LineCoverage>> _solutionCoverage;
@@ -25,7 +29,8 @@ namespace TestCoverageVsPlugin
             _solutionPath = solutionPath;
             _dte = dte;
             _appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
-
+            _solutionExplorer=new SolutionExplorer(_solutionPath);
+            _solutionExplorer.Open();
         }
 
         public Dictionary<string, List<LineCoverage>> SolutionCoverage
@@ -59,6 +64,11 @@ namespace TestCoverageVsPlugin
 
         }
 
+        public Task CalculateForSelectedItemAsync(string documentPath, string documentContent, int selectedPosition)
+        {
+            return Task.Factory.StartNew(() => CalculateForSelectedItem(documentPath, documentContent, selectedPosition));
+        }
+    
         public void CalculateForSelectedItem(string documentPath, string documentContent, int selectedPosition)
         {
             SyntaxNode syntaxNode = CSharpSyntaxTree.ParseText(documentContent).GetRoot();
@@ -81,9 +91,7 @@ namespace TestCoverageVsPlugin
 
             AppDomain domain = null;
 
-            object[] projects = (object[])_dte.ActiveSolutionProjects;
-
-            Project selectedProject = projects.OfType<Project>().Single();
+            var selectedProject = _solutionExplorer.GetProjectByDocument(documentPath);
 
             try
             {
@@ -110,18 +118,24 @@ namespace TestCoverageVsPlugin
                 Path.GetFileNameWithoutExtension(documentPath), GetSelectedNamespaceNode(selectedClass).Name,
                 selectedClass.Identifier.Text, methodNode.Identifier.Text);
 
-            UpdateSolutionCoverage(coverage, path);
+            UpdateSolutionCoverage(coverage);
         }
 
-        private void CalculateForDocument(string documentPath, string documentContent)
+        public Task CalculateForDocumentAsync(string documentPath, string documentContent)
+        {
+            return Task.Factory.StartNew(() => CalculateForDocument(documentPath, documentContent));
+        }
+
+        public void CalculateForDocument(string documentPath, string documentContent)
         {
             Dictionary<string, LineCoverage[]> coverage;
 
             AppDomain domain = null;
 
-            object[] projects = (object[])_dte.ActiveSolutionProjects;
+            var selectedProject = _solutionExplorer.GetProjectByDocument(documentPath);
 
-            Project selectedProject = projects.OfType<Project>().Single();
+            string path = string.Format("{0}.{1}", selectedProject.Name, Path.GetFileNameWithoutExtension(documentPath));
+            ClearCoverage(path);
 
             try
             {
@@ -139,15 +153,14 @@ namespace TestCoverageVsPlugin
             {
                 if (domain != null)
                     AppDomain.Unload(domain);
-            }
+            }            
 
-            string path = string.Format("{0}.{1}", selectedProject.Name, Path.GetFileNameWithoutExtension(documentPath));
-
-            UpdateSolutionCoverage(coverage, path);
+            UpdateSolutionCoverage(coverage);
 
         }
 
-        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage, string currentPath)
+    
+        public void ClearCoverage(string path)
         {
             foreach (string docPath in _solutionCoverage.Keys)
             {
@@ -155,19 +168,27 @@ namespace TestCoverageVsPlugin
 
                 for (int i = 0; i < documentCoverage.Count; i++)
                 {
-                    if (documentCoverage[i].TestPath.StartsWith(currentPath) ||
-                        documentCoverage[i].Path.StartsWith(currentPath))
+                    if (documentCoverage[i].TestPath.StartsWith(path) ||
+                        documentCoverage[i].Path.StartsWith(path))
                     {
                         documentCoverage.RemoveAt(i);
                         i--;
                     }
                 }
 
-                if (coverage.ContainsKey(docPath))
-                    _solutionCoverage[docPath].AddRange(coverage[docPath]);
             }
         }
-        
+
+        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage)
+        {
+            foreach (string docPath in coverage.Keys)
+            {
+                if (coverage.ContainsKey(docPath))
+                    _solutionCoverage[docPath].AddRange(coverage[docPath]);
+                else
+                    _solutionCoverage[docPath] = coverage[docPath].ToList();
+            }
+        }        
 
         private MethodDeclarationSyntax GetSelectedMethodNode(SyntaxNode syntaxNode, int selectedPosition)
         {

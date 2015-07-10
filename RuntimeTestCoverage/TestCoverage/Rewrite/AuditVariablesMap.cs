@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TestCoverage.Rewrite
 {
-    internal class AuditVariablesMap
+    public class AuditVariablesMap
     {
         private readonly Dictionary<string, AuditVariablePlaceholder> _map = new Dictionary<string, AuditVariablePlaceholder>();
 

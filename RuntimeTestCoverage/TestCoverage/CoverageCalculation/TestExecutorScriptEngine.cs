@@ -23,7 +23,11 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine(string.Format("dynamic testFixture = new {0}();", className));
 
             scriptBuilder.Append("try\n{\n");
-            scriptBuilder.AppendLine(string.Format("testFixture.{0}();", methodName));
+            scriptBuilder.AppendLine(string.Format("{0}.{1}.Clear();",
+                auditVariablesMap.AuditVariablesClassName,
+                auditVariablesMap.AuditVariablesDictionaryName));
+
+            scriptBuilder.AppendLine(string.Format("testFixture.{0}();", methodName));            
             scriptBuilder.AppendLine("}");
             scriptBuilder.AppendLine("catch{}");
 
