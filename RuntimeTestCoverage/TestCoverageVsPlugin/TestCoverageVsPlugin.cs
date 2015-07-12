@@ -128,11 +128,18 @@ namespace TestCoverageVsPlugin
 
             _canvas.Children.Clear();
 
-            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
+            var text = _textView.TextBuffer.CurrentSnapshot.GetText();            
 
             for (int i = 0; i < _textView.TextViewLines.Count; i++)
             {
                 int lineNumber = GetLineNumber(i);
+
+                var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
+                var childNodes = methodBlockSyntax.ChildNodes().ToArray();
+                SyntaxNode firstMethodElement = childNodes.First();
+                SyntaxNode lastMethodElement = childNodes.Last();
+      
+
 
                 if (lineNumber > _textView.TextBuffer.CurrentSnapshot.LineCount)
                     break;
@@ -140,7 +147,7 @@ namespace TestCoverageVsPlugin
                 string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
                 currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan + 1);
 
-                if (currentSpan >= allMethods[currentMethodIndex].Span.End)
+                if (currentSpan >= lastMethodElement.Span.End)
                 {
                     currentMethodIndex++;
 
@@ -148,20 +155,20 @@ namespace TestCoverageVsPlugin
                         break;
                 }
 
-                if (currentSpan < allMethods[currentMethodIndex].Span.Start)
+                if (currentSpan < firstMethodElement.Span.Start)
                     continue;
 
-                AddDotCoverage(coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
+                AddDotCoverage(currentLineText,coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
             }
         }
 
-        private void AddDotCoverage(int[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
+        private void AddDotCoverage(string currentLineText, int[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
         {
             Ellipse ellipse = new Ellipse();
 
             if (_taskQueued)
                 ellipse.Fill = Brushes.DarkGray;
-            else if (coveragePositions.Contains(currentSpan - method.Span.Start))
+            else if (string.IsNullOrEmpty(currentLineText.Trim())||coveragePositions.Contains(currentSpan - method.Span.Start))
                 ellipse.Fill = Brushes.Green;
             else
                 ellipse.Fill = Brushes.Red;

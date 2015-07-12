@@ -1,7 +1,7 @@
 ﻿
 namespace TestCoverage
 {
-    internal static class PathHelper
+    public static class PathHelper
     {
         public static string GetRewrittenFilePath(string documentPath)
         {

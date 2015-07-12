@@ -74,7 +74,7 @@ namespace TestCoverage.CoverageCalculation
             var allReferences = _solutionExplorer.GetAllReferences().ToArray();
             var executor = new TestExecutorScriptEngine();
 
-            Dictionary<string, bool> setVariables = executor.RunTest(allReferences, allAssemblies, className, methodNode, rewrittenDocument.AuditVariablesMap);
+            Dictionary<string, bool> setVariables = executor.RunTest(allReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
             string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
             var coverageByDocument = new Dictionary<string, List<LineCoverage>>();
@@ -138,8 +138,7 @@ namespace TestCoverage.CoverageCalculation
         }
 
         private Dictionary<string, List<LineCoverage>> RunAllTests(MetadataReference[] allReferences, SyntaxNode testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName,string documentName)
-        {
-            string className = testClass.ChildTokens().Single(t => t.Kind() == SyntaxKind.IdentifierToken).ValueText;
+        {            
             SyntaxNode[] testMethods = GetTestMethods(testClass);
 
             var executor = new TestExecutorScriptEngine();
@@ -147,7 +146,7 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (SyntaxNode testMethod in testMethods)
             {
-                Dictionary<string, bool> setVariables = executor.RunTest(allReferences, assemblies, className, testMethod, auditVariablesMap);
+                Dictionary<string, bool> setVariables = executor.RunTest(allReferences, assemblies,  testMethod, auditVariablesMap);
                 PopulateCoverageFromVariableNames(coverage, auditVariablesMap, setVariables.Keys, testMethod, projectName,documentName);
             }
 

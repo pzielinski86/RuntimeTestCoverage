@@ -69,7 +69,9 @@ namespace TestCoverage.Compilation
             MetadataReference[] projectReferences = GetProjectReferences(item.Project, currentlyCompiledItems);
             MetadataReference[] auditReferences = { compiledAudit.Compilation.ToMetadataReference() };
             MetadataReference[] requiredReferences = projectReferences.Union(item.Project.MetadataReferences).Union(auditReferences).ToArray();
-            CSharpCompilation compilation = Compile(item.Project.Name, item.SyntaxTrees, requiredReferences);
+
+            string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
+            CSharpCompilation compilation = Compile(newDllName, item.SyntaxTrees, requiredReferences);
 
             currentlyCompiledItems.Add(new CompiledItem(item.Project, compilation));
         }

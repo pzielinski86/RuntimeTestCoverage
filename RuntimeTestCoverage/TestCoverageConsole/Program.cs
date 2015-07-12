@@ -26,7 +26,7 @@ namespace TestCoverageConsole
 
             var positions = engine.CalculateForAllDocuments();
 
-            Console.WriteLine("Positions: {0}", positions.Count);
+            Console.WriteLine("Documents: {0}", positions.Count);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
             AppDomain.Unload(domain);

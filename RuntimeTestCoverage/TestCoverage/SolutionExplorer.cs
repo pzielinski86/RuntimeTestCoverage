@@ -16,9 +16,12 @@ namespace TestCoverage
 
         public SolutionExplorer(string solutionPath)
         {
+            var props = new Dictionary<string, string>();
+            props["CheckForSystemRuntimeDependency"] = "true";
+
             _solutionPath = solutionPath;
 
-            _workspace = MSBuildWorkspace.Create();
+            _workspace = MSBuildWorkspace.Create(props);
         }
 
         public void Open()
