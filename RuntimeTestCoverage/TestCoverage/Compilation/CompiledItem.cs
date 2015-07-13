@@ -27,7 +27,7 @@ namespace TestCoverage.Compilation
             if (IsEmitted)
                 return Assembly;
 
-            string dllName = PathHelper.GetCoverageDllName(Compilation.AssemblyName);
+            string dllName = Compilation.AssemblyName;
             var dllPath = Path.Combine(Directory.GetCurrentDirectory(), dllName);
            
             using (var stream = CreateAssemblyStream(dllPath))

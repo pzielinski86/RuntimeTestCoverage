@@ -20,5 +20,18 @@ namespace TestCoverage.Tests
 
             Assert.That(rewrittenPath, Is.EqualTo(expectedRewrittenPath));
         }
+
+        [Test]
+        public void GetCoverageDllName()
+        {
+            const string path = "c:\test.dll";
+            const string expectedRewrittenPath = "c:\test.dll_testcoverage";
+
+
+
+            string rewrittenPath = PathHelper.GetRewrittenFilePath(path);
+
+            Assert.That(rewrittenPath, Is.EqualTo(expectedRewrittenPath));
+        }
     }
 }

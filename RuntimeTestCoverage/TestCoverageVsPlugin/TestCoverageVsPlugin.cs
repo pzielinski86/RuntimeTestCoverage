@@ -54,7 +54,7 @@ namespace TestCoverageVsPlugin
             this.ClipToBounds = true;
             this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
-            _timer=new DispatcherTimer();
+            _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(2);
             _timer.Tick += RecalculateTimerElapsed;
             textView.TextBuffer.Changing += TextBuffer_Changing;
@@ -71,15 +71,15 @@ namespace TestCoverageVsPlugin
 
             string documentPath = GetTextDocument().FilePath;
 
-            _statusBar.SetText(string.Format("Calculating coverage for {0}",System.IO.Path.GetFileName(documentPath)));
-            
+            _statusBar.SetText(string.Format("Calculating coverage for {0}", System.IO.Path.GetFileName(documentPath)));
+
             _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
-            
-            _currentTask=_solutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
-            _currentTask.ContinueWith(CalculationsCompleted,null,TaskScheduler.FromCurrentSynchronizationContext());
-                
+
+            _currentTask = _solutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
+            _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());
+
         }
 
         private void CalculationsCompleted(Task task, object o)
@@ -87,7 +87,7 @@ namespace TestCoverageVsPlugin
             _taskQueued = false;
             _statusBar.SetText("");
             _currentTask = null;
-            Redraw();                        
+            Redraw();
         }
 
         private void TextBuffer_Changing(object sender, TextContentChangingEventArgs e)
@@ -128,7 +128,7 @@ namespace TestCoverageVsPlugin
 
             _canvas.Children.Clear();
 
-            var text = _textView.TextBuffer.CurrentSnapshot.GetText();            
+            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
             for (int i = 0; i < _textView.TextViewLines.Count; i++)
             {
@@ -136,42 +136,55 @@ namespace TestCoverageVsPlugin
 
                 var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
                 var childNodes = methodBlockSyntax.ChildNodes().ToArray();
-                SyntaxNode firstMethodElement = childNodes.First();
+
                 SyntaxNode lastMethodElement = childNodes.Last();
-      
+
 
 
                 if (lineNumber > _textView.TextBuffer.CurrentSnapshot.LineCount)
                     break;
 
                 string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
-                currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan + 1);
+                currentSpan = text.IndexOf(currentLineText, currentSpan + 1);
 
-                if (currentSpan >= lastMethodElement.Span.End)
+                if (currentSpan >= lastMethodElement.FullSpan.End)
                 {
                     currentMethodIndex++;
 
                     if (currentMethodIndex >= allMethods.Length)
                         break;
                 }
+                methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
+                SyntaxNode firstMethodElement = methodBlockSyntax.ChildNodes().First();
 
-                if (currentSpan < firstMethodElement.Span.Start)
+                if (currentSpan < firstMethodElement.FullSpan.Start)
                     continue;
 
-                AddDotCoverage(currentLineText,coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
+                AddDotCoverage(currentLineText, coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
             }
         }
+
+        private bool _previousLineCovered;
 
         private void AddDotCoverage(string currentLineText, int[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
         {
             Ellipse ellipse = new Ellipse();
 
+            int whitespacesLength = currentLineText.Length - currentLineText.TrimStart().Length;
+
             if (_taskQueued)
                 ellipse.Fill = Brushes.DarkGray;
-            else if (string.IsNullOrEmpty(currentLineText.Trim())||coveragePositions.Contains(currentSpan - method.Span.Start))
+            else if ((_previousLineCovered && string.IsNullOrEmpty(currentLineText.Trim())) ||
+                     coveragePositions.Contains(currentSpan - method.Span.Start + whitespacesLength))
+            {
                 ellipse.Fill = Brushes.Green;
+                _previousLineCovered = true;
+            }
             else
+            {
                 ellipse.Fill = Brushes.Red;
+                _previousLineCovered = false;
+            }
 
             ellipse.Width = ellipse.Height = 15;
 
