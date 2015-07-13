@@ -26,7 +26,8 @@ namespace TestCoverage.CoverageCalculation
 
             string script = CreateRunTestScript(className, methodName, auditVariablesMap);
 
-            ScriptOptions options = new ScriptOptions();
+            ScriptOptions options = new ScriptOptions();    
+
             options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(@namespace);
 
             ScriptState state;

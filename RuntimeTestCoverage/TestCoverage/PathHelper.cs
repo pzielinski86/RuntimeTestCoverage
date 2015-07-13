@@ -12,6 +12,15 @@ namespace TestCoverage
         {
             return string.Format("{0}_testcoverage.dll", assemblyName);
         }
+        public static string GetDllNameFromCoverageName(string coverageDllName)
+        {
+            for (int i = coverageDllName.Length - 1; i >= 0; i--)
+            {
+                if (coverageDllName[i] == '_')
+                    return coverageDllName.Substring(0, i);
+            }
 
+            return coverageDllName;
+        }
     }
 }

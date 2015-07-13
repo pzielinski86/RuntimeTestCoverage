@@ -136,7 +136,7 @@ namespace TestCoverageVsPlugin
 
                 var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
                 var childNodes = methodBlockSyntax.ChildNodes().ToArray();
-                SyntaxNode firstMethodElement = childNodes.First();
+                
                 SyntaxNode lastMethodElement = childNodes.Last();
       
 
@@ -145,17 +145,19 @@ namespace TestCoverageVsPlugin
                     break;
 
                 string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
-                currentSpan = text.IndexOf(currentLineText.TrimStart(), currentSpan + 1);
+                currentSpan = text.IndexOf(currentLineText, currentSpan + 1);
 
-                if (currentSpan >= lastMethodElement.Span.End)
+                if (currentSpan >= lastMethodElement.FullSpan.End)
                 {
                     currentMethodIndex++;
 
                     if (currentMethodIndex >= allMethods.Length)
                         break;
                 }
+                methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
+                SyntaxNode firstMethodElement = methodBlockSyntax.ChildNodes().First();
 
-                if (currentSpan < firstMethodElement.Span.Start)
+                if (currentSpan < firstMethodElement.FullSpan.Start)
                     continue;
 
                 AddDotCoverage(currentLineText,coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
@@ -163,12 +165,14 @@ namespace TestCoverageVsPlugin
         }
 
         private void AddDotCoverage(string currentLineText, int[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
-        {
+        {            
             Ellipse ellipse = new Ellipse();
+
+            int whitespacesLength = currentLineText.Length-currentLineText.TrimStart().Length;
 
             if (_taskQueued)
                 ellipse.Fill = Brushes.DarkGray;
-            else if (string.IsNullOrEmpty(currentLineText.Trim())||coveragePositions.Contains(currentSpan - method.Span.Start))
+            else if (string.IsNullOrEmpty(currentLineText.Trim())||coveragePositions.Contains(currentSpan - method.Span.Start+ whitespacesLength))
                 ellipse.Fill = Brushes.Green;
             else
                 ellipse.Fill = Brushes.Red;
