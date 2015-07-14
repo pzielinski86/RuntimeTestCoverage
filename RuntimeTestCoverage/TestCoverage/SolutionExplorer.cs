@@ -104,6 +104,7 @@ namespace TestCoverage
                 int endQuote = content.IndexOf("\"", startQuote + 1);
 
                 string varName = content.Substring(startQuote + 1, endQuote - startQuote - 1);
+                
                 string fullLine = content.Substring(auditVariablePos,
                     content.IndexOf("\n", auditVariablePos + 1) - auditVariablePos);
 
@@ -111,7 +112,18 @@ namespace TestCoverage
 
                 string documentPath = fullLine.Substring(startCommentPos + 2, fullLine.Length - startCommentPos - 2);
 
-                var placeholder = new AuditVariablePlaceholder(documentPath, varName, AuditVariablesMap.ExtractSpanFromVariableName(varName));
+                string nodePath = varName;
+
+                for (int i = nodePath.Length - 1; i >= 0;i--)
+                {
+                    if (nodePath[i] == '_')
+                    {
+                        nodePath = nodePath.Substring(0, i);
+                        break;
+                    }
+                }
+
+                var placeholder = new AuditVariablePlaceholder(documentPath, nodePath, AuditVariablesMap.ExtractSpanFromVariableName(varName));
                 auditVariablesMap.Map[varName] = placeholder;
 
                 auditVariablePos = endQuote + 1;

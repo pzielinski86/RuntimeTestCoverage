@@ -15,7 +15,7 @@ namespace TestCoverage.CoverageCalculation
 {
     internal class TestExecutorScriptEngine : MarshalByRefObject
     {
-        public Dictionary<string, bool> RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap)
+        public Tuple<string[],bool> RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap)
         {
             var classDeclarationSyntax = method.Ancestors().OfType<ClassDeclarationSyntax>().First();
             var namespaceDeclaration = classDeclarationSyntax.Ancestors().OfType<NamespaceDeclarationSyntax>().First();
@@ -26,7 +26,7 @@ namespace TestCoverage.CoverageCalculation
 
             string script = CreateRunTestScript(className, methodName, auditVariablesMap);
 
-            ScriptOptions options = new ScriptOptions();    
+            ScriptOptions options = new ScriptOptions();
 
             options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(@namespace);
 
@@ -42,7 +42,9 @@ namespace TestCoverage.CoverageCalculation
             }
 
             var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
-            return coverageAudit;
+            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;            
+
+            return new Tuple<string[], bool>(coverageAudit.Keys.ToArray(),!assertionFailed);
         }
 
         private static string CreateRunTestScript(string className, string methodName, AuditVariablesMap auditVariablesMap)
@@ -50,6 +52,7 @@ namespace TestCoverage.CoverageCalculation
             StringBuilder scriptBuilder = new StringBuilder();
 
             scriptBuilder.AppendLine(string.Format("dynamic testFixture = new {0}();", className));
+            scriptBuilder.AppendLine("bool assertionFailed=false;");
 
             scriptBuilder.Append("try\n{\n");
 
@@ -57,6 +60,7 @@ namespace TestCoverage.CoverageCalculation
             CallTest(scriptBuilder, methodName);
 
             scriptBuilder.AppendLine("}");
+            scriptBuilder.AppendLine("catch(NUnit.Framework.AssertionException e){assertionFailed=true;}");
             scriptBuilder.AppendLine("catch{}");
 
             StoreAudit(auditVariablesMap, scriptBuilder);

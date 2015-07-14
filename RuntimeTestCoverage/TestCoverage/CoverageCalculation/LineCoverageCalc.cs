@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -74,11 +75,11 @@ namespace TestCoverage.CoverageCalculation
             var allReferences = _solutionExplorer.GetAllReferences().ToArray();
             var executor = new TestExecutorScriptEngine();
 
-            Dictionary<string, bool> setVariables = executor.RunTest(allReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
+            var setVariables = executor.RunTest(allReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
             string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
             var coverageByDocument = new Dictionary<string, List<LineCoverage>>();
-            PopulateCoverageFromVariableNames(coverageByDocument, rewrittenDocument.AuditVariablesMap, setVariables.Keys, methodNode, project.Name, testDocName);
+            PopulateCoverageFromVariableNames(coverageByDocument, rewrittenDocument.AuditVariablesMap, setVariables, methodNode, project.Name, testDocName);
 
             return coverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
@@ -146,20 +147,29 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (SyntaxNode testMethod in testMethods)
             {
-                Dictionary<string, bool> setVariables = executor.RunTest(allReferences, assemblies,  testMethod, auditVariablesMap);
-                PopulateCoverageFromVariableNames(coverage, auditVariablesMap, setVariables.Keys, testMethod, projectName,documentName);
+                var setVariables = executor.RunTest(allReferences, assemblies,  testMethod, auditVariablesMap);
+                PopulateCoverageFromVariableNames(coverage, auditVariablesMap, setVariables, testMethod, projectName,documentName);
             }
 
             return coverage;
         }
 
-        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, IEnumerable<string> variableNames, SyntaxNode testMethod, string testProjectName,string testDocumentName)
+        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, Tuple<string[], bool> variables, SyntaxNode testMethod, string testProjectName,string testDocumentName)
         {
-            foreach (string varName in variableNames)
+            foreach (string varName in variables.Item1)
             {
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
                 LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocumentName);
+                if (!variables.Item2)
+                {
+                    if (lineCoverage.Path == lineCoverage.TestPath&&varName!=variables.Item1.Last())
+                        lineCoverage.IsSuccess = true;
+                    else
+                        lineCoverage.IsSuccess = false;
+                }
+                else
+                    lineCoverage.IsSuccess = true;
 
                 if (!coverageByDocument.ContainsKey(docPath))
                     coverageByDocument[docPath] = new List<LineCoverage>();

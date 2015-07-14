@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestCoverage.Rewrite
 {
-    internal class LineCoverageRewriter : CSharpSyntaxRewriter
+    public class LineCoverageRewriter : CSharpSyntaxRewriter
     {
         private readonly AuditVariablesMap _auditVariableMapping;
         private readonly AuditVariablePlaceholder[] _auditVariablePlaceholders;
@@ -28,14 +28,14 @@ namespace TestCoverage.Rewrite
 
             foreach (var statement in node.Statements)
             {
-                statements.Add(CreateLineAuditNdoe(statement));
+                statements.Add(CreateLineAuditNode(statement));
                 statements.Add(statement);
             }
 
             return base.VisitBlock(SyntaxFactory.Block(statements));
         }
 
-        private StatementSyntax CreateLineAuditNdoe(SyntaxNode node)
+        private StatementSyntax CreateLineAuditNode(SyntaxNode node)
         {        
             string varName = AuditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex]);
             _auditIndex++;

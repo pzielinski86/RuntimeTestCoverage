@@ -18,7 +18,7 @@ namespace TestCoverage.Rewrite
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
-            var walker = new LineCoverageWalker(projectName);
+            var walker = new LineCoverageWalker(projectName, documentPath);
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
@@ -49,7 +49,7 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    LineCoverageWalker walker=new LineCoverageWalker(project.Name);
+                    LineCoverageWalker walker=new LineCoverageWalker(project.Name,document.FilePath);
                     walker.Visit(syntaxNode);
 
                     var lineCoverageRewriter = new LineCoverageRewriter(auditVariablesMap, walker.AuditVariablePlaceholderPositions);
