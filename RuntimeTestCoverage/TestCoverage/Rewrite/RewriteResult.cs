@@ -5,7 +5,7 @@ using TestCoverage.Compilation;
 
 namespace TestCoverage.Rewrite
 {
-    internal class RewriteResult
+    public class RewriteResult
     {
         private readonly Dictionary<Project, List<RewrittenItemInfo>> _items;
         private readonly AuditVariablesMap _auditVariablesMap;

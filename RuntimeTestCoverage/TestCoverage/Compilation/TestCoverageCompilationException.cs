@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace TestCoverage.Compilation
 {
     [Serializable]
-    internal class TestCoverageCompilationException : Exception
+    public class TestCoverageCompilationException : Exception
     {
         public TestCoverageCompilationException(string[] errors) :base("Cannot compile test coverage exception.")
         {

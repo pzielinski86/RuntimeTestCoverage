@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TestCoverage.Rewrite
 {
-    public class AuditVariablesMap
+    public class AuditVariablesMap : IAuditVariablesMap
     {
         private readonly Dictionary<string, AuditVariablePlaceholder> _map = new Dictionary<string, AuditVariablePlaceholder>();
 
@@ -16,10 +16,24 @@ namespace TestCoverage.Rewrite
 
             return varName;
         }
-           
+
+        public string GenerateSourceCode()
+        {
+            return ToString();
+        }
+
         public override string ToString()
         {
-            return GenerateAuditClass();
+            StringBuilder classBuilder = new StringBuilder();
+
+            classBuilder.AppendLine(string.Format("public static class {0}", AuditVariablesClassName));
+            classBuilder.AppendLine("{");
+
+            classBuilder.AppendLine(string.Format("\tpublic static System.Collections.Generic.Dictionary<string,bool> {0} = new  System.Collections.Generic.Dictionary<string,bool>();", AuditVariablesDictionaryName));
+
+            classBuilder.Append("}");
+
+            return classBuilder.ToString();
         }
 
         public string AuditVariablesClassName
@@ -60,20 +74,6 @@ namespace TestCoverage.Rewrite
             }
 
             throw new ArgumentException("Passed argument is not audit variable.");
-        }
-
-        private string GenerateAuditClass()
-        {
-            StringBuilder classBuilder = new StringBuilder();
-
-            classBuilder.AppendLine(string.Format("public static class {0}", AuditVariablesClassName));
-            classBuilder.AppendLine("{");
-
-            classBuilder.AppendLine(string.Format("\tpublic static System.Collections.Generic.Dictionary<string,bool> {0} = new  System.Collections.Generic.Dictionary<string,bool>();", AuditVariablesDictionaryName));
-
-            classBuilder.AppendLine("}");
-
-            return classBuilder.ToString();
-        }    
+        } 
     }
 }

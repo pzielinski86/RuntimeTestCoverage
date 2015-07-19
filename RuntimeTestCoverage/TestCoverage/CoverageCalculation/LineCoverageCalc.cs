@@ -11,10 +11,10 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    internal class LineCoverageCalc
+    public class LineCoverageCalc
     {
-        private readonly SolutionExplorer _solutionExplorer;
-        public LineCoverageCalc(SolutionExplorer solutionExplorer)
+        private readonly ISolutionExplorer _solutionExplorer;
+        public LineCoverageCalc(ISolutionExplorer solutionExplorer)
         {
             _solutionExplorer = solutionExplorer;
         }
@@ -31,7 +31,7 @@ namespace TestCoverage.CoverageCalculation
             {
                 foreach (RewrittenItemInfo rewrittenItem in rewritenResult.Items[project])
                 {
-                    string testDocName = Path.GetFileNameWithoutExtension(rewrittenItem.Document.FilePath);
+                    string testDocName = Path.GetFileNameWithoutExtension(rewrittenItem.DocumentPath);
 
                     foreach (SyntaxNode testClass in GetTestClasses(rewrittenItem.SyntaxTree.GetRoot()))
                     {

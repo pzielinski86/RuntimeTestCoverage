@@ -31,7 +31,28 @@ namespace TestCoverage.Tests
     }
 }");
             SyntaxNode methodNode = tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            string path =  NodePathBuilder.BuildPath(methodNode, documentName, projectName);
+            string path = NodePathBuilder.BuildPath(methodNode, documentName, projectName);
+
+            Assert.That(path, Is.EqualTo(expectedPath));
+        }
+
+        [Test]
+        public void Should_ReturnValidPath_When_NamespaceIsNotAvailable()
+        {
+            const string documentName = "tests";
+            const string projectName = "coverage_project";
+            const string expectedPath = "coverage_project.tests.SampleClass.SampleMethod";
+
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(@"
+    class SampleClass
+    {
+        public void SampleMethod()
+        {
+            
+        }
+    }");
+            SyntaxNode methodNode = tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+            string path = NodePathBuilder.BuildPath(methodNode, documentName, projectName);
 
             Assert.That(path, Is.EqualTo(expectedPath));
         }

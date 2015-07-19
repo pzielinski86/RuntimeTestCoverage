@@ -9,19 +9,21 @@ namespace TestCoverage
 {
     public class SolutionCoverageEngine : MarshalByRefObject
     {
-        private SolutionExplorer _solutionExplorer;        
+        private ISolutionExplorer _solutionExplorer;
+        private IAuditVariablesRewriter _auditVariablesRewriter;
 
         public void Init(string solutionPath)
         {
-            _solutionExplorer=new SolutionExplorer(solutionPath);
+            _auditVariablesRewriter=new AuditVariablesRewriter(new AuditVariablesWalker());
+            _solutionExplorer =new SolutionExplorer(solutionPath);
             _solutionExplorer.Open();
                         
         }
 
         public Dictionary<string,LineCoverage[]> CalculateForAllDocuments()
         {             
-            var rewritter = new SolutionRewritter(_solutionExplorer);
-            RewriteResult rewriteResult = rewritter.RewriteAllClasses(_solutionExplorer.SolutionPath);                                   
+            var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter,  new ContentWriter());
+            RewriteResult rewriteResult = rewritter.RewriteAllClasses();
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer);
             return lineCoverageCalc.CalculateForAllTests(_solutionExplorer.SolutionPath, rewriteResult);
@@ -30,7 +32,7 @@ namespace TestCoverage
 
         public Dictionary<string, LineCoverage[]> CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
-            var rewritter = new SolutionRewritter(_solutionExplorer);
+            var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer);
@@ -41,7 +43,7 @@ namespace TestCoverage
 
         public Dictionary<string, LineCoverage[]> CalculateForTest(string projectName, string documentPath, string documentContent, string className, string methodName)
         {
-            var rewritter = new SolutionRewritter(_solutionExplorer);
+            var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer);

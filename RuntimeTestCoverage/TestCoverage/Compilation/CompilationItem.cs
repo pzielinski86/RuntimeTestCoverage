@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace TestCoverage.Compilation
 {
-    internal class CompilationItem
+    public class CompilationItem
     {
         public Project Project { get; private set; }
         public SyntaxTree[] SyntaxTrees { get; private set; }

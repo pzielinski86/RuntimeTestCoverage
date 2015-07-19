@@ -7,7 +7,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.Compilation
 {
-    internal class Compiler
+    public class Compiler
     {
         public Assembly[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
         {
@@ -36,7 +36,8 @@ namespace TestCoverage.Compilation
                     references.Select(r => MetadataReference.CreateFromFile(r.Location))).ToList();
             requiredReferences.Add(compiledAudit.Compilation.ToMetadataReference());
 
-            CSharpCompilation compiledDll = Compile(item.Project.Name, item.SyntaxTrees, requiredReferences.ToArray());
+            string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
+            CSharpCompilation compiledDll = Compile(newDllName, item.SyntaxTrees, requiredReferences.ToArray());
 
             compiledItems.Add(new CompiledItem(item.Project,compiledDll));
             compiledItems.Add(compiledAudit);
@@ -44,7 +45,7 @@ namespace TestCoverage.Compilation
             return compiledItems.Select(x => x.EmitAndSave()).ToArray();
         }
 
-        public CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
+        private CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
         {
             var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 

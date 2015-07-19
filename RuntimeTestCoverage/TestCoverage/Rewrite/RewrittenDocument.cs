@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace TestCoverage.Rewrite
 {
-    internal class RewrittenDocument
+    public class RewrittenDocument
     {
         public AuditVariablesMap AuditVariablesMap { get; private set; }
         public SyntaxTree SyntaxTree { get; private set; }

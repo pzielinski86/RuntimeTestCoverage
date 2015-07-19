@@ -2,19 +2,19 @@ using Microsoft.CodeAnalysis;
 
 namespace TestCoverage.Rewrite
 {
-    internal class RewrittenItemInfo
+    public class RewrittenItemInfo
     {
-        private readonly Document _document;
+        private readonly string _documentPath;
 
-        public RewrittenItemInfo(Document document, SyntaxTree syntaxTree)
+        public RewrittenItemInfo(string documentPath, SyntaxTree syntaxTree)
         {
             SyntaxTree = syntaxTree;
-            _document = document;
+            _documentPath = documentPath;
         }
 
-        public Document Document
+        public string DocumentPath
         {
-            get { return _document; }
+            get { return _documentPath; }
         }
 
         public SyntaxTree SyntaxTree { get; set; }

@@ -8,7 +8,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-    public class SolutionExplorer
+    public class SolutionExplorer : ISolutionExplorer
     {
         private readonly string _solutionPath;
         private readonly MSBuildWorkspace _workspace;

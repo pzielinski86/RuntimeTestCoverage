@@ -18,7 +18,8 @@ namespace TestCoverage
             {
                 if (coverageDllName[i] == '_')
                 {
-                    return coverageDllName.Substring(0, i);
+                    if(coverageDllName.Substring(i+1,coverageDllName.Length-i-1).StartsWith("testcoverage.dll"))
+                        return coverageDllName.Substring(0, i);
                 }
             }
 

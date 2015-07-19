@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace TestCoverage.Compilation
 {
-    internal class CompiledItem
+    public class CompiledItem
     {
         public Project Project { get; private set; }
         public CSharpCompilation Compilation { get; private set; }

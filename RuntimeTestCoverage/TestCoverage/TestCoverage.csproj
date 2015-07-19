@@ -103,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISolutionExplorer.cs" />
     <Compile Include="Rewrite\AuditVariablePlaceholder.cs" />
     <Compile Include="Rewrite\AuditVariablesMap.cs" />
     <Compile Include="Compilation\CompilationItem.cs" />
@@ -110,15 +111,20 @@
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="CoverageCalculation\LineCoverage.cs" />
     <Compile Include="CoverageCalculation\LineCoverageCalc.cs" />
+    <Compile Include="Rewrite\ContentWriter.cs" />
+    <Compile Include="Rewrite\IAuditVariablesMap.cs" />
+    <Compile Include="Rewrite\IAuditVariablesRewriter.cs" />
+    <Compile Include="Rewrite\IAuditVariablesWalker.cs" />
+    <Compile Include="Rewrite\IContentWriter.cs" />
     <Compile Include="SolutionCoverageEngine.cs" />
-    <Compile Include="Rewrite\LineCoverageRewriter.cs" />
-    <Compile Include="Rewrite\LineCoverageWalker.cs" />
+    <Compile Include="Rewrite\AuditVariablesRewriter.cs" />
+    <Compile Include="Rewrite\AuditVariablesWalker.cs" />
     <Compile Include="NodePathBuilder.cs" />
     <Compile Include="PathHelper.cs" />
     <Compile Include="Rewrite\RewriteResult.cs" />
     <Compile Include="Rewrite\RewrittenDocument.cs" />
     <Compile Include="SolutionExplorer.cs" />
-    <Compile Include="Rewrite\SolutionRewritter.cs" />
+    <Compile Include="Rewrite\SolutionRewriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rewrite\RewrittenItemInfo.cs" />
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
