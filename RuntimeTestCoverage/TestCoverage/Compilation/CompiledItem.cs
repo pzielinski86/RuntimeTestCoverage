@@ -30,7 +30,7 @@ namespace TestCoverage.Compilation
             string dllName = Compilation.AssemblyName;
             var dllPath = Path.Combine(Directory.GetCurrentDirectory(), dllName);
            
-            using (var stream = CreateAssemblyStream(dllPath))
+            using (var stream = File.Open(dllPath,FileMode.OpenOrCreate))
             {
                 EmitResult emitResult = Compilation.Emit(stream);
 
@@ -41,18 +41,11 @@ namespace TestCoverage.Compilation
                 }
             }
 
-            Assembly = Assembly.LoadFile(dllPath);
+            Assembly = Assembly.LoadFrom(dllPath);
             DllPath = dllPath;
             IsEmitted = true;
 
             return Assembly;
-        }
-
-        private Stream CreateAssemblyStream(string dllPath)
-        {
-            if (dllPath == null) return new MemoryStream();
-
-            return new FileStream(dllPath, FileMode.Create);
         }
     }
 }

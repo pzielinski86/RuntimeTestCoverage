@@ -209,3 +209,7 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+/LineCounter.exe
+/lines.lc
+/RuntimeTestCoverage/LineCounter.exe
+/RuntimeTestCoverage/lines.lc

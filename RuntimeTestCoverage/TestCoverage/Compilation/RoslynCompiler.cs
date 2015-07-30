@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.Compilation
 {
-    public class Compiler
+    public class RoslynCompiler : ICompiler
     {
         public Assembly[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
         {
@@ -51,7 +52,7 @@ namespace TestCoverage.Compilation
 
             var references = new[] { MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location) };
 
-            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
+            CSharpCompilation compilation = Compile("Audit_"+Guid.NewGuid(), new[] { auditTree }, references);
 
             return new CompiledItem(null, compilation);
         }

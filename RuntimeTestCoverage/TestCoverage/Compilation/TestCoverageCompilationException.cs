@@ -6,7 +6,7 @@ namespace TestCoverage.Compilation
     [Serializable]
     public class TestCoverageCompilationException : Exception
     {
-        public TestCoverageCompilationException(string[] errors) :base("Cannot compile test coverage exception.")
+        public TestCoverageCompilationException(string[] errors) :base("Cannot compile test coverage exception."+string.Join(Environment.NewLine,errors))
         {
             Errors = errors;
         }

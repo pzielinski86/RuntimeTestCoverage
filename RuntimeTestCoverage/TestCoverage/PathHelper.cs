@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace TestCoverage
 {
     public static class PathHelper
@@ -10,15 +12,15 @@ namespace TestCoverage
 
         public static string GetCoverageDllName(string assemblyName)
         {
-            return string.Format("{0}_testcoverage.dll", assemblyName);
+            return string.Format("{0}_{1}.dll", assemblyName, Guid.NewGuid());
         }
+
         public static string GetDllNameFromCoverageDll(string coverageDllName)
         {
             for (int i = coverageDllName.Length - 1; i >= 0; i--)
             {
                 if (coverageDllName[i] == '_')
                 {
-                    if(coverageDllName.Substring(i+1,coverageDllName.Length-i-1).StartsWith("testcoverage.dll"))
                         return coverageDllName.Substring(0, i);
                 }
             }

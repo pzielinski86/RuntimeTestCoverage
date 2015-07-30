@@ -24,10 +24,10 @@ namespace TestCoverage.Tests
         [Test]
         public void GetCoverageDllName()
         {
-            const string expectedDllName = "Logic_testcoverage.dll";
+            const string expectedDllName = "Logic_(.+).dll";
             string coverageDllName = PathHelper.GetCoverageDllName("Logic");
-
-            Assert.That(coverageDllName, Is.EqualTo(expectedDllName));
+            
+            Assert.That(coverageDllName, Is.StringMatching(expectedDllName));
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace TestCoverage.Tests
         [Test]
         public void GetDllNameFromCoverageDll_Should_ReturnOriginalDll_When_ProvidedNameIsCoverageDll()
         {
-            string originalDll = PathHelper.GetDllNameFromCoverageDll("Coverage_testcoverage.dll");
+            string originalDll = PathHelper.GetDllNameFromCoverageDll("Coverage_525252-343-4343-43-43.dll");
 
             Assert.That(originalDll, Is.EqualTo("Coverage"));
         }
@@ -49,15 +49,7 @@ namespace TestCoverage.Tests
         [Test]
         public void GetDllNameFromCoverageDll_Should_ReturnOriginalDll_When_ProvidedNameIsCoverageDllWithAdditionalUnderscore()
         {
-            string originalDll = PathHelper.GetDllNameFromCoverageDll("Covera_ge_testcoverage.dll");
-
-            Assert.That(originalDll, Is.EqualTo("Covera_ge"));
-        }
-
-        [Test]
-        public void GetDllNameFromCoverageDll_Should_ReturnOriginalDll_When_ProvidedNameIsOriginalDllContainingUnderscore()
-        {
-            string originalDll = PathHelper.GetDllNameFromCoverageDll("Covera_ge");
+            string originalDll = PathHelper.GetDllNameFromCoverageDll("Covera_ge_25252-25325-253252-5252.dll");
 
             Assert.That(originalDll, Is.EqualTo("Covera_ge"));
         }

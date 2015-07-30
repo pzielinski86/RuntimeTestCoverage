@@ -14,15 +14,17 @@ namespace TestCoverage.CoverageCalculation
     public class LineCoverageCalc
     {
         private readonly ISolutionExplorer _solutionExplorer;
-        public LineCoverageCalc(ISolutionExplorer solutionExplorer)
+        private readonly ICompiler _compiler;
+
+        public LineCoverageCalc(ISolutionExplorer solutionExplorer,ICompiler compiler)
         {
             _solutionExplorer = solutionExplorer;
+            _compiler = compiler;
         }
 
-        public Dictionary<string, LineCoverage[]> CalculateForAllTests(string solutionPath, RewriteResult rewritenResult)
+        public Dictionary<string, LineCoverage[]> CalculateForAllTests(RewriteResult rewritenResult)
         {
-            var compiler = new Compiler();
-            Assembly[] assemblies = compiler.Compile(rewritenResult.ToCompilationItems(), rewritenResult.AuditVariablesMap);
+            Assembly[] assemblies = _compiler.Compile(rewritenResult.ToCompilationItems(), rewritenResult.AuditVariablesMap);
 
             var finalCoverage = new Dictionary<string, List<LineCoverage>>();
             MetadataReference[] allReferences = _solutionExplorer.GetAllReferences().ToArray();
@@ -92,7 +94,7 @@ namespace TestCoverage.CoverageCalculation
 
             SyntaxTree[] projectTrees = _solutionExplorer.LoadProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
 
-            var compiler = new Compiler();
+            var compiler = new RoslynCompiler();
             var allProjectTrees = projectTrees.Union(new[] { rewrittenDocument.SyntaxTree }).ToArray();
             Assembly[] documentAssemblies = compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies, rewrittenDocument.AuditVariablesMap);
             assemblies.AddRange(documentAssemblies);
