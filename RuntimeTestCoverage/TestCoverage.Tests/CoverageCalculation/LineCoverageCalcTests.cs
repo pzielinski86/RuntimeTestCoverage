@@ -22,19 +22,19 @@ namespace TestCoverage.Tests.CoverageCalculation
             _lineCoverageCalc=new LineCoverageCalc(_solutionExplorerMock,_compilerMock);
         }
 
-        [Test]
-        public void Should_CompileProvidedDocuments()
-        {
-            AuditVariablesMap auditVariablesMap=new AuditVariablesMap();
-            var rewrittenItemsByProject=new Dictionary<Project, List<RewrittenItemInfo>>();
-            Project project=new 
+        //[Test]
+        //public void Should_CompileProvidedDocuments()
+        //{
+        //    AuditVariablesMap auditVariablesMap=new AuditVariablesMap();
+        //    var rewrittenItemsByProject=new Dictionary<Project, List<RewrittenItemInfo>>();
+        //    Project project=new 
 
-            rewrittenItemsByProject.Add();
+        //    rewrittenItemsByProject.Add();
 
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
-            _lineCoverageCalc.CalculateForAllTests()
-        }
+        //    RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
+        //    _lineCoverageCalc.CalculateForAllTests()
+        //}
          
     }
 }
