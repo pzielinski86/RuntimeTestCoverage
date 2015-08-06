@@ -11,10 +11,10 @@ namespace TestCoverage
         void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap);
         IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments);
         Assembly[] LoadCompiledAssemblies(params string[] excludedProjects);
-        IEnumerable<MetadataReference> GetAllReferences();
         Solution Solution { get; }
         string SolutionPath { get; }
         IEnumerable<Document> GetAllDocuments();
         Project GetProjectByDocument(string documentPath);
+        MetadataReference[] GetProjectReferences(Project project1);
     }
 }

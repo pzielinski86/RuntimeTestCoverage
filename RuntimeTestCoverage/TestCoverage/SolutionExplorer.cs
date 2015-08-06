@@ -64,12 +64,7 @@ namespace TestCoverage
 
             return allAssemblies.ToArray();
         }
-
-        public IEnumerable<MetadataReference> GetAllReferences()
-        {
-            return _solution.Projects.SelectMany(project => project.MetadataReferences);
-        }
-
+     
         public Solution Solution
         {
             get { return _solution; }
@@ -88,6 +83,11 @@ namespace TestCoverage
         public Project GetProjectByDocument(string documentPath)
         {
             return _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
+        }
+
+        public MetadataReference[] GetProjectReferences(Project project1)
+        {
+            throw new System.NotImplementedException();
         }
 
         private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)

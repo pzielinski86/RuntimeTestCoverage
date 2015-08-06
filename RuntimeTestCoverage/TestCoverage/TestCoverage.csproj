@@ -102,6 +102,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\ICompiler.cs" />
+    <Compile Include="CoverageCalculation\ITestExecutorScriptEngine.cs" />
+    <Compile Include="CoverageCalculation\ITestsExtractor.cs" />
+    <Compile Include="CoverageCalculation\NUnitTestExtractor.cs" />
     <Compile Include="ISolutionExplorer.cs" />
     <Compile Include="Rewrite\AuditVariablePlaceholder.cs" />
     <Compile Include="Rewrite\AuditVariablesMap.cs" />
@@ -127,7 +130,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rewrite\RewrittenItemInfo.cs" />
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
-    <Compile Include="CoverageCalculation\TestExecutorScriptEngine.cs" />
+    <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -26,7 +26,7 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter,  new ContentWriter());
             RewriteResult rewriteResult = rewritter.RewriteAllClasses();
 
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer,new RoslynCompiler());
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer,new RoslynCompiler(),new NUnitTestExtractor(),new AppDomainTestExecutorScriptEngine());
             return lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
         }
@@ -36,7 +36,7 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler());
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(),new NUnitTestExtractor(),new AppDomainTestExecutorScriptEngine());
             Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
             return lineCoverageCalc.CalculateForDocument(rewrittenDocument, project);
 
@@ -47,7 +47,7 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName,documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler());
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(),new NUnitTestExtractor(),new AppDomainTestExecutorScriptEngine());
 
             Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
             return lineCoverageCalc.CalculateForTest(rewrittenDocument, project,className, methodName);
