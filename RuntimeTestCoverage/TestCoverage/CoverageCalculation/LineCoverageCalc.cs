@@ -83,11 +83,11 @@ namespace TestCoverage.CoverageCalculation
             MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project).ToArray();
             var executor = new AppDomainTestExecutorScriptEngine();
 
-            var setVariables = executor.RunTest(projectReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
+            TestRunResult testRunResult = executor.RunTest(projectReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
             string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
             var coverageByDocument = new Dictionary<string, List<LineCoverage>>();
-            PopulateCoverageFromVariableNames(coverageByDocument, rewrittenDocument.AuditVariablesMap, setVariables, methodNode, project.Name, testDocName);
+            PopulateCoverageFromVariableNames(coverageByDocument, rewrittenDocument.AuditVariablesMap, testRunResult, methodNode, project.Name, testDocName);
 
             return coverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToArray());
         }
@@ -160,16 +160,16 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, Tuple<string[], bool> variables, SyntaxNode testMethod, string testProjectName,string testDocumentName)
+        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, TestRunResult testRunResult, SyntaxNode testMethod, string testProjectName,string testDocumentName)
         {
-            foreach (string varName in variables.Item1)
+            foreach (string varName in testRunResult.SetAuditVars)
             {
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
                 LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocumentName);
-                if (!variables.Item2)
+                if (!testRunResult.AssertionFailed)
                 {
-                    if (lineCoverage.Path == lineCoverage.TestPath&&varName!=variables.Item1.Last())
+                    if (lineCoverage.Path == lineCoverage.TestPath&&varName!= testRunResult.SetAuditVars.Last())
                         lineCoverage.IsSuccess = true;
                     else
                         lineCoverage.IsSuccess = false;

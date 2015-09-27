@@ -15,7 +15,7 @@ namespace TestCoverage.CoverageCalculation
 {
     public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        public Tuple<string[],bool> RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap)
+        public TestRunResult RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap)
         {
             var classDeclarationSyntax = method.Ancestors().OfType<ClassDeclarationSyntax>().First();
             var namespaceDeclaration = classDeclarationSyntax.Ancestors().OfType<NamespaceDeclarationSyntax>().First();
@@ -44,7 +44,7 @@ namespace TestCoverage.CoverageCalculation
             var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
             bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;            
 
-            return new Tuple<string[], bool>(coverageAudit.Keys.ToArray(),!assertionFailed);
+            return new TestRunResult(coverageAudit.Keys.ToArray(),!assertionFailed);
         }
 
         private static string CreateRunTestScript(string className, string methodName, AuditVariablesMap auditVariablesMap)

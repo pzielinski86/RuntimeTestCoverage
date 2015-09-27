@@ -105,6 +105,7 @@
     <Compile Include="CoverageCalculation\ITestExecutorScriptEngine.cs" />
     <Compile Include="CoverageCalculation\ITestsExtractor.cs" />
     <Compile Include="CoverageCalculation\NUnitTestExtractor.cs" />
+    <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="ISolutionExplorer.cs" />
     <Compile Include="Rewrite\AuditVariablePlaceholder.cs" />
     <Compile Include="Rewrite\AuditVariablesMap.cs" />

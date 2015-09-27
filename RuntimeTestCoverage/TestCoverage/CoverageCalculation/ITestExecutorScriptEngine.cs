@@ -8,9 +8,6 @@ namespace TestCoverage.CoverageCalculation
 {
     public interface ITestExecutorScriptEngine
     {
-        Tuple<string[],bool> RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap);
-        object GetLifetimeService();
-        object InitializeLifetimeService();
-        ObjRef CreateObjRef(Type requestedType);
+        TestRunResult RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap);
     }
 }

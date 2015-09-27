@@ -51,7 +51,6 @@ namespace TestCoverage
 
             Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
             return lineCoverageCalc.CalculateForTest(rewrittenDocument, project,className, methodName);
-
         }
     }
 }

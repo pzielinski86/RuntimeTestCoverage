@@ -65,15 +65,9 @@ namespace TestCoverage
             return allAssemblies.ToArray();
         }
      
-        public Solution Solution
-        {
-            get { return _solution; }
-        }
+        public Solution Solution => _solution;
 
-        public string SolutionPath
-        {
-            get { return _solutionPath; }
-        }
+        public string SolutionPath => _solutionPath;
 
         public IEnumerable<Document> GetAllDocuments()
         {
@@ -85,9 +79,9 @@ namespace TestCoverage
             return _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
         }
 
-        public MetadataReference[] GetProjectReferences(Project project1)
+        public MetadataReference[] GetProjectReferences(Project project)
         {
-            throw new System.NotImplementedException();
+            return project.MetadataReferences.ToArray();
         }
 
         private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)

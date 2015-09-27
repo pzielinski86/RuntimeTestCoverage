@@ -6,21 +6,20 @@ using TestCoverage;
 
 namespace TestCoverageConsole
 {
-
     internal class Program
     {
+        private const string RuntimetestcoverageSln = @"../../../RuntimeTestCoverage.sln";
+
         private static void Main(string[] args)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            const string solutionPath = @"../../../RuntimeTestCoverage.sln";          
 
             var appDomainSetup=new AppDomainSetup();
             appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
 
             var domain = AppDomain.CreateDomain("coverage",null, appDomainSetup);
             var engine =(SolutionCoverageEngine)domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
-            engine.Init(solutionPath);
+            engine.Init(RuntimetestcoverageSln);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -36,7 +35,7 @@ namespace TestCoverageConsole
                 (SolutionCoverageEngine)
                     domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
 
-            engine.Init(solutionPath);
+            engine.Init(RuntimetestcoverageSln);
 
             stopwatch = Stopwatch.StartNew();
 
