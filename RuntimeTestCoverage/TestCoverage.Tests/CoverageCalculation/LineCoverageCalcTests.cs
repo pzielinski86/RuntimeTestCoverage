@@ -84,10 +84,10 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
-            Dictionary<string, LineCoverage[]> output = _lineCoverageCalc.CalculateForAllTests(rewriteResult);
+            var output = _lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
             // then
-            Assert.IsFalse(output.First().Value[0].IsSuccess);
+            Assert.IsFalse(output.First().IsSuccess);
         }
 
         [Test]
@@ -121,11 +121,11 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
-            Dictionary<string, LineCoverage[]> output = _lineCoverageCalc.CalculateForAllTests(rewriteResult);
+            LineCoverage[] output = _lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
             // then
-            Assert.That(output.Keys.First(), Is.EqualTo("path1"));
-            Assert.That(output.Keys.Last(), Is.EqualTo("path2"));
+            Assert.That(output[0].DocumentPath, Is.EqualTo("path1"));
+            Assert.That(output[1].DocumentPath, Is.EqualTo("path2"));
         }
 
         [Test]

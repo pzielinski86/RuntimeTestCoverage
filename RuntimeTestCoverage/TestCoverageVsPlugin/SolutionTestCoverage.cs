@@ -53,15 +53,14 @@ namespace TestCoverageVsPlugin
 
                 engine.Init(_solutionPath);
 
-                Dictionary<string, LineCoverage[]> coverage = engine.CalculateForAllDocuments();
-                _solutionCoverage = coverage.ToDictionary(x => x.Key, x => x.Value.ToList());
+                CoverageResult coverage = engine.CalculateForAllDocuments();
+                _solutionCoverage = coverage.CoverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToList());
             }
             finally
             {
                 if (domain != null)
                     AppDomain.Unload(domain);
             }
-
         }
 
         public Task CalculateForSelectedItemAsync(string documentPath, string documentContent, int selectedPosition)
@@ -71,7 +70,7 @@ namespace TestCoverageVsPlugin
     
         public void CalculateForSelectedItem(string documentPath, string documentContent, int selectedPosition)
         {
-            SyntaxNode syntaxNode = CSharpSyntaxTree.ParseText(documentContent).GetRoot();
+            SyntaxNode syntaxNode = CSharpSyntaxTree.ParseText(documentContent).GetCompilationUnitRoot();
 
             ClassDeclarationSyntax selectedClass = GetSelectedClassNode(syntaxNode, selectedPosition);
             if (selectedClass == null)
@@ -87,7 +86,7 @@ namespace TestCoverageVsPlugin
                 return;
             }
 
-            Dictionary<string, LineCoverage[]> coverage;
+            CoverageResult coverage;
 
             AppDomain domain = null;
 
@@ -106,7 +105,7 @@ namespace TestCoverageVsPlugin
 
 
                 coverage = engine.CalculateForTest(selectedProject.Name, documentPath, documentContent,
-                    selectedClass.Identifier.Text, methodNode.Identifier.Text);
+                    selectedClass.Identifier.ToString(), methodNode.Identifier.ToString());
             }
             finally
             {
@@ -116,7 +115,7 @@ namespace TestCoverageVsPlugin
 
             string path = string.Format("{0}.{1}.{2}.{3}.{4}", selectedProject.Name,
                 Path.GetFileNameWithoutExtension(documentPath), GetSelectedNamespaceNode(selectedClass).Name,
-                selectedClass.Identifier.Text, methodNode.Identifier.Text);
+                selectedClass.Identifier, methodNode.Identifier);
 
             UpdateSolutionCoverage(coverage);
         }
@@ -128,7 +127,7 @@ namespace TestCoverageVsPlugin
 
         public void CalculateForDocument(string documentPath, string documentContent)
         {
-            Dictionary<string, LineCoverage[]> coverage;
+            CoverageResult coverage;
 
             AppDomain domain = null;
 
@@ -179,14 +178,14 @@ namespace TestCoverageVsPlugin
             }
         }
 
-        private void UpdateSolutionCoverage(Dictionary<string, LineCoverage[]> coverage)
+        private void UpdateSolutionCoverage(CoverageResult coverage)
         {
-            foreach (string docPath in coverage.Keys)
+            foreach (string docPath in coverage.CoverageByDocument.Keys)
             {
-                if (coverage.ContainsKey(docPath))
-                    _solutionCoverage[docPath].AddRange(coverage[docPath]);
+                if (coverage.CoverageByDocument.ContainsKey(docPath))
+                    _solutionCoverage[docPath].AddRange(coverage.CoverageByDocument[docPath]);
                 else
-                    _solutionCoverage[docPath] = coverage[docPath].ToList();
+                    _solutionCoverage[docPath] = coverage.CoverageByDocument[docPath].ToList();
             }
         }        
 

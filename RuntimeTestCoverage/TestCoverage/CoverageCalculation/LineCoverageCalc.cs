@@ -18,7 +18,7 @@ namespace TestCoverage.CoverageCalculation
         private readonly ITestsExtractor _testsExtractor;
         private readonly ITestExecutorScriptEngine _testExecutorScriptEngine;
 
-        public LineCoverageCalc(ISolutionExplorer solutionExplorer,ICompiler compiler,ITestsExtractor testsExtractor,ITestExecutorScriptEngine testExecutorScriptEngine)
+        public LineCoverageCalc(ISolutionExplorer solutionExplorer, ICompiler compiler, ITestsExtractor testsExtractor, ITestExecutorScriptEngine testExecutorScriptEngine)
         {
             _solutionExplorer = solutionExplorer;
             _compiler = compiler;
@@ -26,12 +26,12 @@ namespace TestCoverage.CoverageCalculation
             _testExecutorScriptEngine = testExecutorScriptEngine;
         }
 
-        public Dictionary<string, LineCoverage[]> CalculateForAllTests(RewriteResult rewritenResult)
+        public LineCoverage[] CalculateForAllTests(RewriteResult rewritenResult)
         {
             Assembly[] assemblies = _compiler.Compile(rewritenResult.ToCompilationItems(), rewritenResult.AuditVariablesMap);
 
-            var finalCoverage = new Dictionary<string, List<LineCoverage>>();
-   
+            var finalCoverage = new List<LineCoverage>();
+
             foreach (Project project in rewritenResult.Items.Keys)
             {
                 MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project);
@@ -42,20 +42,20 @@ namespace TestCoverage.CoverageCalculation
 
                     foreach (SyntaxNode testClass in _testsExtractor.GetTestClasses(rewrittenItem.SyntaxTree.GetRoot()))
                     {
-                        Dictionary<string, List<LineCoverage>> partialCoverage = RunAllTests(projectReferences, testClass, assemblies,
-                                                                          rewritenResult.AuditVariablesMap, project.Name, testDocName);
+                        var partialCoverage = RunAllTests(projectReferences, testClass, assemblies,
+                                                                           rewritenResult.AuditVariablesMap, project.Name, testDocName);
 
-                        MergeCoverage(finalCoverage, partialCoverage);
+                        finalCoverage.AddRange(partialCoverage);
                     }
                 }
             }
-            return finalCoverage.ToDictionary(x => x.Key, x => x.Value.ToArray());
+            return finalCoverage.ToArray();
         }
 
 
-        public Dictionary<string, LineCoverage[]> CalculateForDocument(RewrittenDocument rewrittenDocument, Project project)
+        public LineCoverage[] CalculateForDocument(RewrittenDocument rewrittenDocument, Project project)
         {
-            var finalCoverage = new Dictionary<string, List<LineCoverage>>();
+            var finalCoverage = new List<LineCoverage>();
             var allAssemblies = CompileDocument(project, rewrittenDocument);
 
             MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project).ToArray();
@@ -65,16 +65,16 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (SyntaxNode testClass in testClasses)
             {
-                Dictionary<string, List<LineCoverage>> partialCoverage =
+                var partialCoverage =
                     RunAllTests(projectReferences, testClass, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, project.Name, testDocName);
 
-                MergeCoverage(finalCoverage, partialCoverage);
+                finalCoverage.AddRange(partialCoverage);
             }
 
-            return finalCoverage.ToDictionary(x => x.Key, x => x.Value.ToArray());
+            return finalCoverage.ToArray();
         }
 
-        public Dictionary<string, LineCoverage[]> CalculateForTest(RewrittenDocument rewrittenDocument, Project project, string className, string methodName)
+        public LineCoverage[] CalculateForTest(RewrittenDocument rewrittenDocument, Project project, string className, string methodName)
         {
             ClassDeclarationSyntax classNode = GetClassNodeByName(rewrittenDocument.SyntaxTree.GetRoot(), className);
             MethodDeclarationSyntax methodNode = GetMethodNodeByName(classNode, methodName);
@@ -83,13 +83,12 @@ namespace TestCoverage.CoverageCalculation
             MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project).ToArray();
             var executor = new AppDomainTestExecutorScriptEngine();
 
-            TestRunResult testRunResult = executor.RunTest(projectReferences, allAssemblies,  methodNode, rewrittenDocument.AuditVariablesMap);
+            TestRunResult testRunResult = executor.RunTest(projectReferences, allAssemblies, methodNode, rewrittenDocument.AuditVariablesMap);
             string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
-            var coverageByDocument = new Dictionary<string, List<LineCoverage>>();
-            PopulateCoverageFromVariableNames(coverageByDocument, rewrittenDocument.AuditVariablesMap, testRunResult, methodNode, project.Name, testDocName);
+            var partialCoverage = GetCoverageFromVariableNames(rewrittenDocument.AuditVariablesMap, testRunResult, methodNode, project.Name, testDocName);
 
-            return coverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToArray());
+            return partialCoverage;
         }
 
         private Assembly[] CompileDocument(Project project, RewrittenDocument rewrittenDocument)
@@ -146,22 +145,25 @@ namespace TestCoverage.CoverageCalculation
             return lineCoverage;
         }
 
-        private Dictionary<string, List<LineCoverage>> RunAllTests(MetadataReference[] testProjectReferences, SyntaxNode testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName,string documentName)
-        {            
+        private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, SyntaxNode testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string documentName)
+        {
             SyntaxNode[] testMethods = _testsExtractor.GetTestMethods(testClass);
-            var coverage = new Dictionary<string, List<LineCoverage>>();
+            var coverage = new List<LineCoverage>();
 
             foreach (SyntaxNode testMethod in testMethods)
             {
-                var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies,  testMethod, auditVariablesMap);
-                PopulateCoverageFromVariableNames(coverage, auditVariablesMap, setVariables, testMethod, projectName,documentName);
+                var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies, testMethod, auditVariablesMap);
+                var partialCoverage = GetCoverageFromVariableNames( auditVariablesMap, setVariables, testMethod, projectName, documentName);
+                coverage.AddRange(partialCoverage);
             }
 
-            return coverage;
+            return coverage.ToArray();
         }
 
-        private void PopulateCoverageFromVariableNames(Dictionary<string, List<LineCoverage>> coverageByDocument, AuditVariablesMap auditVariablesMap, TestRunResult testRunResult, SyntaxNode testMethod, string testProjectName,string testDocumentName)
+        private LineCoverage[] GetCoverageFromVariableNames(AuditVariablesMap auditVariablesMap, TestRunResult testRunResult, SyntaxNode testMethod, string testProjectName, string testDocumentName)
         {
+            List<LineCoverage> coverage = new List<LineCoverage>();
+
             foreach (string varName in testRunResult.SetAuditVars)
             {
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
@@ -169,7 +171,7 @@ namespace TestCoverage.CoverageCalculation
                 LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocumentName);
                 if (!testRunResult.AssertionFailed)
                 {
-                    if (lineCoverage.Path == lineCoverage.TestPath&&varName!= testRunResult.SetAuditVars.Last())
+                    if (lineCoverage.Path == lineCoverage.TestPath && varName != testRunResult.SetAuditVars.Last())
                         lineCoverage.IsSuccess = true;
                     else
                         lineCoverage.IsSuccess = false;
@@ -177,11 +179,12 @@ namespace TestCoverage.CoverageCalculation
                 else
                     lineCoverage.IsSuccess = true;
 
-                if (!coverageByDocument.ContainsKey(docPath))
-                    coverageByDocument[docPath] = new List<LineCoverage>();
 
-                coverageByDocument[docPath].Add(lineCoverage);
+                lineCoverage.DocumentPath = docPath;
+                coverage.Add(lineCoverage);
             }
+
+            return coverage.ToArray();
         }
     }
 }

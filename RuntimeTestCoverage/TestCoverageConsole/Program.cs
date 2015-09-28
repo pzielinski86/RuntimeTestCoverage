@@ -8,33 +8,21 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string RuntimetestcoverageSln = @"../../../RuntimeTestCoverage.sln";
+        private const string RuntimetestcoverageSln = @"../../../../TestSolution/TestSolution.sln";
 
         private static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-            var appDomainSetup=new AppDomainSetup();
-            appDomainSetup.LoaderOptimization = LoaderOptimization.MultiDomain;
-
-            var domain = AppDomain.CreateDomain("coverage",null, appDomainSetup);
-            var engine =(SolutionCoverageEngine)domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
+            var engine = new AppDomainSolutionCoverageEngine();
             engine.Init(RuntimetestcoverageSln);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             var positions = engine.CalculateForAllDocuments();
 
-            Console.WriteLine("Documents: {0}", positions.Count);
+            Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
 
-            AppDomain.Unload(domain);
-
-            domain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
-            engine =
-                (SolutionCoverageEngine)
-                    domain.CreateInstanceFromAndUnwrap("TestCoverage.dll", typeof (SolutionCoverageEngine).FullName);
-
+            engine=new AppDomainSolutionCoverageEngine();
             engine.Init(RuntimetestcoverageSln);
 
             stopwatch = Stopwatch.StartNew();
@@ -44,21 +32,8 @@ namespace TestCoverageConsole
                 documentContent, "MathHelperTests",
                 "DivideTestZero");
 
-            Console.WriteLine("Positions: {0}", documentPositions.Count);
+            Console.WriteLine("Positions: {0}", documentPositions.CoverageByDocument.Count);
             Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
-        }
-
-
-        private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (args.Name.Contains("TestCoverage"))
-            {
-                string path = Assembly.GetExecutingAssembly().Location;
-                path = System.IO.Path.GetDirectoryName(path);
-
-                return Assembly.LoadFrom(System.IO.Path.Combine(path, "TestCoverage.dll"));
-            }
-            return null;
         }
     }
 }
