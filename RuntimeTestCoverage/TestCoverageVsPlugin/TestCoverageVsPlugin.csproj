@@ -128,7 +128,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SolutionTestCoverage.cs" />
+    <Compile Include="VsSolutionTestCoverage.cs" />
     <Compile Include="TestCoverageVsPlugin.cs" />
     <Compile Include="TestCoverageVsPluginFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

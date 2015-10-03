@@ -22,25 +22,12 @@ namespace TestCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
-        private readonly SolutionTestCoverage _solutionTestCoverage;
+        private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private IVsStatusbar _statusBar;
 
         static MarginFactory()
         {
 
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;   
-        }
-
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (args.Name.Contains("TestCoverage"))
-            {
-                string path = Assembly.GetExecutingAssembly().Location;
-                path = System.IO.Path.GetDirectoryName(path);
-
-                return Assembly.LoadFrom(System.IO.Path.Combine(path, SolutionTestCoverage.TestcoverageDll));
-            }
-            return null;
         }
 
         [ImportingConstructor]
@@ -50,13 +37,13 @@ namespace TestCoverageVsPlugin
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
 
             string solutionPath = dte.Solution.FullName;
-            _solutionTestCoverage = new SolutionTestCoverage(solutionPath, dte);
-            _solutionTestCoverage.CalculateForAllDocuments();
+            _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionPath, dte);
+            _vsSolutionTestCoverage.CalculateForAllDocuments();
         }                
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
-            return new TestCoverageVsPlugin(_solutionTestCoverage, textViewHost.TextView,_statusBar);
+            return new TestCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView,_statusBar);
         }
    
     }

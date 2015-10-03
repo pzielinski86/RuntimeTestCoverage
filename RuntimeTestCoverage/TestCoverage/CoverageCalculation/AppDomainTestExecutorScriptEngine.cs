@@ -42,9 +42,10 @@ namespace TestCoverage.CoverageCalculation
             }
 
             var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
-            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;            
+            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
+            string errorMessage = (string) state.Variables["errorMessage"].Value;           
 
-            return new TestRunResult(coverageAudit.Keys.ToArray(),!assertionFailed);
+            return new TestRunResult(coverageAudit.Keys.ToArray(),!assertionFailed, errorMessage);
         }
 
         private static string CreateRunTestScript(string className, string methodName, AuditVariablesMap auditVariablesMap)
@@ -53,6 +54,7 @@ namespace TestCoverage.CoverageCalculation
 
             scriptBuilder.AppendLine(string.Format("dynamic testFixture = new {0}();", className));
             scriptBuilder.AppendLine("bool assertionFailed=false;");
+            scriptBuilder.AppendLine("string errorMessage=null;");
 
             scriptBuilder.Append("try\n{\n");
 
@@ -61,7 +63,7 @@ namespace TestCoverage.CoverageCalculation
 
             scriptBuilder.AppendLine("}");
             scriptBuilder.AppendLine("catch(NUnit.Framework.AssertionException e){assertionFailed=true;}");
-            scriptBuilder.AppendLine("catch{}");
+            scriptBuilder.AppendLine("catch(System.Exception e){errorMessage=e.Message;}");
 
             StoreAudit(auditVariablesMap, scriptBuilder);
 

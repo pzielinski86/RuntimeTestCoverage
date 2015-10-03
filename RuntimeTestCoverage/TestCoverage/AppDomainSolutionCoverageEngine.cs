@@ -3,10 +3,10 @@ using System.Reflection;
 
 namespace TestCoverage
 {
-    public class AppDomainSolutionCoverageEngine:ISolutionCoverageEngine
+    public sealed class AppDomainSolutionCoverageEngine:ISolutionCoverageEngine,IDisposable
     {
-        private const string SandBoxDllName = "CoverageSandbox.dll";
         private ISolutionCoverageEngine _coverageEngine;
+        private AppDomain _appDomain;
 
         public AppDomainSolutionCoverageEngine()
         {
@@ -14,8 +14,11 @@ namespace TestCoverage
 
             var appDomainSetup = new AppDomainSetup {LoaderOptimization = LoaderOptimization.MultiDomain};
 
-            var domain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
-            _coverageEngine = (SolutionCoverageEngine)domain.CreateInstanceFromAndUnwrap(SandBoxDllName, typeof(SolutionCoverageEngine).FullName);            
+            _appDomain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
+            Type engineType = typeof (SolutionCoverageEngine);
+
+            _coverageEngine = (SolutionCoverageEngine)_appDomain.CreateInstanceFromAndUnwrap(engineType.Assembly.ManifestModule.Name,
+                engineType.FullName);            
         }
 
         public void Init(string solutionPath)
@@ -39,16 +42,24 @@ namespace TestCoverage
             return _coverageEngine.CalculateForTest(projectName, documentPath, documentContent, className, methodName);
         }
 
-        private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            if (args.Name.Contains("TestCoverage"))
-            {
-                string path = Assembly.GetExecutingAssembly().Location;
-                path = System.IO.Path.GetDirectoryName(path);
-
-                return Assembly.LoadFrom(System.IO.Path.Combine(path, "TestCoverage.dll"));
+            var assembly = typeof (SolutionCoverageEngine).Assembly;
+            
+            if (args.Name == assembly.FullName) 
+            {         
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+                
+                return Assembly.LoadFrom(assembly.Location);
             }
+
             return null;
+        }
+
+        public void Dispose()
+        {
+            _coverageEngine = null;
+            AppDomain.Unload(_appDomain);
         }
     }
 }

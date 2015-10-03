@@ -58,7 +58,8 @@ namespace TestCoverage
                 if (excludedProjects.Contains(project.Name))
                     continue;
 
-                Assembly assembly = Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(),PathHelper.GetCoverageDllName(project.Name)));
+                string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(),PathHelper.GetCoverageDllName(project.Name));
+                Assembly assembly = Assembly.LoadFile(assemblyPath);
                 allAssemblies.Add(assembly);
             }
 

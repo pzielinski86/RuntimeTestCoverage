@@ -28,6 +28,7 @@ namespace Math.Tests
             decimal result = helper.Divide(10, 2);
 
             Assert.That(result, Is.EqualTo(5));
+            //jj
         }
 
         [Test]
@@ -44,8 +45,17 @@ namespace Math.Tests
         {
             ////
             MathHelper helper = new MathHelper();
-            helper.DoSomething(9);
+            helper.DoSomething(4);
         }
+          
+        [Test]
+        public void DoSOmethingTes131t()
+        {
+            ////
+            MathHelper helper = new MathHelper();
+         //   helper.DoSomething(1); v
+        }
+
         [Test]
         public void DoSOmethingTest2()
         {

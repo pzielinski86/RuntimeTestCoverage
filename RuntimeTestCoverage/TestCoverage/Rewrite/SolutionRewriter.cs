@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using TestCoverage.Extensions;
 
 namespace TestCoverage.Rewrite
 {
@@ -45,17 +46,14 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.Name, syntaxNode.ToString());
-                    
-
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToString());                    
                     RewrittenItemInfo rewrittenItemInfo = new RewrittenItemInfo(document.FilePath, rewrittenDocument.SyntaxTree);
 
                     if (!rewrittenItems.ContainsKey(document.Project))
-                    {
                         rewrittenItems[document.Project] = new List<RewrittenItemInfo>();
-                    }
 
                     rewrittenItems[document.Project].Add(rewrittenItemInfo);
+                    auditVariablesMap.Map.Merge(rewrittenDocument.AuditVariablesMap.Map);
                 }
             }
 

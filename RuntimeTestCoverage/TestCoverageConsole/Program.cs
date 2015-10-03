@@ -8,32 +8,37 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string RuntimetestcoverageSln = @"../../../../TestSolution/TestSolution.sln";
+        private const string TestSubjectSlnPath = @"../../../../TestSolution/TestSolution.sln";
 
         private static void Main(string[] args)
         {
-            var engine = new AppDomainSolutionCoverageEngine();
-            engine.Init(RuntimetestcoverageSln);
+            using (var engine = new AppDomainSolutionCoverageEngine())
+            {
+                engine.Init(TestSubjectSlnPath);
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
-            var positions = engine.CalculateForAllDocuments();
+                var positions = engine.CalculateForAllDocuments();
 
-            Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-            Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+                Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+                Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+            }
 
-            engine=new AppDomainSolutionCoverageEngine();
-            engine.Init(RuntimetestcoverageSln);
+            using (var engine = new AppDomainSolutionCoverageEngine())
+            {
+                engine.Init(TestSubjectSlnPath);
 
-            stopwatch = Stopwatch.StartNew();
+                var stopwatch = Stopwatch.StartNew();
 
-            string documentContent = File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
-            var documentPositions = engine.CalculateForTest("Math.Tests", Path.GetFullPath(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs"),
-                documentContent, "MathHelperTests",
-                "DivideTestZero");
+                string documentContent = File.ReadAllText(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs");
+                var documentPositions = engine.CalculateForTest("Math.Tests",
+                    Path.GetFullPath(@"../../../../TestSolution/Math.Tests/MathHelperTests.cs"),
+                    documentContent, "MathHelperTests",
+                    "DivideTestZero");
 
-            Console.WriteLine("Positions: {0}", documentPositions.CoverageByDocument.Count);
-            Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
+                Console.WriteLine("Positions: {0}", documentPositions.CoverageByDocument.Count);
+                Console.WriteLine("Single document rewrite time: {0}", stopwatch.ElapsedMilliseconds);
+            }
         }
     }
 }

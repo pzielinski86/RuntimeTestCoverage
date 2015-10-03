@@ -5,6 +5,7 @@ using TestCoverage.CoverageCalculation;
 
 namespace TestCoverage
 {
+    [Serializable]
     public class CoverageResult
     {
         public CoverageResult(LineCoverage[] coverage)

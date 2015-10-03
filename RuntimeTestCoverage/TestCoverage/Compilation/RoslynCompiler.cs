@@ -52,7 +52,7 @@ namespace TestCoverage.Compilation
 
             var references = new[] { MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location) };
 
-            CSharpCompilation compilation = Compile("Audit_"+Guid.NewGuid(), new[] { auditTree }, references);
+            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
 
             return new CompiledItem(null, compilation);
         }

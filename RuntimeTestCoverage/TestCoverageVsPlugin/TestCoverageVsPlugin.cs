@@ -26,27 +26,27 @@ namespace TestCoverageVsPlugin
     {
         public const string MarginName = "TestCoverageVsPlugin";
 
-        private readonly string _documentPath;
-        private SyntaxTree _syntaxTree;
-        private readonly SolutionTestCoverage _solutionTestCoverage;
         private readonly IWpfTextView _textView;
         private readonly IVsStatusbar _statusBar;
-        private bool _isDisposed = false;
-        private bool _taskQueued;
         private readonly Canvas _canvas;
         private readonly DispatcherTimer _timer;
+
         private Task _currentTask;
+        private SyntaxTree _syntaxTree;
+        private readonly string _documentPath;
+        private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private bool _isDisposed = false;
+        private bool _taskQueued;
 
         /// <summary>
         /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
         /// </summary>
-        /// <param name="solutionTestCoverage"></param>
+        /// <param name="vsSolutionTestCoverage"></param>
         /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
         /// <param name="statusBar"></param>
-        public TestCoverageVsPlugin(SolutionTestCoverage solutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar)
+        public TestCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar)
         {
             _canvas = new Canvas();
-            _solutionTestCoverage = solutionTestCoverage;
             _textView = textView;
             _statusBar = statusBar;
             _textView.ViewportHeightChanged += TextViewViewportHeightChanged;
@@ -59,7 +59,9 @@ namespace TestCoverageVsPlugin
             _timer.Interval = TimeSpan.FromSeconds(2);
             _timer.Tick += RecalculateTimerElapsed;
             textView.TextBuffer.Changing += TextBuffer_Changing;
+
             _documentPath = GetTextDocument().FilePath;
+            _vsSolutionTestCoverage = vsSolutionTestCoverage;
             _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
@@ -75,16 +77,13 @@ namespace TestCoverageVsPlugin
                 return;
 
             string documentPath = textDocument.FilePath;
-
-            _statusBar.SetText(string.Format("Calculating coverage for {0}", System.IO.Path.GetFileName(documentPath)));
-
-            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
-
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
 
-            _currentTask = _solutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
-            _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());
+            _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(documentPath)}");
+            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
+            _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
+            _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void CalculationsCompleted(Task task, object o)
@@ -100,17 +99,15 @@ namespace TestCoverageVsPlugin
             _taskQueued = true;
             _timer.Stop();
             _timer.Start();
-
-            Redraw();
         }
+
         private ITextDocument GetTextDocument()
         {
             ITextDocument textDocument = null;
 
-            if (_textView.TextBuffer.Properties.TryGetProperty(typeof (ITextDocument), out textDocument))
+            if (_textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out textDocument))
                 return textDocument;
-            else
-                return null;
+            return null;
         }
 
         private void TextViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
@@ -126,15 +123,10 @@ namespace TestCoverageVsPlugin
         private void Redraw()
         {
             int currentMethodIndex = 0;
-            int currentSpan = 0;
+            int currentSpan = _textView.TextViewLines.FormattedSpan.Start;
             MethodDeclarationSyntax[] allMethods = _syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
             if (allMethods.Length == 0)
-                return;
-
-            LineCoverage[] coveragePositions=new LineCoverage[0];
-
-            if (_solutionTestCoverage.SolutionCoverage.ContainsKey(_documentPath))
-                coveragePositions = _solutionTestCoverage.SolutionCoverage[_documentPath].ToArray();
+                return;         
 
             _canvas.Children.Clear();
 
@@ -144,80 +136,81 @@ namespace TestCoverageVsPlugin
             {
                 int lineNumber = GetLineNumber(i);
 
-                var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
-                var childNodes = methodBlockSyntax.ChildNodes().ToArray();
-
-                SyntaxNode lastMethodElement = childNodes.Last();
-
-
-
                 if (lineNumber > _textView.TextBuffer.CurrentSnapshot.LineCount)
                     break;
 
                 string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
                 currentSpan = text.IndexOf(currentLineText, currentSpan + 1);
+                currentMethodIndex = GetCurrentMethodIndex(allMethods, currentMethodIndex, currentSpan);
 
-                if (currentSpan >= lastMethodElement.FullSpan.End)
-                {
-                    currentMethodIndex++;
+                if (currentMethodIndex >= allMethods.Length)
+                    break;
 
-                    if (currentMethodIndex >= allMethods.Length)
-                        break;
-                }
-                methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
-                SyntaxNode firstMethodElement = methodBlockSyntax.ChildNodes().First();
+                var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
 
-                if (currentSpan < firstMethodElement.FullSpan.Start)
+                if (currentSpan < methodBlockSyntax.FullSpan.Start)
                     continue;
 
-                AddDotCoverage(currentLineText, coveragePositions, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
+                AddDotCoverage(currentLineText, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
             }
         }
+  
 
-        private bool _previousLineCovered;
-
-        private void AddDotCoverage(string currentLineText, LineCoverage[] coveragePositions, int currentSpan, MethodDeclarationSyntax method, IWpfTextViewLine wpfTextViewLine)
+        private int GetCurrentMethodIndex(MethodDeclarationSyntax[] allMethods, int previousMethodIndex, int currentSpan)
         {
-            Ellipse ellipse = new Ellipse();
+            int currentMethodIndex = previousMethodIndex;
+            var methodBlockSyntax = allMethods[previousMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
+  
+            if (currentSpan >= methodBlockSyntax.Span.End)
+                currentMethodIndex++;
 
-            int whitespacesLength = currentLineText.Length - currentLineText.TrimStart().Length;
+            return currentMethodIndex;
+        }
+         
+
+        private void AddDotCoverage(string currentLineText, 
+            int currentSpan, 
+            MethodDeclarationSyntax method, 
+            IWpfTextViewLine wpfTextViewLine)
+        {
+            Ellipse ellipse = new Ellipse();           
 
             if (_taskQueued)
                 ellipse.Fill = Brushes.DarkGray;
             else
             {
-                var coverage = coveragePositions.FirstOrDefault(x=>x.Span==currentSpan - method.Span.Start + whitespacesLength);
+                LineCoverage coverage = GetCoverageBySpan(currentLineText, currentSpan, method);
 
                 if (coverage != null)
-                {
-                    if (coverage.IsSuccess)
-                    {
-                        ellipse.Fill = Brushes.Green;
-                        _previousLineCovered = true;
-                    }
-                    else
-                    {
-                        ellipse.Fill = Brushes.Red;
-                        _previousLineCovered = false;
-                    }
-                }
-
-                else if (currentLineText.Trim()=="}"|| currentLineText.Trim()=="{"||string.IsNullOrEmpty(currentLineText.Trim()))
-                {
+                    ellipse.Fill = coverage.IsSuccess ? Brushes.Green : Brushes.Red;
+                else if (IsBracketOrEmptyLine(currentLineText))
                     return;
-                }
                 else
-                {
                     ellipse.Fill = Brushes.Silver;
-                    _previousLineCovered = false;
-                }
             }
 
             ellipse.Width = ellipse.Height = 15;
-
             SetTop(ellipse, wpfTextViewLine.TextTop - _textView.ViewportTop);
-
             _canvas.Children.Add(ellipse);
+        }
+
+        private LineCoverage GetCoverageBySpan(string currentLineText, int currentSpan, MethodDeclarationSyntax method)
+        {
+            LineCoverage[] coveragePositions = new LineCoverage[0];
+
+            if (_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
+                coveragePositions = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath].ToArray();
+
+            int whitespacesLength = currentLineText.Length - currentLineText.TrimStart().Length;
+            var coverage = coveragePositions.FirstOrDefault(x => x.Span == currentSpan - method.Span.Start + whitespacesLength);
+
+            return coverage;
+        }
+
+
+        private static bool IsBracketOrEmptyLine(string currentLineText)
+        {
+            return currentLineText.Trim() == "}" || currentLineText.Trim() == "{" || string.IsNullOrEmpty(currentLineText.Trim());
         }
 
         private int GetLineNumber(int index)
