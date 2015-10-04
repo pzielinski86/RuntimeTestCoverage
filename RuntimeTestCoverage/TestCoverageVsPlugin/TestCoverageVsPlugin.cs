@@ -127,7 +127,7 @@ namespace TestCoverageVsPlugin
 
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
             List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
-            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, _textView.TextViewLines.FormattedSpan.Span.Start);
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text);
             string[] lines = GetCurrentLines();
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
             
