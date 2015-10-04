@@ -12,7 +12,6 @@ namespace TestCoverage.Rewrite
         private string _projectName;
         private string _documentPath;
         private readonly List<AuditVariablePlaceholder> _auditVariablePlaceholders = new List<AuditVariablePlaceholder>();
-        private int _currentMethodSpan;
 
         public void Init(string projectName, string documentPath)
         {
@@ -25,13 +24,7 @@ namespace TestCoverage.Rewrite
         {
             get { return _auditVariablePlaceholders.ToArray(); }
         }
-
-        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
-        {
-            _currentMethodSpan = node.Span.Start;
-            base.VisitMethodDeclaration(node);
-        }
-
+ 
         public override void VisitBlock(BlockSyntax node)
         {
             foreach (StatementSyntax statement in node.Statements)
@@ -41,7 +34,7 @@ namespace TestCoverage.Rewrite
                 string nodePath = NodePathBuilder.BuildPath(statement, documentName, _projectName);
                 var auditVariablePlaceholder = new AuditVariablePlaceholder(_documentPath,
                     nodePath,
-                    statement.Span.Start - _currentMethodSpan);
+                    statement.Span.Start);
 
                 _auditVariablePlaceholders.Add(auditVariablePlaceholder);
             }

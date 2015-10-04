@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Formatting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -122,95 +123,36 @@ namespace TestCoverageVsPlugin
 
         private void Redraw()
         {
-            int currentMethodIndex = 0;
-            int currentSpan = _textView.TextViewLines.FormattedSpan.Start;
-            MethodDeclarationSyntax[] allMethods = _syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
-            if (allMethods.Length == 0)
-                return;         
-
             _canvas.Children.Clear();
 
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
+            List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, _textView.TextViewLines.FormattedSpan.Span.Start);
+            string[] lines = GetCurrentLines();
+            int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
+            
+            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskQueued))
+            {
+                Ellipse ellipse = new Ellipse();
+                ellipse.Fill = dotCoverage.Color;
+                ellipse.Width = ellipse.Height = 15;
+
+                SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);
+                _canvas.Children.Add(ellipse);
+            }
+        }
+
+        private string[] GetCurrentLines()
+        {
+            string[] lines = new string[_textView.TextViewLines.Count];
 
             for (int i = 0; i < _textView.TextViewLines.Count; i++)
             {
                 int lineNumber = GetLineNumber(i);
-
-                if (lineNumber > _textView.TextBuffer.CurrentSnapshot.LineCount)
-                    break;
-
-                string currentLineText = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
-                currentSpan = text.IndexOf(currentLineText, currentSpan + 1);
-                currentMethodIndex = GetCurrentMethodIndex(allMethods, currentMethodIndex, currentSpan);
-
-                if (currentMethodIndex >= allMethods.Length)
-                    break;
-
-                var methodBlockSyntax = allMethods[currentMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
-
-                if (currentSpan < methodBlockSyntax.FullSpan.Start)
-                    continue;
-
-                AddDotCoverage(currentLineText, currentSpan, allMethods[currentMethodIndex], _textView.TextViewLines[i]);
-            }
-        }
-  
-
-        private int GetCurrentMethodIndex(MethodDeclarationSyntax[] allMethods, int previousMethodIndex, int currentSpan)
-        {
-            int currentMethodIndex = previousMethodIndex;
-            var methodBlockSyntax = allMethods[previousMethodIndex].ChildNodes().OfType<BlockSyntax>().First();
-  
-            if (currentSpan >= methodBlockSyntax.Span.End)
-                currentMethodIndex++;
-
-            return currentMethodIndex;
-        }
-         
-
-        private void AddDotCoverage(string currentLineText, 
-            int currentSpan, 
-            MethodDeclarationSyntax method, 
-            IWpfTextViewLine wpfTextViewLine)
-        {
-            Ellipse ellipse = new Ellipse();           
-
-            if (_taskQueued)
-                ellipse.Fill = Brushes.DarkGray;
-            else
-            {
-                LineCoverage coverage = GetCoverageBySpan(currentLineText, currentSpan, method);
-
-                if (coverage != null)
-                    ellipse.Fill = coverage.IsSuccess ? Brushes.Green : Brushes.Red;
-                else if (IsBracketOrEmptyLine(currentLineText))
-                    return;
-                else
-                    ellipse.Fill = Brushes.Silver;
+                lines[i] = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
             }
 
-            ellipse.Width = ellipse.Height = 15;
-            SetTop(ellipse, wpfTextViewLine.TextTop - _textView.ViewportTop);
-            _canvas.Children.Add(ellipse);
-        }
-
-        private LineCoverage GetCoverageBySpan(string currentLineText, int currentSpan, MethodDeclarationSyntax method)
-        {
-            LineCoverage[] coveragePositions = new LineCoverage[0];
-
-            if (_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
-                coveragePositions = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath].ToArray();
-
-            int whitespacesLength = currentLineText.Length - currentLineText.TrimStart().Length;
-            var coverage = coveragePositions.FirstOrDefault(x => x.Span == currentSpan - method.Span.Start + whitespacesLength);
-
-            return coverage;
-        }
-
-
-        private static bool IsBracketOrEmptyLine(string currentLineText)
-        {
-            return currentLineText.Trim() == "}" || currentLineText.Trim() == "{" || string.IsNullOrEmpty(currentLineText.Trim());
+            return lines;
         }
 
         private int GetLineNumber(int index)

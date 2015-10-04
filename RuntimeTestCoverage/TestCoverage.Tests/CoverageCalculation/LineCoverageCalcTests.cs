@@ -30,7 +30,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExecutorScriptEngine = Substitute.For<ITestExecutorScriptEngine>();
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], true));
+                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], true,null));
 
             _lineCoverageCalc = new LineCoverageCalc(_solutionExplorerMock, _compilerMock, _testsExtractor, _testExecutorScriptEngine);
         }
@@ -80,7 +80,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1"}, false));
+            Returns(new TestRunResult(new[] { "1"}, false,null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -117,7 +117,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
                 Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
-                Returns(new TestRunResult(new []{"1","2"}, false));
+                Returns(new TestRunResult(new []{"1","2"}, false,null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);

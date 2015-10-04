@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.Tests", "TestC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.IntegrationTests", "TestCoverage.IntegrationTests\TestCoverage.IntegrationTests.csproj", "{AB7B7244-215F-4896-BB82-030B6F1DC626}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin.Tests", "TestCoverageVsPlugin.Tests\TestCoverageVsPlugin.Tests.csproj", "{B770038F-42C0-47FB-BB7A-37C3E184A019}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

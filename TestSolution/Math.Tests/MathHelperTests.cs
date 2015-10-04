@@ -27,7 +27,7 @@ namespace Math.Tests
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 2);
 
-            Assert.That(result, Is.EqualTo(5));
+            Assert.That(result, Is.EqualTo(15));
             //jj
         }
 
