@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Media.Media3D;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using TestCoverage;
+using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin.Tests
@@ -63,6 +65,7 @@ namespace TestCoverageVsPlugin.Tests
             _sut.SolutionCoverageByDocument.Add(documentPath, new List<LineCoverage>() { testLineCoverage,codeLineCoverage });
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
                 Returns(new CoverageResult(new LineCoverage[0]));
+
             // act
             _sut.CalculateForDocument(documentPath, string.Empty);
 
@@ -93,6 +96,54 @@ namespace TestCoverageVsPlugin.Tests
 
         [Test]
         public void CalculateForDocument_ShouldNot_ClearCoverageOfUnrelatedDocuments()
+        {
+            // arrange
+            var testLineCoverage = new LineCoverage();
+            testLineCoverage.Path = "CurrentProject.MathHelperTests";
+            testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            var codeLineCoverage = new LineCoverage();
+            codeLineCoverage.Path = "CurrentProject.MathHelper";
+            codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            _solutionExplorerMock.GetProjectNameByDocument(Arg.Any<string>()).Returns("CurrentProject");
+
+            _sut.SolutionCoverageByDocument.Add("doc1.xml", new List<LineCoverage>() { testLineCoverage, codeLineCoverage });
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Throws(new TestCoverageCompilationException(new string[0]));
+
+            // act
+            _sut.CalculateForDocument("test.xml", string.Empty);
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CalculateForAllDocuments_ShouldNot_ClearCoverageOfUnrelatedDocuments()
+        {
+            // arrange
+            var testLineCoverage = new LineCoverage();
+            testLineCoverage.Path = "CurrentProject.MathHelperTests";
+            testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            var codeLineCoverage = new LineCoverage();
+            codeLineCoverage.Path = "CurrentProject.MathHelper";
+            codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            _sut.SolutionCoverageByDocument.Add("doc1.xml", new List<LineCoverage>() { testLineCoverage, codeLineCoverage });
+            _solutionCoverageEngineMock.CalculateForAllDocuments().
+                Throws(new TestCoverageCompilationException(new string[0]));
+
+            // act
+            _sut.CalculateForAllDocuments();
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CalculateForDocument_ShouldClearAllCoverage_When_CompilationExceptionIsThrown()
         {
             // arrange
             const string documentPath = "EmployeeRepository.cs";

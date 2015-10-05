@@ -125,6 +125,10 @@ namespace TestCoverageVsPlugin
         {
             _canvas.Children.Clear();
 
+            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
+                return;
+
+           
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
             List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
             var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text);

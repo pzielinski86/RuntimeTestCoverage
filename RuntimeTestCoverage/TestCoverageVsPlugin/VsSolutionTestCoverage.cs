@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TestCoverage;
+using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin
@@ -30,7 +31,18 @@ namespace TestCoverageVsPlugin
             {
                 engine.Init(_solutionExplorer.SolutionPath);
 
-                CoverageResult coverage = engine.CalculateForAllDocuments();
+                CoverageResult coverage;
+
+                try
+                {
+                    coverage = engine.CalculateForAllDocuments();
+                }
+                catch (TestCoverageCompilationException e)
+                {
+                    SolutionCoverageByDocument.Clear();
+                    return;
+                }
+
                 SolutionCoverageByDocument = coverage.CoverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToList());
             }
         }      
@@ -51,7 +63,18 @@ namespace TestCoverageVsPlugin
             {
                 engine.Init(_solutionExplorer.SolutionPath);
 
-                CoverageResult coverage = engine.CalculateForDocument(selectedProjectName, documentPath, documentContent);
+                CoverageResult coverage;
+
+                try
+                {
+                    coverage = engine.CalculateForDocument(selectedProjectName, documentPath, documentContent);
+                }
+                catch (TestCoverageCompilationException e)
+                {
+                    SolutionCoverageByDocument.Clear();
+                    return;
+                }
+
                 UpdateSolutionCoverage(coverage);
             }               
         }
