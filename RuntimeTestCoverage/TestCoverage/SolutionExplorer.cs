@@ -75,9 +75,11 @@ namespace TestCoverage
             return _solution.Projects.SelectMany(project => project.Documents);
         }
 
-        public Project GetProjectByDocument(string documentPath)
+        public string GetProjectNameByDocument(string documentPath)
         {
-            return _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
+            var project= _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
+
+            return project?.Name;
         }
 
         public MetadataReference[] GetProjectReferences(Project project)

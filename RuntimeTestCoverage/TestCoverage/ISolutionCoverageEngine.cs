@@ -1,8 +1,9 @@
-﻿using System.Runtime.Remoting;
+﻿using System;
+using System.Runtime.Remoting;
 
 namespace TestCoverage
 {
-    public interface ISolutionCoverageEngine
+    public interface ISolutionCoverageEngine:IDisposable
     {
         void Init(string solutionPath);
         CoverageResult CalculateForAllDocuments();

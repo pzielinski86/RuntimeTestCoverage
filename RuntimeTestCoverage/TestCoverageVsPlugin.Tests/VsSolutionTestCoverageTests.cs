@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Media;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Windows.Media.Media3D;
+using NSubstitute;
 using NUnit.Framework;
+using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin.Tests
@@ -12,250 +10,105 @@ namespace TestCoverageVsPlugin.Tests
     [TestFixture]
     public class VsSolutionTestCoverageTests
     {
-        private List<LineCoverage> _linesCoverage;
-
+        private VsSolutionTestCoverage _sut;
+        private ISolutionCoverageEngine _solutionCoverageEngineMock;
+        private ISolutionExplorer _solutionExplorerMock;
+        private const string SolutionPath = "c:\\1.sln";
+            
         [SetUp]
         public void Setup()
         {
-            _linesCoverage = new List<LineCoverage>();
+            _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
+            _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
+
+            _sut =new VsSolutionTestCoverage(_solutionExplorerMock, ()=> _solutionCoverageEngineMock);
         }
 
         [Test]
-        public void ShouldNot_DrawAnyDots_When_ThereAreNoMethodsInCode()
+        public void CalculateForDocument_Should_ClearCoverageForCurrentDocument()
         {
             // arrange
-            const string sourceCode = "using System;\nclass Test{\n}";
-            
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            const string documentPath = "MathHelperTests.cs";
+            var lineCoverage=new LineCoverage();
+            lineCoverage.TestPath = lineCoverage.Path = "CurrentProject.MathHelperTests";
 
+            _solutionExplorerMock.GetProjectNameByDocument(Arg.Any<string>()).Returns("CurrentProject");
+
+            _sut.SolutionCoverageByDocument.Add(documentPath,new List<LineCoverage>() { lineCoverage });
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Returns(new CoverageResult(new LineCoverage[0]));
             // act
-            IEnumerable<CoverageDot> dots = sut.Draw(GetLineStartPositions(sourceCode), true);
+            _sut.CalculateForDocument(documentPath,string.Empty);
 
             // assert
-            Assert.That(dots.Count(), Is.EqualTo(0));
+            Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(0));
         }
 
         [Test]
-        public void Should_DrawGreenDot_When_LineIsCovered_And_AssertionDidNotFail()
+        public void CalculateForDocument_Should_ClearCoverageOfCodeCoveredByTest()
         {
             // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public vodi TestMethod()
-	                                        {
-		                                        int a=0;
-	                                        }
-                                        }";
+            const string documentPath = "MathHelperTests.cs";
 
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
+            var testLineCoverage = new LineCoverage();
+            testLineCoverage.Path = "CurrentProject.MathHelperTests";
+            testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var codeLineCoverage = new LineCoverage();
+            codeLineCoverage.Path = "CurrentProject.MathHelper";
+            codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
+            _solutionExplorerMock.GetProjectNameByDocument(Arg.Any<string>()).Returns("CurrentProject");
+
+            _sut.SolutionCoverageByDocument.Add(documentPath, new List<LineCoverage>() { testLineCoverage,codeLineCoverage });
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Returns(new CoverageResult(new LineCoverage[0]));
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            _sut.CalculateForDocument(documentPath, string.Empty);
 
             // assert
-            Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.Green));
+            Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(0));
         }
 
         [Test]
-        public void Should_DrawRedDot_When_LineIsCovered_And_AssertionFailed()
+        public void CalculateForDocument_Should_PopulateCoverageWithNewData_When_NewDataIsAvailable()
         {
             // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public vodi TestMethod()
-	                                        {
-                                                Assert.IsTrue(false);
-	                                        }
-                                        }";
+            const string newDocumentPath = "MathHelper.cs";
 
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = false;
-            _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal);
+            _solutionExplorerMock.GetProjectNameByDocument(Arg.Any<string>()).Returns("CurrentProject");
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var coverage = new LineCoverage {DocumentPath = newDocumentPath};
+
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Returns(new CoverageResult(new[] { coverage }));
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            _sut.CalculateForDocument("MathHelperTests.cs", string.Empty);
 
             // assert
-            Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.Red));
+            Assert.That(_sut.SolutionCoverageByDocument[newDocumentPath].Count, Is.EqualTo(1));
+            Assert.That(_sut.SolutionCoverageByDocument[newDocumentPath][0], Is.EqualTo(coverage));
         }
 
         [Test]
-        public void Should_DrawGrayDot_When_LineIsCovered_And_CalcsAreInProgress()
+        public void CalculateForDocument_ShouldNot_ClearCoverageOfUnrelatedDocuments()
         {
             // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public vodi TestMethod()
-	                                        {
-                                                Assert.IsTrue(false);
-	                                        }
-                                        }";
+            const string documentPath = "EmployeeRepository.cs";
+            var lineCoverage = new LineCoverage();
+            lineCoverage.TestPath = lineCoverage.Path = "CurrentProject.MathHelperTests";
 
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = false;
-            _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal);
+            _solutionExplorerMock.GetProjectNameByDocument(Arg.Any<string>()).Returns("CurrentProject");
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-
+            _sut.SolutionCoverageByDocument.Add(documentPath, new List<LineCoverage>() { lineCoverage });
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Returns(new CoverageResult(new LineCoverage[0]));
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), true).ToArray();
+            _sut.CalculateForDocument(documentPath, string.Empty);
 
             // assert
-            Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.DarkGray));
-        }
-
-        [Test]
-        public void Should_DrawSilveryDot_When_LineIsNotCovered_And_CalsAreNotInProgress()
-        {
-            // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public vodi TestMethod()
-	                                        {
-                                                Assert.IsTrue(false);
-	                                        }
-                                        }";
-
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-
-            // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
-
-            // assert
-            Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.Silver));
-        }
-
-        [Test]
-        public void ShouldNot_DrawDot_When_LineIsCovered_But_TheCodeIsBeforeDrawRange()
-        {
-            // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public void TestMethod()
-	                                        {
-		                                        int a=0;
-	                                        }
-                                        }";
-
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
-      
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-            var lineStartPositions = GetLineStartPositions(sourceCode);
-            
-            // act
-            CoverageDot[] dots = sut.Draw(lineStartPositions.Skip(5).ToArray(), false).ToArray();
-
-            // assert
-            Assert.That(dots.Length, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void ShouldNot_DrawDot_When_LineIsCovered_But_TheCodeIsAfterDrawRange()
-        {
-            // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public void TestMethod()
-	                                        {
-		                                        int a=0;
-	                                        }
-                                        }";
-
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
-
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-            var lineStartPositions = GetLineStartPositions(sourceCode);
-
-            // act
-            CoverageDot[] dots = sut.Draw(lineStartPositions.Take(4).ToArray(), false).ToArray();
-
-            // assert
-            Assert.That(dots.Length, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void Should_DrawDots_ForAllMethods()
-        {
-            // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public void TestMethod()
-	                                        {
-		                                        int a=0;
-	                                        }
-                                            
-                                            public void TestMethod2()
-	                                        {
-		                                        int a=0;
-                                                int b=0;
-	                                        }
-                                        }";
-           
-
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-
-            // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
-
-            // assert
-            Assert.That(dots.Length, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void Should_DrawDot_BetweenLeadingTrivia_And_Statement()
-        {
-            // arrange
-            const string sourceCode = @"class Test
-                                        {
-	                                        public vodi TestMethod()
-	                                        {
-                                                // leading trivia
-                                                    int a=32;// line number 5
-	                                        }
-                                        }";
-
-            _linesCoverage.Add(new LineCoverage());
-            _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=32", StringComparison.Ordinal);
-
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
-
-            // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
-
-            // assert
-            Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().LineNumber,Is.EqualTo(5));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.Green));
-        }
-
-        private int[] GetLineStartPositions(string text)
-        {
-            string[] lines = text.Split('\n');
-            int[]positions=new int[lines.Length];
-            int previousPos = 0;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                positions[i] = text.IndexOf(lines[i], previousPos, StringComparison.Ordinal);
-                previousPos=positions[i];
-            }
-
-            return positions;
+            Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(1));
         }
     }
 }

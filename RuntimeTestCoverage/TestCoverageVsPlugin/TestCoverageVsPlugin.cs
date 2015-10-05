@@ -128,9 +128,9 @@ namespace TestCoverageVsPlugin
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
             List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
             var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text);
-            string[] lines = GetCurrentLines();
+
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
-            
+
             foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskQueued))
             {
                 Ellipse ellipse = new Ellipse();
@@ -140,19 +140,6 @@ namespace TestCoverageVsPlugin
                 SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);
                 _canvas.Children.Add(ellipse);
             }
-        }
-
-        private string[] GetCurrentLines()
-        {
-            string[] lines = new string[_textView.TextViewLines.Count];
-
-            for (int i = 0; i < _textView.TextViewLines.Count; i++)
-            {
-                int lineNumber = GetLineNumber(i);
-                lines[i] = _textView.TextBuffer.CurrentSnapshot.GetLineFromLineNumber(lineNumber - 1).GetText();
-            }
-
-            return lines;
         }
 
         private int GetLineNumber(int index)

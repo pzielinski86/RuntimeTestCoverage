@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell.Interop;
+using TestCoverage;
 
 namespace TestCoverageVsPlugin
 {
@@ -37,7 +38,8 @@ namespace TestCoverageVsPlugin
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
 
             string solutionPath = dte.Solution.FullName;
-            _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionPath, dte);
+            _vsSolutionTestCoverage = new VsSolutionTestCoverage(new SolutionExplorer(solutionPath), 
+                ()=>new AppDomainSolutionCoverageEngine());
             _vsSolutionTestCoverage.CalculateForAllDocuments();
         }                
 

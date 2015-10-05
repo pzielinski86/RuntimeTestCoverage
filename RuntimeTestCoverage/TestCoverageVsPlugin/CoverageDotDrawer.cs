@@ -25,9 +25,10 @@ namespace TestCoverageVsPlugin
             SourceCode = sourceCode;
         }
 
-        public IEnumerable<CoverageDot> Draw(int[] lineStartPositions, bool areCalcsInProgress)
+        public List<CoverageDot> Draw(int[] lineStartPositions, bool areCalcsInProgress)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceCode);
+            var coverageDots = new List<CoverageDot>();
             int lineNumber = 0;
 
             foreach (var methodDeclarationSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
@@ -35,38 +36,59 @@ namespace TestCoverageVsPlugin
                 if (methodDeclarationSyntax.SpanStart < lineStartPositions[0])
                     continue;
 
-                foreach (var statement in methodDeclarationSyntax.DescendantNodes().OfType<StatementSyntax>())
+                if (!ProcessMethod(coverageDots, methodDeclarationSyntax, lineStartPositions, areCalcsInProgress, ref lineNumber))
+                    break;
+
+            }
+
+            return coverageDots;
+        }
+
+        private bool ProcessMethod(List<CoverageDot> coverageDots, MethodDeclarationSyntax methodDeclarationSyntax, int[] lineStartPositions, bool areCalcsInProgress, ref int lineNumber)
+        {
+            foreach (var statement in methodDeclarationSyntax.DescendantNodes().OfType<StatementSyntax>())
+            {
+                if (statement is BlockSyntax)
+                    continue;
+
+                if (!LoopUntilStartPositionIsFound(lineStartPositions, statement, ref lineNumber))
+                    return false;
+
+                if (lineStartPositions[lineNumber] == statement.FullSpan.Start)
                 {
-                    if (statement is BlockSyntax)
-                        continue;
+                    if (!LoopUntilLeadingTriviaIsSkipped(lineStartPositions, statement, ref lineNumber))
+                        return false;
 
-                    while (lineStartPositions[lineNumber] < statement.FullSpan.Start)
-                    {
-                        lineNumber++;
+                    CoverageDot dot = CreateDotCoverage(statement, areCalcsInProgress, lineNumber);
 
-                        if (lineStartPositions.Length == lineNumber)
-                            yield break;
-                    }
-
-                    if (lineStartPositions[lineNumber] == statement.FullSpan.Start)
-                    {
-                        while (lineStartPositions.Length > lineNumber + 1 && lineStartPositions[lineNumber + 1] < statement.SpanStart)
-                        {
-                            lineNumber++;
-
-                            if (lineStartPositions.Length == lineNumber)
-                                yield break;
-                        }
-
-                        CoverageDot dot = CreateDotCoverage(statement, areCalcsInProgress, lineNumber);
-
-                        if (dot != null)
-                            yield return dot;
-                    }
+                    if (dot != null)
+                        coverageDots.Add(dot);
                 }
             }
+
+            return true;
         }
-        
+
+        private bool LoopUntilLeadingTriviaIsSkipped(int[] lineStartPositions, StatementSyntax statement, ref int lineNumber)
+        {
+            while (lineStartPositions.Length > lineNumber + 1 && lineStartPositions[lineNumber + 1] < statement.SpanStart)
+            {
+                lineNumber++;
+            }
+
+            return lineNumber < lineStartPositions.Length;
+        }
+
+        private bool LoopUntilStartPositionIsFound(int[] lineStartPositions, StatementSyntax statement, ref int lineNumber)
+        {
+            while (lineNumber < lineStartPositions.Length && lineStartPositions[lineNumber] < statement.FullSpan.Start)
+            {
+                lineNumber++;
+            }
+
+            return lineNumber < lineStartPositions.Length;
+        }
+
         private CoverageDot CreateDotCoverage(StatementSyntax currentStatement, bool areCalcsInProgress, int lineNumber)
         {
             Brush color;

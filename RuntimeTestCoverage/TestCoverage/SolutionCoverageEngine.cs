@@ -55,5 +55,10 @@ namespace TestCoverage
 
             return new CoverageResult(coverage);
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }
