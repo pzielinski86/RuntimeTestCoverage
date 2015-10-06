@@ -15,20 +15,13 @@ namespace TestCoverage.CoverageCalculation
 {
     public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        public TestRunResult RunTest(MetadataReference[] references, Assembly[] assemblies, SyntaxNode method, AuditVariablesMap auditVariablesMap)
-        {
-            var classDeclarationSyntax = method.Ancestors().OfType<ClassDeclarationSyntax>().First();
-            var namespaceDeclaration = classDeclarationSyntax.Ancestors().OfType<NamespaceDeclarationSyntax>().First();
-
-            string className = classDeclarationSyntax.Identifier.Text;
-            string @namespace = namespaceDeclaration.Name.ToString();
-            string methodName = method.ChildTokens().Single(t => t.Kind() == SyntaxKind.IdentifierToken).ValueText;
-
-            string script = CreateRunTestScript(className, methodName, auditVariablesMap);
+        public TestRunResult RunTest(MetadataReference[] references, Assembly[] assemblies, TestCase testCase, AuditVariablesMap auditVariablesMap)
+        {                        
+            string script = CreateRunTestScript(testCase.ClassName, testCase.MethodName, auditVariablesMap);
 
             ScriptOptions options = new ScriptOptions();
 
-            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(@namespace);
+            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.Namespace);
 
             ScriptState state;
 

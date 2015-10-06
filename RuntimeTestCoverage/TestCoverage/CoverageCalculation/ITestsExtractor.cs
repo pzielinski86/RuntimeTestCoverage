@@ -1,10 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestCoverage.CoverageCalculation
 {
     public interface ITestsExtractor
     {
         SyntaxNode[] GetTestClasses(SyntaxNode testClass);
-        SyntaxNode[] GetTestMethods(SyntaxNode root);
+        TestCase[] GetTestCases(ClassDeclarationSyntax root);
     }
 }

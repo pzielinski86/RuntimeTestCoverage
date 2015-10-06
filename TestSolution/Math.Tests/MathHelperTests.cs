@@ -20,14 +20,14 @@ namespace Math.Tests
     [TestFixture]
     public class MathHelperTests
     {
-        [Test]
-        public void DivideTest()
+        [TestCase(1,1,5)]
+        public void DivideTest(int a,int b,int c)
         {
             ///////ak55kkkllklkjklmhgjghjg
             MathHelper helper = new MathHelper();
-            decimal result = helper.Divide(10, 2);
+            decimal result = helper.Divide(a, b);
             
-            Assert.That(result, Is.EqualTo(15));
+            Assert.That(result, Is.EqualTo(c));
             //jj
         }
 

@@ -147,13 +147,13 @@ namespace TestCoverage.CoverageCalculation
 
         private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, SyntaxNode testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string documentName)
         {
-            SyntaxNode[] testMethods = _testsExtractor.GetTestMethods(testClass);
+            TestCase[] testCases = _testsExtractor.GetTestCases(testClass);
             var coverage = new List<LineCoverage>();
 
-            foreach (SyntaxNode testMethod in testMethods)
+            foreach (TestCase testCase in testCases)
             {
-                var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies, testMethod, auditVariablesMap);
-                var partialCoverage = GetCoverageFromVariableNames( auditVariablesMap, setVariables, testMethod, projectName, documentName);
+                var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies, testCase, auditVariablesMap);
+                var partialCoverage = GetCoverageFromVariableNames( auditVariablesMap, setVariables, testCase, projectName, documentName);
                 coverage.AddRange(partialCoverage);
             }
 

@@ -31,7 +31,7 @@ namespace TestCoverage.Tests.Rewrite
                                     }
                                 }";
 
-            const int expectedSpanPosition = 115; // relative to a parent method
+            int expectedSpanPosition = sourceCode.IndexOf("int a",StringComparison.Ordinal);
 
             var tree = CSharpSyntaxTree.ParseText(sourceCode);
 

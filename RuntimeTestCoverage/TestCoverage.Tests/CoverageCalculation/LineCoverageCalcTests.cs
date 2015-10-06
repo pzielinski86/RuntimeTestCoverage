@@ -77,7 +77,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
             Returns(new TestRunResult(new[] { "1"}, false,null));
@@ -114,7 +114,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
                 Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
                 Returns(new TestRunResult(new []{"1","2"}, false,null));
@@ -150,7 +150,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
             _solutionExplorerMock.GetProjectReferences(project1).Returns(expectedTestProjectReferences);
 
             // when
@@ -184,7 +184,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
             _compilerMock.Compile(Arg.Any<IEnumerable<CompilationItem>>(), Arg.Any<AuditVariablesMap>())
                 .Returns(expectedAssemblies);
 
@@ -218,7 +218,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -254,8 +254,8 @@ namespace TestCoverage.Tests.CoverageCalculation
             SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First(), syntaxTree1.GetRoot().ChildNodes().First() };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestMethods(testClasses[0]).Returns(testMethods);
-            _testsExtractor.GetTestMethods(testClasses[1]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[1]).Returns(testMethods);
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
