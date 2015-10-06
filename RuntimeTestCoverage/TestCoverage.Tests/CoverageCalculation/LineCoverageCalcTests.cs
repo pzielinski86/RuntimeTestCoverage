@@ -75,8 +75,8 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1)
             };
 
-            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
-            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
+            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
             
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
@@ -113,8 +113,8 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path2", syntaxTree1),
             };
 
-            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
-            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
+            var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
@@ -151,8 +151,8 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1),
             };
 
-            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
-            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
+            var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
@@ -187,7 +187,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             };
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
-            var testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
@@ -221,8 +221,8 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1),
             };
 
-            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
-            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
+            var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
@@ -256,14 +256,13 @@ namespace TestCoverage.Tests.CoverageCalculation
             };
 
             var testClasses = new ClassDeclarationSyntax[2];
-            testClasses[0] = (ClassDeclarationSyntax)CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
-            testClasses[1] = (ClassDeclarationSyntax)CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
+            testClasses[0] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot().GetClassDeclarationSyntax();
+            testClasses[1] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot().GetClassDeclarationSyntax();
 
             TestCase[] testCases = new TestCase[2] {new TestCase(), new TestCase()};
-            testCases[0].SyntaxNode = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
-            testCases[0].SyntaxNode = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            testCases[0].SyntaxNode = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+            testCases[0].SyntaxNode = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             
-
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
             _testsExtractor.GetTestCases(testClasses[0]).Returns(testCases);
             _testsExtractor.GetTestCases(testClasses[1]).Returns(testCases);

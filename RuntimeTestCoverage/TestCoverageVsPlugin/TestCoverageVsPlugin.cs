@@ -127,7 +127,6 @@ namespace TestCoverageVsPlugin
 
             if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
                 return;
-
            
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
             List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
@@ -144,12 +143,6 @@ namespace TestCoverageVsPlugin
                 SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);
                 _canvas.Children.Add(ellipse);
             }
-        }
-
-        private int GetLineNumber(int index)
-        {
-            int position = _textView.TextViewLines[index].Start.Position;
-            return _textView.TextViewLines[index].Start.Snapshot.GetLineNumberFromPosition(position) + 1;
         }
 
         private void ThrowIfDisposed()
