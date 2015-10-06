@@ -110,6 +110,7 @@
     <Compile Include="Rewrite\AuditVariablesRewriterTests.cs" />
     <Compile Include="Rewrite\AuditVariablesWalkerTests.cs" />
     <Compile Include="Rewrite\SolutionRewriterTests.cs" />
+    <Compile Include="TestCaseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
