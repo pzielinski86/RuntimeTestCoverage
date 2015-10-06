@@ -22,6 +22,7 @@ namespace TestCoverage.CoverageCalculation
         {
             var testCase = new TestCase();
 
+            testCase.SyntaxNode = methodDeclarationSyntax;
             testCase.Namespace = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().First().Name.ToString();
             testCase.ClassName = testClass.Identifier.Text;            
             testCase.MethodName = methodDeclarationSyntax.Identifier.ValueText;
@@ -30,11 +31,11 @@ namespace TestCoverage.CoverageCalculation
             return testCase;
         }
 
-        public SyntaxNode[] GetTestClasses(SyntaxNode root)
+        public ClassDeclarationSyntax[] GetTestClasses(SyntaxNode root)
         {
             return root.DescendantNodes().OfType<AttributeSyntax>()
                 .Where(a => a.Name.ToString() == "TestFixture")
-                .Select(a => a.Parent.Parent).ToArray();
+                .Select(a => a.Parent.Parent).OfType<ClassDeclarationSyntax>().ToArray();
         }
     }
 }

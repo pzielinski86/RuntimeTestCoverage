@@ -4,10 +4,12 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NUnit.Framework;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Tests.CoverageCalculation
@@ -30,7 +32,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExecutorScriptEngine = Substitute.For<ITestExecutorScriptEngine>();
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], true,null));
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], true, null));
 
             _lineCoverageCalc = new LineCoverageCalc(_solutionExplorerMock, _compilerMock, _testsExtractor, _testExecutorScriptEngine);
         }
@@ -60,7 +62,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         {
             // given
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
-            auditVariablesMap.Map["1"]=new AuditVariablePlaceholder("path1",string.Empty,0);
+            auditVariablesMap.Map["1"] = new AuditVariablePlaceholder("path1", string.Empty, 0);
 
             var rewrittenItemsByProject = new Dictionary<Project, List<RewrittenItemInfo>>();
             var workspace = new AdhocWorkspace();
@@ -73,14 +75,15 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1)
             };
 
-            SyntaxNode[] testClasses = { CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot() };
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
-
+            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
+            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
             _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-            Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1"}, false,null));
+            Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
+            Returns(new TestRunResult(new[] { "1" }, false, null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -110,14 +113,16 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path2", syntaxTree1),
             };
 
-            SyntaxNode[] testClasses = { CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot() };
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
+            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
+            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestCases((ClassDeclarationSyntax)testClasses[0]).Returns(testMethods);
+
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>()).
-                Returns(new TestRunResult(new []{"1","2"}, false,null));
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
+                Returns(new TestRunResult(new[] { "1", "2" }, false, null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -146,8 +151,9 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1),
             };
 
-            SyntaxNode[] testClasses = { CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot() };
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
+            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
+            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
             _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
@@ -159,7 +165,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(1).RunTest(expectedTestProjectReferences, Arg.Any<Assembly[]>(),
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>());
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
         }
 
         [Test]
@@ -180,8 +186,9 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1),
             };
 
-            SyntaxNode[] testClasses = { CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot() };
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
+            var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
+            var testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
             _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
@@ -194,7 +201,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), expectedAssemblies,
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>());
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
         }
 
         [Test]
@@ -214,8 +221,9 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path1", syntaxTree1),
             };
 
-            SyntaxNode[] testClasses = { CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot() };
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First() };
+            var testClasses = new[] { (ClassDeclarationSyntax)syntaxTree1.GetRoot() };
+            MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
             _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
@@ -247,15 +255,18 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new RewrittenItemInfo("path2", syntaxTree1)
             };
 
-            SyntaxNode[] testClasses = new SyntaxNode[2];
-            testClasses[0] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
-            testClasses[1] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
+            var testClasses = new ClassDeclarationSyntax[2];
+            testClasses[0] = (ClassDeclarationSyntax)CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
+            testClasses[1] = (ClassDeclarationSyntax)CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot();
 
-            SyntaxNode[] testMethods = { syntaxTree1.GetRoot().ChildNodes().First(), syntaxTree1.GetRoot().ChildNodes().First() };
+            TestCase[] testCases = new TestCase[2] {new TestCase(), new TestCase()};
+            testCases[0].SyntaxNode = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            testCases[0].SyntaxNode = syntaxTree1.GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().First();
+            
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
-            _testsExtractor.GetTestCases(testClasses[1]).Returns(testMethods);
+            _testsExtractor.GetTestCases(testClasses[0]).Returns(testCases);
+            _testsExtractor.GetTestCases(testClasses[1]).Returns(testCases);
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -263,7 +274,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(8).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<SyntaxNode>(), Arg.Any<AuditVariablesMap>());
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
         }
 
         private bool DoesContainExpectedCompilationItems(IEnumerable<CompilationItem> expectedCompilationItems, Dictionary<Project, List<RewrittenItemInfo>> rewrittenItemsByProject)

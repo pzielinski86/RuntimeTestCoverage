@@ -42,20 +42,6 @@ namespace TestCoverage
 
             return new CoverageResult(coverage);
         }
-
-        public CoverageResult CalculateForTest(string projectName, string documentPath, string documentContent, string className, string methodName)
-        {
-            var rewritter = new SolutionRewriter(_solutionExplorer, _auditVariablesRewriter, new ContentWriter());
-            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName, documentPath, documentContent);
-
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine());
-
-            Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
-            var coverage = lineCoverageCalc.CalculateForTest(rewrittenDocument, project, className, methodName);
-
-            return new CoverageResult(coverage);
-        }
-
         public void Dispose()
         {
             

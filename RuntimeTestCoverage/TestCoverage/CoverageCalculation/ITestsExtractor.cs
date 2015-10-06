@@ -5,7 +5,7 @@ namespace TestCoverage.CoverageCalculation
 {
     public interface ITestsExtractor
     {
-        SyntaxNode[] GetTestClasses(SyntaxNode testClass);
+        ClassDeclarationSyntax[] GetTestClasses(SyntaxNode testClass);
         TestCase[] GetTestCases(ClassDeclarationSyntax root);
     }
 }

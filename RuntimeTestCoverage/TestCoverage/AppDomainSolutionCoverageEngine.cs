@@ -6,7 +6,7 @@ namespace TestCoverage
     public sealed class AppDomainSolutionCoverageEngine:ISolutionCoverageEngine,IDisposable
     {
         private ISolutionCoverageEngine _coverageEngine;
-        private AppDomain _appDomain;
+        private readonly AppDomain _appDomain;
 
         public AppDomainSolutionCoverageEngine()
         {
@@ -34,12 +34,6 @@ namespace TestCoverage
         public CoverageResult CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
             return _coverageEngine.CalculateForDocument(projectName, documentPath, documentContent);
-        }
-
-        public CoverageResult CalculateForTest(string projectName, string documentPath, string documentContent, string className,
-            string methodName)
-        {
-            return _coverageEngine.CalculateForTest(projectName, documentPath, documentContent, className, methodName);
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

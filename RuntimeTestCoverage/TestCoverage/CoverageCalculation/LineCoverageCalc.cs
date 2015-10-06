@@ -40,7 +40,7 @@ namespace TestCoverage.CoverageCalculation
                 {
                     string testDocName = Path.GetFileNameWithoutExtension(rewrittenItem.DocumentPath);
 
-                    foreach (SyntaxNode testClass in _testsExtractor.GetTestClasses(rewrittenItem.SyntaxTree.GetRoot()))
+                    foreach (ClassDeclarationSyntax testClass in _testsExtractor.GetTestClasses(rewrittenItem.SyntaxTree.GetRoot()))
                     {
                         var partialCoverage = RunAllTests(projectReferences, testClass, assemblies,
                                                                            rewritenResult.AuditVariablesMap, project.Name, testDocName);
@@ -60,10 +60,10 @@ namespace TestCoverage.CoverageCalculation
 
             MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project).ToArray();
 
-            SyntaxNode[] testClasses = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot());
+            ClassDeclarationSyntax[] testClasses = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot());
             string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
-            foreach (SyntaxNode testClass in testClasses)
+            foreach (ClassDeclarationSyntax testClass in testClasses)
             {
                 var partialCoverage =
                     RunAllTests(projectReferences, testClass, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, project.Name, testDocName);
@@ -72,23 +72,6 @@ namespace TestCoverage.CoverageCalculation
             }
 
             return finalCoverage.ToArray();
-        }
-
-        public LineCoverage[] CalculateForTest(RewrittenDocument rewrittenDocument, Project project, string className, string methodName)
-        {
-            ClassDeclarationSyntax classNode = GetClassNodeByName(rewrittenDocument.SyntaxTree.GetRoot(), className);
-            MethodDeclarationSyntax methodNode = GetMethodNodeByName(classNode, methodName);
-
-            var allAssemblies = CompileDocument(project, rewrittenDocument);
-            MetadataReference[] projectReferences = _solutionExplorer.GetProjectReferences(project).ToArray();
-            var executor = new AppDomainTestExecutorScriptEngine();
-
-            TestRunResult testRunResult = executor.RunTest(projectReferences, allAssemblies, methodNode, rewrittenDocument.AuditVariablesMap);
-            string testDocName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
-
-            var partialCoverage = GetCoverageFromVariableNames(rewrittenDocument.AuditVariablesMap, testRunResult, methodNode, project.Name, testDocName);
-
-            return partialCoverage;
         }
 
         private Assembly[] CompileDocument(Project project, RewrittenDocument rewrittenDocument)
@@ -105,39 +88,13 @@ namespace TestCoverage.CoverageCalculation
             assemblies.AddRange(documentAssemblies);
 
             return assemblies.ToArray();
-        }
+        }      
 
-        private void MergeCoverage(Dictionary<string, List<LineCoverage>> finalCoverage, Dictionary<string, List<LineCoverage>> partialCoverage)
-        {
-            foreach (string docPath in partialCoverage.Keys)
-            {
-                if (!finalCoverage.ContainsKey(docPath))
-                    finalCoverage[docPath] = new List<LineCoverage>();
-
-                finalCoverage[docPath].AddRange(partialCoverage[docPath]);
-            }
-        }
-
-        private MethodDeclarationSyntax GetMethodNodeByName(ClassDeclarationSyntax classNode, string methodName)
-        {
-            return classNode.DescendantNodes()
-                .OfType<MethodDeclarationSyntax>()
-                .Single(d => d.Identifier.Text == methodName);
-        }
-
-        private ClassDeclarationSyntax GetClassNodeByName(SyntaxNode root, string className)
-        {
-            return root
-                .DescendantNodes()
-                .OfType<ClassDeclarationSyntax>()
-                .Single(d => d.Identifier.Text == className);
-        }
-
-        private LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap, string variableName, SyntaxNode methodNode, string testProjectName, string testDocName)
+        private LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap, string variableName, TestCase testCase, string testProjectName, string testDocName)
         {
             LineCoverage lineCoverage = new LineCoverage
             {
-                TestPath = NodePathBuilder.BuildPath(methodNode, testDocName, testProjectName),
+                TestPath = NodePathBuilder.BuildPath(testCase.SyntaxNode, testDocName, testProjectName),
                 Path = auditVariablesMap.Map[variableName].NodePath,
                 Span = auditVariablesMap.Map[variableName].SpanStart
             };
@@ -145,7 +102,7 @@ namespace TestCoverage.CoverageCalculation
             return lineCoverage;
         }
 
-        private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, SyntaxNode testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string documentName)
+        private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, ClassDeclarationSyntax testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string documentName)
         {
             TestCase[] testCases = _testsExtractor.GetTestCases(testClass);
             var coverage = new List<LineCoverage>();
@@ -160,7 +117,7 @@ namespace TestCoverage.CoverageCalculation
             return coverage.ToArray();
         }
 
-        private LineCoverage[] GetCoverageFromVariableNames(AuditVariablesMap auditVariablesMap, TestRunResult testRunResult, SyntaxNode testMethod, string testProjectName, string testDocumentName)
+        private LineCoverage[] GetCoverageFromVariableNames(AuditVariablesMap auditVariablesMap, TestRunResult testRunResult, TestCase testMethod, string testProjectName, string testDocumentName)
         {
             List<LineCoverage> coverage = new List<LineCoverage>();
 
