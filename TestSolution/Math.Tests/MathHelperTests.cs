@@ -20,7 +20,8 @@ namespace Math.Tests
     [TestFixture]
     public class MathHelperTests
     {
-        [TestCase(1,1,5)]
+        [TestCase(20,10,23)]
+        [TestCase(20, 10, 2)]
         public void DivideTest(int a,int b,int c)
         {
             ///////ak55kkkllklkjklmhgjghjg

@@ -38,7 +38,6 @@ namespace TestCoverageVsPlugin
 
                 if (!ProcessMethod(coverageDots, methodDeclarationSyntax, lineStartPositions, areCalcsInProgress, ref lineNumber))
                     break;
-
             }
 
             return coverageDots;
@@ -116,7 +115,8 @@ namespace TestCoverageVsPlugin
 
         private LineCoverage GetCoverageBySpan(StatementSyntax currentStatement)
         {
-            var coverage = _lineCoverage.FirstOrDefault(x => x.Span == currentStatement.Span.Start);
+            var coverage = _lineCoverage.Where(x => x.Span == currentStatement.Span.Start)
+                .OrderBy(x => x.IsSuccess).FirstOrDefault();
 
             return coverage;
         }

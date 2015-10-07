@@ -33,7 +33,6 @@ namespace TestCoverageVsPlugin
         private readonly DispatcherTimer _timer;
 
         private Task _currentTask;
-        private SyntaxTree _syntaxTree;
         private readonly string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
@@ -63,7 +62,7 @@ namespace TestCoverageVsPlugin
 
             _documentPath = GetTextDocument().FilePath;
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
+            CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
         private void RecalculateTimerElapsed(object sender, EventArgs eventArgs)
@@ -81,7 +80,7 @@ namespace TestCoverageVsPlugin
             string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
 
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(documentPath)}");
-            _syntaxTree = CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
+            CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
             _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
             _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());

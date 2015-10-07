@@ -69,6 +69,24 @@ namespace TestCoverage.Tests
         }
 
         [Test]
+        public void Should_Call_TestWithNull()
+        {
+            // arrange
+            const string expectedCode = "testExecutor.Test(null);";
+
+            _sut.MethodName = "Test";
+            _sut.ClassName = "MathHelperTests";
+            _sut.Namespace = "Names";
+            _sut.Arguments = new object[] { null };
+
+            // act
+            string code = _sut.CreateCallTestCode("testExecutor");
+
+            // assert
+            Assert.That(code, Is.EqualTo(expectedCode));
+        }
+
+        [Test]
         public void Should_Call_TestWithBool()
         {
             // arrange

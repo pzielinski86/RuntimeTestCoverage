@@ -16,14 +16,16 @@ namespace TestCoverage.CoverageCalculation
         {
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendFormat("{0}.{1}(", instanceName,MethodName);
+            stringBuilder.AppendFormat("{0}.{1}(", instanceName, MethodName);
 
             for (int i = 0; i < Arguments.Length; i++)
             {
                 if (Arguments[i] is string)
                     stringBuilder.AppendFormat("\"{0}\"", Arguments[i]);
-                else if(Arguments[i] is bool)
+                else if (Arguments[i] is bool)
                     stringBuilder.Append(Arguments[i].ToString().ToLower());
+                else if (Arguments[i] == null)
+                    stringBuilder.Append("null");
                 else
                     stringBuilder.Append(Arguments[i]);
 

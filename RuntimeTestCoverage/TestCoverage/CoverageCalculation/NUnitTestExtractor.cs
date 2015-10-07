@@ -9,43 +9,48 @@ namespace TestCoverage.CoverageCalculation
     {
         public TestCase[] GetTestCases(ClassDeclarationSyntax testClass)
         {
-            var foundTestCases= ExtractTestCases(testClass);
-            if (foundTestCases.Length == 0)
-                return foundTestCases;
-
-            int maxPars = foundTestCases.Max(x => x.Arguments.Length);
-
-            return foundTestCases.Where(x => x.Arguments.Length == maxPars).ToArray();
+            return ExtractTestCases(testClass);
         }
 
         private TestCase[] ExtractTestCases(ClassDeclarationSyntax testClass)
         {
-            var testCases=new List<TestCase>();
+            var allTestCases = new List<TestCase>();
             var namespaceNode = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
             string nameSpace = namespaceNode?.Name.ToString();
 
-            foreach (AttributeSyntax attribute in testClass.DescendantNodes().OfType<AttributeSyntax>())
+            foreach (MethodDeclarationSyntax methodNode in testClass.DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-                if (attribute.Name.ToString() == "Test")
+                var methodTestCases = new List<TestCase>();
+
+                foreach (AttributeSyntax attribute in methodNode.DescendantNodes().OfType<AttributeSyntax>())
                 {
-                    var testCase = ExtractTest(testClass, attribute, nameSpace);
-                    testCases.Add(testCase);
+                    if (attribute.Name.ToString() == "Test")
+                    {
+                        var testCase = ExtractTest(testClass, attribute, nameSpace);
+                        methodTestCases.Add(testCase);
+                    }
+
+                    else if (attribute.Name.ToString() == "TestCase")
+                    {
+                        var testCase = ExtractTestCase(testClass, attribute, nameSpace);
+                        methodTestCases.Add(testCase);
+                    }
                 }
 
-                else if (attribute.Name.ToString() == "TestCase")
+                if (methodTestCases.Count > 0)
                 {
-                    var testCase = ExtractTestCase(testClass, attribute, nameSpace);
-                    testCases.Add(testCase);
+                    int maxPars = methodTestCases.Max(x => x.Arguments.Length);
+                    allTestCases.AddRange(methodTestCases.Where(x => x.Arguments.Length == maxPars));
                 }
             }
 
-            return testCases.ToArray();
+            return allTestCases.ToArray();
         }
 
         private static TestCase ExtractTestCase(ClassDeclarationSyntax testClass, AttributeSyntax attribute, string nameSpace)
         {
             var testCase = new TestCase();
-            var methodDeclarationSyntax = (MethodDeclarationSyntax) attribute.Parent.Parent;
+            var methodDeclarationSyntax = (MethodDeclarationSyntax)attribute.Parent.Parent;
 
             testCase.Arguments = new object[attribute.ArgumentList.Arguments.Count];
 
@@ -65,7 +70,7 @@ namespace TestCoverage.CoverageCalculation
 
         private static TestCase ExtractTest(ClassDeclarationSyntax testClass, AttributeSyntax attribute, string nameSpace)
         {
-            var methodDeclarationSyntax = (MethodDeclarationSyntax) attribute.Parent.Parent;
+            var methodDeclarationSyntax = (MethodDeclarationSyntax)attribute.Parent.Parent;
 
             var testCase = new TestCase
             {

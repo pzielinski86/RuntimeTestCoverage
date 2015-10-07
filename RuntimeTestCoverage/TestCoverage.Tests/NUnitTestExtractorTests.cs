@@ -97,6 +97,38 @@ namespace TestCoverage.Tests
         }
 
         [Test]
+        public void ShouldExtract_TestCase_And_Test_FromTestFixture()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+                                [Test]
+	                            [TestCase(1,""Test"",true)]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+
+                                [Test]
+	                            public void TestSomething2()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testMethods = _sut.GetTestCases(tree);
+
+            // assert
+            Assert.That(testMethods.Length, Is.EqualTo(2));
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(3));
+            Assert.That(testMethods[1].Arguments.Length, Is.EqualTo(0));
+        }
+
+        [Test]
         public void ShouldExtract_NamespaceWithClassName_For_TestMethod()
         {
             // arrange
