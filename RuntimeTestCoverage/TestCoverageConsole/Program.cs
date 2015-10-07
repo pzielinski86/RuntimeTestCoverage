@@ -23,6 +23,21 @@ namespace TestCoverageConsole
                 Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
                 Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
             }
+
+            using (var engine = new AppDomainSolutionCoverageEngine())
+            {
+                engine.Init(TestSubjectSlnPath);
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
+                string documentPath = @"C:\projects\RuntimeTestCoverage\TestSolution\Math\MathHelper.cs";
+                string documentContent = File.ReadAllText(documentPath);
+
+                var positions = engine.CalculateForDocument("Math", documentPath,documentContent);
+
+                Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+                Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+            }
         }
     }
 }

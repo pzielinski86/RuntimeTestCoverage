@@ -33,7 +33,7 @@ namespace TestCoverageVsPlugin
 
             foreach (var methodDeclarationSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-                if (methodDeclarationSyntax.SpanStart < lineStartPositions[0])
+                if (methodDeclarationSyntax.Span.End < lineStartPositions[0])
                     continue;
 
                 if (!ProcessMethod(coverageDots, methodDeclarationSyntax, lineStartPositions, areCalcsInProgress, ref lineNumber))

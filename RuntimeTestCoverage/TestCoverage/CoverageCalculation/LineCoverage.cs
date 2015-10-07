@@ -9,6 +9,7 @@ namespace TestCoverage.CoverageCalculation
         public string Path { get; set; }
         public string TestPath { get; set; }
         public string DocumentPath { get; set; }
+        public string TestDocumentPath { get; set; }
 
         public bool IsSuccess { get; set; }
     }

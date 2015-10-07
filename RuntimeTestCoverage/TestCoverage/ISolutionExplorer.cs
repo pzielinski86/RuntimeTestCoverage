@@ -15,6 +15,7 @@ namespace TestCoverage
         string SolutionPath { get; }
         IEnumerable<Document> GetAllDocuments();
         string GetProjectNameByDocument(string documentPath);
+        Project GetProjectByDocument(string documentPath);
         MetadataReference[] GetProjectReferences(Project project1);
     }
 }
