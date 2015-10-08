@@ -213,3 +213,4 @@ FakesAssemblies/
 /lines.lc
 /RuntimeTestCoverage/LineCounter.exe
 /RuntimeTestCoverage/lines.lc
+TestSolution/TestSolution_CoverageStore

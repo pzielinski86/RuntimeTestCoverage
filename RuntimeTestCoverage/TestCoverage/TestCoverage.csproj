@@ -138,6 +138,7 @@
     <Compile Include="Rewrite\RewrittenItemInfo.cs" />
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
     <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
+    <Compile Include="Storage\AllowAllAssemblyVersionsDeserializationBinder.cs" />
     <Compile Include="Storage\FileCoverageStore.cs" />
     <Compile Include="Storage\ICoverageStore.cs" />
   </ItemGroup>

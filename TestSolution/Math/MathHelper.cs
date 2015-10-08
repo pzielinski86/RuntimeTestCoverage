@@ -13,14 +13,18 @@ namespace Math
             if (b == 0)
             {
                 throw new ArgumentOutOfRangeException();
+            
                 throw new ArgumentOutOfRangeException();
             }
 
             return a / b;
         }
 
+
         public void DoSomething(int a)
         {
+          
+
             if (a < 10)
             {
                 int test = 4;

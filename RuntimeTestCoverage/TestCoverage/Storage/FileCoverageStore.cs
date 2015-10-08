@@ -12,21 +12,28 @@ namespace TestCoverage.Storage
 
         public FileCoverageStore(string solutionPath)
         {
-            string solutionDir= Path.GetDirectoryName(solutionPath);
+            string solutionDir = Path.GetDirectoryName(solutionPath);
             string solutionName = Path.GetFileNameWithoutExtension(solutionPath);
 
             _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageStore");
         }
 
-        public void Add(IEnumerable<LineCoverage> coverage)
+        public void Append(IEnumerable<LineCoverage> coverage)
         {
             var currentCoverage = ReadAll().ToList();
             currentCoverage.AddRange(coverage);
 
+            WriteAll(currentCoverage);
+        }
+
+        public void WriteAll(IEnumerable<LineCoverage> coverage)
+        {
             using (var stream = new FileStream(_filePath, FileMode.OpenOrCreate))
             {
                 var binaryFormatter = new BinaryFormatter();
-                binaryFormatter.Serialize(stream, currentCoverage.ToArray());
+                binaryFormatter.Binder = new AllowAllAssemblyVersionsDeserializationBinder();
+
+                binaryFormatter.Serialize(stream, coverage.ToArray());
             }
         }
 
@@ -38,6 +45,8 @@ namespace TestCoverage.Storage
                     return new LineCoverage[0];
 
                 var binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Binder = new AllowAllAssemblyVersionsDeserializationBinder();
+
                 var coverage = (LineCoverage[])binaryFormatter.Deserialize(stream);
 
                 return coverage;

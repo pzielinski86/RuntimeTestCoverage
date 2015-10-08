@@ -72,7 +72,7 @@ namespace TestCoverage.CoverageCalculation
             if (allTestClasses.Length == 0)
                 testClassesByDocument = GetReferencedTests(rewrittenDocument.SyntaxTree.GetRoot(), docName, project.Name);
             else
-                testClassesByDocument[docName] = allTestClasses;
+                testClassesByDocument[rewrittenDocument.DocumentPath] = allTestClasses;
 
             foreach (var testDocument in testClassesByDocument)
             {
@@ -83,7 +83,7 @@ namespace TestCoverage.CoverageCalculation
                 foreach (var classDeclarationSyntax in testDocument.Value)
                 {
                     var partialCoverage =
-                    RunAllTests(projectReferences, classDeclarationSyntax, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, project.Name, testDocument.Key);
+                    RunAllTests(projectReferences, classDeclarationSyntax, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, testProject.Name, testDocument.Key);
                     
                     finalCoverage.AddRange(partialCoverage);
                 }                

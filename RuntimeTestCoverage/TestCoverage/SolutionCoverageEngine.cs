@@ -32,7 +32,7 @@ namespace TestCoverage
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(),_coverageStore, new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine());
             var coverage = lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
-            _coverageStore.Add(coverage);
+            _coverageStore.Append(coverage);
 
             return new CoverageResult(coverage);
         }
@@ -46,7 +46,7 @@ namespace TestCoverage
             Project project = _solutionExplorer.Solution.Projects.Single(p => p.Name == projectName);
             var coverage = lineCoverageCalc.CalculateForDocument(rewrittenDocument, project);
 
-            _coverageStore.Add(coverage);
+            _coverageStore.Append(coverage);
 
             return new CoverageResult(coverage);
         }
