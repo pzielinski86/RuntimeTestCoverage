@@ -18,9 +18,20 @@ namespace TestCoverage.Storage
             _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageStore");
         }
 
-        public void Append(IEnumerable<LineCoverage> coverage)
+        public void Append(string documentPath,IEnumerable<LineCoverage> coverage)
         {
             var currentCoverage = ReadAll().ToList();
+
+            for (int i = 0; i < currentCoverage.Count; i++)
+            {
+                if (currentCoverage[i].DocumentPath == documentPath ||
+                    currentCoverage[i].TestDocumentPath == documentPath)
+                {
+                    currentCoverage.RemoveAt(i);
+                    i--;
+                }
+            }
+
             currentCoverage.AddRange(coverage);
 
             WriteAll(currentCoverage);
@@ -30,8 +41,7 @@ namespace TestCoverage.Storage
         {
             using (var stream = new FileStream(_filePath, FileMode.OpenOrCreate))
             {
-                var binaryFormatter = new BinaryFormatter();
-                binaryFormatter.Binder = new AllowAllAssemblyVersionsDeserializationBinder();
+                var binaryFormatter = new BinaryFormatter {Binder = new AllowAllAssemblyVersionsDeserializationBinder()};
 
                 binaryFormatter.Serialize(stream, coverage.ToArray());
             }
@@ -44,8 +54,7 @@ namespace TestCoverage.Storage
                 if (stream.Length.Equals(0))
                     return new LineCoverage[0];
 
-                var binaryFormatter = new BinaryFormatter();
-                binaryFormatter.Binder = new AllowAllAssemblyVersionsDeserializationBinder();
+                var binaryFormatter = new BinaryFormatter {Binder = new AllowAllAssemblyVersionsDeserializationBinder()};
 
                 var coverage = (LineCoverage[])binaryFormatter.Deserialize(stream);
 

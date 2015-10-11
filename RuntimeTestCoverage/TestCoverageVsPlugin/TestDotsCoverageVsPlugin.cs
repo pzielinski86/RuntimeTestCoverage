@@ -17,18 +17,20 @@ using System.Windows.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage.CoverageCalculation;
+using Solution = EnvDTE.Solution;
 
 namespace TestCoverageVsPlugin
 {
     /// <summary>
     /// A class detailing the margin's visual definition including both size and content.
     /// </summary>
-    class TestCoverageVsPlugin : Canvas, IWpfTextViewMargin
+    class TestDotsCoverageVsPlugin : Canvas, IWpfTextViewMargin
     {
-        public const string MarginName = "TestCoverageVsPlugin";
+        public const string MarginName = "TestDotsCoverageVsPlugin";
 
         private readonly IWpfTextView _textView;
         private readonly IVsStatusbar _statusBar;
+        private readonly Solution _solution;
         private readonly Canvas _canvas;
         private readonly DispatcherTimer _timer;
 
@@ -39,16 +41,17 @@ namespace TestCoverageVsPlugin
         private bool _taskQueued;
 
         /// <summary>
-        /// Creates a <see cref="TestCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
+        /// Creates a <see cref="TestDotsCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
         /// </summary>
         /// <param name="vsSolutionTestCoverage"></param>
         /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
         /// <param name="statusBar"></param>
-        public TestCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar)
+        public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar, Solution solution)
         {
             _canvas = new Canvas();
             _textView = textView;
             _statusBar = statusBar;
+            _solution = solution;
             _textView.ViewportHeightChanged += TextViewViewportHeightChanged;
             _textView.LayoutChanged += TextViewLayoutChanged;
             this.Width = 20;
@@ -82,7 +85,10 @@ namespace TestCoverageVsPlugin
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(documentPath)}");
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
-            _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(documentPath, documentContent);
+
+            var projectItem = _solution.FindProjectItem(documentPath);
+            var projectName = projectItem.ContainingProject.Name;
+            _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(projectName, documentPath, documentContent);
             _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
@@ -124,11 +130,14 @@ namespace TestCoverageVsPlugin
         {
             _canvas.Children.Clear();
 
-            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
-                return;
-           
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
-            List<LineCoverage> lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
+
+            List<LineCoverage> lineCoverage;
+            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
+                lineCoverage = new List<LineCoverage>();
+            else
+                lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
+
             var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text);
 
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
@@ -196,10 +205,10 @@ namespace TestCoverageVsPlugin
         /// Returns an instance of the margin if this is the margin that has been requested.
         /// </summary>
         /// <param name="marginName">The name of the margin requested</param>
-        /// <returns>An instance of TestCoverageVsPlugin or null</returns>
+        /// <returns>An instance of TestDotsCoverageVsPlugin or null</returns>
         public ITextViewMargin GetTextViewMargin(string marginName)
         {
-            return (marginName == TestCoverageVsPlugin.MarginName) ? (IWpfTextViewMargin)this : null;
+            return (marginName == TestDotsCoverageVsPlugin.MarginName) ? (IWpfTextViewMargin)this : null;
         }
 
         public void Dispose()

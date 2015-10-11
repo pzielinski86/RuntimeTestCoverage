@@ -10,21 +10,23 @@ using TestCoverage;
 
 namespace TestCoverageVsPlugin
 {
-    #region TestCoverageVsPlugin Factory
+    #region TestDotsCoverageVsPlugin Factory
     /// <summary>
     /// Export a <see cref="IWpfTextViewMarginProvider"/>, which returns an instance of the margin for the editor
     /// to use.
     /// </summary>
     [Export(typeof(IWpfTextViewMarginProvider))]
-    [Name(TestCoverageVsPlugin.MarginName)]
+    [Name(TestDotsCoverageVsPlugin.MarginName)]
     [Order(After = PredefinedMarginNames.LeftSelection)]
-    [MarginContainer(PredefinedMarginNames.LeftSelection)] 
+    [MarginContainer(PredefinedMarginNames.LeftSelection)]
     [ContentType("text")] //Show this margin for all text-based types
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private IVsStatusbar _statusBar;
+        private DTE _dte;
+        private SolutionExplorer _solutionExplorer;
 
         static MarginFactory()
         {
@@ -34,20 +36,20 @@ namespace TestCoverageVsPlugin
         [ImportingConstructor]
         public MarginFactory([Import]SVsServiceProvider serviceProvider)
         {
-            DTE dte = (DTE)serviceProvider.GetService(typeof(DTE));
+            _dte = (DTE)serviceProvider.GetService(typeof(DTE));
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
 
-            string solutionPath = dte.Solution.FullName;
-            _vsSolutionTestCoverage = new VsSolutionTestCoverage(new SolutionExplorer(solutionPath), 
-                ()=>new AppDomainSolutionCoverageEngine());
+            string solutionPath = _dte.Solution.FullName;
+            _solutionExplorer = new SolutionExplorer(solutionPath);
+            _vsSolutionTestCoverage = new VsSolutionTestCoverage(_solutionExplorer,
+                () => new AppDomainSolutionCoverageEngine());
             _vsSolutionTestCoverage.CalculateForAllDocuments();
-        }                
-
+        }
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
-            return new TestCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView,_statusBar);
+            return new TestDotsCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView, _statusBar, _dte.Solution);
         }
-   
+
     }
     #endregion
 }

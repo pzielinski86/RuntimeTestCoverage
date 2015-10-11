@@ -5,7 +5,7 @@ namespace TestCoverage.Storage
 {
     public interface ICoverageStore
     {
-        void Append(IEnumerable<LineCoverage> coverage);
+        void Append(string documentPath,IEnumerable<LineCoverage> coverage);
 
         void WriteAll(IEnumerable<LineCoverage> coverage);
 

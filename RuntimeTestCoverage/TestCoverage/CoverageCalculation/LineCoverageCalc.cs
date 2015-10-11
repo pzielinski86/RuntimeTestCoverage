@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
+using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
 using TestCoverage.Storage;
 
@@ -58,21 +59,13 @@ namespace TestCoverage.CoverageCalculation
             return finalCoverage.ToArray();
         }
 
-        //TODO: refactor
         public LineCoverage[] CalculateForDocument(RewrittenDocument rewrittenDocument, Project project)
         {
             var finalCoverage = new List<LineCoverage>();
             var allAssemblies = CompileDocument(project, rewrittenDocument);
-            
-
             string docName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
-            ClassDeclarationSyntax[] allTestClasses = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot());
-            var testClassesByDocument=new Dictionary<string,ClassDeclarationSyntax[]>();
 
-            if (allTestClasses.Length == 0)
-                testClassesByDocument = GetReferencedTests(rewrittenDocument.SyntaxTree.GetRoot(), docName, project.Name);
-            else
-                testClassesByDocument[rewrittenDocument.DocumentPath] = allTestClasses;
+            var testClassesByDocument = GetTestClassesByDocument(rewrittenDocument, project, docName);
 
             foreach (var testDocument in testClassesByDocument)
             {
@@ -84,23 +77,35 @@ namespace TestCoverage.CoverageCalculation
                 {
                     var partialCoverage =
                     RunAllTests(projectReferences, classDeclarationSyntax, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, testProject.Name, testDocument.Key);
-                    
+
                     finalCoverage.AddRange(partialCoverage);
-                }                
+                }
             }
 
             return finalCoverage.ToArray();
         }
 
-        // TODO: Tests
+        private Dictionary<string, ClassDeclarationSyntax[]> GetTestClassesByDocument(RewrittenDocument rewrittenDocument, Project project, string docName)
+        {
+            ClassDeclarationSyntax[] allTestClasses = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot());
+
+            var testClassesByDocument = new Dictionary<string, ClassDeclarationSyntax[]>();
+
+            if (allTestClasses.Length == 0)
+                testClassesByDocument = GetReferencedTests(rewrittenDocument.SyntaxTree.GetRoot(), docName, project.Name);
+            else
+                testClassesByDocument[rewrittenDocument.DocumentPath] = allTestClasses;
+
+            return testClassesByDocument;
+        }
+
         private Dictionary<string, ClassDeclarationSyntax[]> GetReferencedTests(SyntaxNode root, string documentName, string projectName)
         {
-            // TODO: Make it to read only public methods
-            var methods = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+            var methods = root.GetPublicMethods();
             var currentCoverage = _coverageStore.ReadAll();
             var allTestClasses = new Dictionary<string, ClassDeclarationSyntax[]>();
 
-            foreach (var method in methods) 
+            foreach (var method in methods)
             {
                 string path = NodePathBuilder.BuildPath(method, documentName, projectName);
 
@@ -108,9 +113,8 @@ namespace TestCoverage.CoverageCalculation
                 {
                     if (!allTestClasses.ContainsKey(docCoverage.TestDocumentPath))
                     {
-                        string testDocumentContent = File.ReadAllText(docCoverage.TestDocumentPath);
-                        var testRoot = CSharpSyntaxTree.ParseText(testDocumentContent);
-                        var testClasses = testRoot.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
+                        var testRoot = _solutionExplorer.OpenFile(docCoverage.TestDocumentPath);
+                        var testClasses = testRoot.GetRoot().GetClassDeclarations();
 
                         allTestClasses[docCoverage.TestDocumentPath] = testClasses.ToArray();
                     }
@@ -128,9 +132,8 @@ namespace TestCoverage.CoverageCalculation
 
             SyntaxTree[] projectTrees = _solutionExplorer.LoadProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
 
-            var compiler = new RoslynCompiler();
             var allProjectTrees = projectTrees.Union(new[] { rewrittenDocument.SyntaxTree }).ToArray();
-            Assembly[] documentAssemblies = compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies, rewrittenDocument.AuditVariablesMap);
+            Assembly[] documentAssemblies = _compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies, rewrittenDocument.AuditVariablesMap);
             assemblies.AddRange(documentAssemblies);
 
             return assemblies.ToArray();

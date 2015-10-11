@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage
@@ -27,6 +28,11 @@ namespace TestCoverage
         public void Open()
         {
             _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
+        }
+
+        public SyntaxTree OpenFile(string path)
+        {
+            return CSharpSyntaxTree.ParseText(File.ReadAllText(path));
         }
 
         public void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap)
@@ -75,13 +81,6 @@ namespace TestCoverage
             return _solution.Projects.SelectMany(project => project.Documents);
         }
 
-        public string GetProjectNameByDocument(string documentPath)
-        {
-            var project= _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
-
-            return project?.Name;
-        }
-
         public Project GetProjectByDocument(string documentPath)
         {
             var project = _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
@@ -94,6 +93,7 @@ namespace TestCoverage
             return project.MetadataReferences.ToArray();
         }
 
+        // TODO: Refactor
         private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)
         {
             int auditVariablePos = 0;

@@ -47,16 +47,14 @@ namespace TestCoverageVsPlugin
             }
         }      
        
-        public Task CalculateForDocumentAsync(string documentPath, string documentContent)
+        public Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
         {
-            return Task.Factory.StartNew(() => CalculateForDocument(documentPath, documentContent));
+            return Task.Factory.StartNew(() => CalculateForDocument(projectName,documentPath, documentContent));
         }
 
-        public void CalculateForDocument(string documentPath, string documentContent)
+        public void CalculateForDocument(string projectName, string documentPath, string documentContent)
         { 
-            var selectedProjectName = _solutionExplorer.GetProjectNameByDocument(documentPath);
-
-            string path = $"{selectedProjectName}.{Path.GetFileNameWithoutExtension(documentPath)}";
+            string path = $"{projectName}.{Path.GetFileNameWithoutExtension(documentPath)}";
             ClearDataCoveredByPath(path);
 
             using (var engine = _solutionCoverageFactory())
@@ -67,7 +65,7 @@ namespace TestCoverageVsPlugin
 
                 try
                 {
-                    coverage = engine.CalculateForDocument(selectedProjectName, documentPath, documentContent);
+                    coverage = engine.CalculateForDocument(projectName, documentPath, documentContent);
                 }
                 catch (TestCoverageCompilationException e)
                 {
