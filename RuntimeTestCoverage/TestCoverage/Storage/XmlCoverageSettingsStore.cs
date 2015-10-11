@@ -31,10 +31,9 @@ namespace TestCoverage.Storage
 
         public void Update(CoverageSettings coverageSettings)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(CoverageSettings));
-
-            using (var fileStream = File.Open(_filePath, FileMode.Open))
+            using (var fileStream = File.Open(_filePath, FileMode.Create))
             {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(CoverageSettings));
                 xmlSerializer.Serialize(fileStream, coverageSettings);
             }
         }

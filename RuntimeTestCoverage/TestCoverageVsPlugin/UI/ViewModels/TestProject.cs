@@ -1,10 +1,13 @@
-﻿using System.Windows.Input;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Annotations;
 
 namespace TestCoverageVsPlugin.UI.ViewModels
 {
-    public class TestProject
+    public sealed class TestProject:INotifyPropertyChanged
     {
         private readonly ICoverageSettingsStore _coverageSettingsStore;
 
@@ -20,12 +23,22 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 
         public ICommand FlagProjectCoverageSettingsCmd { get; set; }
 
-        public string FlagProjectCoverageSettingsCmdText => TestProjectSettings.IsCoverageEnabled ? "Unignore" : "Ignore";
+        public string FlagProjectCoverageSettingsCmdText => TestProjectSettings.IsCoverageEnabled ? "Ignore" : "Unignore";
 
         private void FlagProjectCoverageSettings(object obj)
         {
             TestProjectSettings.IsCoverageEnabled = !TestProjectSettings.IsCoverageEnabled;
             _coverageSettingsStore.Update(TestProjectSettings);
+
+            OnPropertyChanged(nameof(FlagProjectCoverageSettingsCmdText));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
