@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,15 +26,49 @@ namespace TestCoverage.Rewrite
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
         {
-            List<StatementSyntax> statements = new List<StatementSyntax>();
+            List<StatementSyntax> newStatements = new List<StatementSyntax>();
 
             foreach (var statement in node.Statements)
             {
-                statements.Add(CreateLineAuditNode());
-                statements.Add(statement);
+                newStatements.Add(CreateLineAuditNode());
+                newStatements.Add(statement);
             }
 
-            return base.VisitBlock(SyntaxFactory.Block(statements));
+            return base.VisitBlock(SyntaxFactory.Block(newStatements));
+        }
+
+        public override SyntaxNode VisitIfStatement(IfStatementSyntax node)
+        {
+            SyntaxNode rewrittenNode = null;
+
+            if (node.Statement != null)
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
+            if (node.Else != null)
+            {
+                var currentParent =(IfStatementSyntax) rewrittenNode ?? node;
+                rewrittenNode = RewriteWithBlockIfRequired(currentParent, currentParent.Else.Statement);
+            }
+
+            return rewrittenNode ?? VisitIfStatement(node);
+        }
+
+        private SyntaxNode RewriteWithBlockIfRequired(SyntaxNode parent,StatementSyntax node)
+        {
+            if (!(node is BlockSyntax))
+            {
+                List<StatementSyntax> newStatements = new List<StatementSyntax>
+                {
+                    CreateLineAuditNode(),
+                    node
+                };
+
+
+                var block = SyntaxFactory.Block(newStatements);
+
+                return parent.ReplaceNode(node, block);
+            }
+
+            return null;
         }
 
         public SyntaxNode Rewrite(string projectName, string documentPath, SyntaxNode root, IAuditVariablesMap auditVariableMapping)

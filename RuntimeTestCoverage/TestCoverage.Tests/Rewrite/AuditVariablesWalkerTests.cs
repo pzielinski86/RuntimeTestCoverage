@@ -60,6 +60,23 @@ namespace TestCoverage.Tests.Rewrite
         }
 
         [Test]
+        public void Should_AddAuditVariables_In_Inline_IfElseStatement()
+        {
+            const string sourceCode = @"class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {           
+                                            if(a==5)
+                                                int a=4;
+                                            else
+                                               int b=5;
+                                        }
+                                    }";
+
+            AssertAuditVariablesCount(sourceCode, 3);
+        }
+
+        [Test]
         public void Should_AddAuditVariableBeforeNestedIfsAndLocalVariables()
         {
             const string sourceCode = @"class SampleClass
