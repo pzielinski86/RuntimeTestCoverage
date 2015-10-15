@@ -235,8 +235,8 @@
     </Compile>
     <Compile Include="UI\CoverageOverviewPackage.cs" />
     <Compile Include="UI\ViewModels\CoverageOverviewViewModel.cs" />
-    <Compile Include="UI\ViewModels\TestProject.cs" />
-    <Compile Include="UI\ViewModels\TestFixture.cs" />
+    <Compile Include="UI\ViewModels\TestProjectViewModel.cs" />
+    <Compile Include="UI\ViewModels\TestFixtureViewModel.cs" />
     <Compile Include="VsSolutionTestCoverage.cs" />
     <Compile Include="TestDotsCoverageVsPlugin.cs" />
     <Compile Include="TestCoverageVsPluginFactory.cs" />

@@ -8,7 +8,7 @@ namespace TestCoverageVsPlugin.Tests.UI
     [TestFixture]
     public class TestProjectTests
     {
-        private TestProject _sut;
+        private TestProjectViewModel _sut;
         private ICoverageSettingsStore _coverageSettingsStore;
 
         [SetUp]
@@ -16,7 +16,7 @@ namespace TestCoverageVsPlugin.Tests.UI
         {
             _coverageSettingsStore = Substitute.For<ICoverageSettingsStore>();
 
-            _sut =new TestProject(_coverageSettingsStore);
+            _sut =new TestProjectViewModel(_coverageSettingsStore);
             _sut.TestProjectSettings=new TestProjectSettings();
         }
 

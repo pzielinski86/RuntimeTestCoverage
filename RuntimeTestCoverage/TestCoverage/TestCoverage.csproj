@@ -120,6 +120,7 @@
     <Compile Include="Extensions\SyntaxNode.cs" />
     <Compile Include="ISolutionCoverageEngine.cs" />
     <Compile Include="ISolutionExplorer.cs" />
+    <Compile Include="ITestExplorer.cs" />
     <Compile Include="Rewrite\AuditVariablePlaceholder.cs" />
     <Compile Include="Rewrite\AuditVariablesMap.cs" />
     <Compile Include="Compilation\CompilationItem.cs" />
@@ -152,6 +153,8 @@
     <Compile Include="Storage\ICoverageStore.cs" />
     <Compile Include="Storage\TestProjectSettings.cs" />
     <Compile Include="Storage\XmlCoverageSettingsStore.cs" />
+    <Compile Include="TestExplorer.cs" />
+    <Compile Include="TestProject.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

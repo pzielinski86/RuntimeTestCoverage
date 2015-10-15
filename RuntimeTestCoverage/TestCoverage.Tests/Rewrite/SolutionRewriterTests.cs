@@ -17,18 +17,16 @@ namespace TestCoverage.Tests.Rewrite
     public class SolutionRewriterTests
     {
         private SolutionRewriter _solutionRewriter;
-        private ISolutionExplorer _solutionExplorerMock;
         private IContentWriter _contentWriterMock;
         private IAuditVariablesRewriter _auditVariablesRewriter;
 
         [SetUp]
         public void Setup()
         {
-            _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
             _contentWriterMock = Substitute.For<IContentWriter>();
             _auditVariablesRewriter = Substitute.For<IAuditVariablesRewriter>();
 
-            _solutionRewriter = new SolutionRewriter(_solutionExplorerMock, _auditVariablesRewriter, _contentWriterMock);
+            _solutionRewriter = new SolutionRewriter( _auditVariablesRewriter, _contentWriterMock);
         }
 
         [Test]
@@ -106,13 +104,11 @@ namespace TestCoverage.Tests.Rewrite
             Document document = workspace.AddDocument(documentInfo);
 
 
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>(),
                 Arg.Any<IAuditVariablesMap>()).Returns(node);
 
             // act
-            RewriteResult result = _solutionRewriter.RewriteAllClasses();
+            RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
             // assert
             Assert.That(result.Items.Count, Is.EqualTo(1));
@@ -140,13 +136,10 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
                 Arg.Any<IAuditVariablesMap>()).Returns(node);
 
-            RewriteResult result = _solutionRewriter.RewriteAllClasses();
+            RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
             Assert.That(result.Items.Count, Is.EqualTo(1));
             Assert.That(result.Items.Values.First().Count, Is.EqualTo(2));
@@ -172,12 +165,10 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
                 Arg.Any<IAuditVariablesMap>()).Returns(node);
-
-            RewriteResult result = _solutionRewriter.RewriteAllClasses();
+        
+            RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
             Assert.That(result.Items.Count, Is.EqualTo(2));
             Assert.That(result.Items.Keys.First().Id, Is.EqualTo(project1.Id));
@@ -198,7 +189,7 @@ namespace TestCoverage.Tests.Rewrite
 
             SyntaxNode node = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
-            SetupSolutionWithOneProject("Main.cs","Tests.cs");
+            var solution=SetupSolutionWithOneProject("Main.cs","Tests.cs");
 
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
                 Arg.Any<IAuditVariablesMap>()).
@@ -206,7 +197,7 @@ namespace TestCoverage.Tests.Rewrite
                 AndDoes(x => x.Arg<IAuditVariablesMap>().Map.Add(variablesStack.Pop(), null));
 
             // act
-            RewriteResult result = _solutionRewriter.RewriteAllClasses();
+            RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);
 
             // assert
             Assert.That(result.AuditVariablesMap.Map.Keys.Count, Is.EqualTo(2));
@@ -214,18 +205,18 @@ namespace TestCoverage.Tests.Rewrite
             Assert.IsTrue(result.AuditVariablesMap.Map.ContainsKey(auditVariableDoc2));
         }
 
-        private void SetupSolutionWithOneProject(params string[] documentNames)
+        private Solution SetupSolutionWithOneProject(params string[] documentNames)
         {
             var workspace = new AdhocWorkspace();
             var project1 = workspace.AddProject("foo.dll", LanguageNames.CSharp);
 
             foreach (var documentPath in documentNames)
             {
-                DocumentInfo documentInfo1 = DocumentInfo.Create(DocumentId.CreateNewId(project1.Id), documentPath, filePath: documentPath + ".cs");
+                DocumentInfo documentInfo1 = DocumentInfo.Create(DocumentId.CreateNewId(project1.Id), documentPath,
+                    filePath: documentPath + ".cs");
                 workspace.AddDocument(documentInfo1);
             }
-
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
+            return workspace.CurrentSolution;
         }
     }
 }

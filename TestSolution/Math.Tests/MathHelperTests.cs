@@ -64,7 +64,9 @@ namespace Math.Tests
         {
             ////
             MathHelper helper = new MathHelper();
-         //   helper.DoSomething(1); v
+
+
+     //      helper.DoSomething(5); 
         }
 
         [Test]
@@ -84,6 +86,14 @@ namespace Math.Tests
     {
         public void Test()
         {
+
+
+
+
+
+
+
+
 
         }
     }

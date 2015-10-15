@@ -49,7 +49,7 @@ namespace TestCoverage.Rewrite
                 rewrittenNode = RewriteWithBlockIfRequired(currentParent, currentParent.Else.Statement);
             }
 
-            return rewrittenNode ?? VisitIfStatement(node);
+            return rewrittenNode ?? base.VisitIfStatement(node);
         }
 
         private SyntaxNode RewriteWithBlockIfRequired(SyntaxNode parent,StatementSyntax node)

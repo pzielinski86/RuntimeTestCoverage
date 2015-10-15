@@ -21,145 +21,84 @@ namespace TestCoverageVsPlugin.Tests.UI
     public class CoverageOverviewViewModelTests
     {
         private CoverageOverviewViewModel _sut;
-        private ISolutionExplorer _solutionExplorerMock;
-        private ITestsExtractor _testExtractorMock;
-        private ICoverageSettingsStore _settingsStoreMock;
+        private ITestExplorer _testExplorerMock;
+        private ICoverageSettingsStore _coverageSettingsStoreMock;
 
         [SetUp]
         public void Setup()
         {
-            _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
-            _testExtractorMock = Substitute.For<ITestsExtractor>();
-            _settingsStoreMock = Substitute.For<ICoverageSettingsStore>();
+            _testExplorerMock = Substitute.For<ITestExplorer>();
+            _coverageSettingsStoreMock = Substitute.For<ICoverageSettingsStore>();
 
-            _settingsStoreMock.Read().Returns(new CoverageSettings());
-
-            _sut =new CoverageOverviewViewModel(_solutionExplorerMock,_testExtractorMock,_settingsStoreMock);
+            _sut = new CoverageOverviewViewModel(_testExplorerMock,_coverageSettingsStoreMock);
         }
 
         [Test]
-        public void Should_PopulateWithSolutionTestProjects_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
+        public async void Should_PopulateProjects_With_ProjectsFromTestExplorer()
         {
             // arrange
             var workspace = new AdhocWorkspace();
             var project = workspace.AddProject("foo", LanguageNames.CSharp);
-            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixture]class MathHelperTests{ [Test]void Test(){}}");
-            
-            workspace.AddDocument(project.Id,"MathHelperTests.cs", SourceText.From(testClass.ToString()));
-
-            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax()});
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
-            // act
-            _sut.PopulateWithTestProjects();
-
-            // assert
-            Assert.That(_sut.TestProjects.Count,Is.EqualTo(1));
-            Assert.That(_sut.TestProjects[0].TestProjectSettings.Name, Is.EqualTo("foo"));
-            Assert.IsFalse(_sut.TestProjects[0].TestProjectSettings.IsCoverageEnabled);
-        }
-
-        [Test]
-        public void Should_PopulateTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
-        {
-            // arrange
-            var workspace = new AdhocWorkspace();
-            var project = workspace.AddProject("foo", LanguageNames.CSharp);
-            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixture]class MathHelperTests{ [Test]void Test(){}}");
-
+            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
             workspace.AddDocument(project.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
 
-            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax() });
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
+            var testProject = new TestProject();
+            testProject.Project = project;
+            testProject.IsCoverageEnabled = true;
+            _testExplorerMock.GetTestProjectsAsync().Returns(Task.FromResult(new[] { testProject }));
 
             // act
-            _sut.PopulateWithTestProjects();
-
-            // assert
-            Assert.That(_sut.TestProjects[0].TestFixtures.Length, Is.EqualTo(1));
-            Assert.That(_sut.TestProjects[0].TestFixtures[0].Name, Is.EqualTo("MathHelperTests"));
-        }
-
-        [Test]
-        public void Should_PopulateTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreAvailable()
-        {
-            // arrange
-            var coverageSettings = new CoverageSettings();
-            var testProjectSettings = new TestProjectSettings();
-            coverageSettings.Projects.Add(testProjectSettings);
-            _settingsStoreMock.Read().Returns(coverageSettings);
-
-            testProjectSettings.IsCoverageEnabled = true;
-            testProjectSettings.Name = "foo";
-
-            var workspace = new AdhocWorkspace();
-            var project = workspace.AddProject("foo", LanguageNames.CSharp);
-            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixture]class MathHelperTests{ [Test]void Test(){}}");
-
-            workspace.AddDocument(project.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
-
-            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax() });
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
-            // act
-            _sut.PopulateWithTestProjects();
-
-            // assert
-            Assert.That(_sut.TestProjects[0].TestFixtures.Length, Is.EqualTo(1));
-            Assert.That(_sut.TestProjects[0].TestFixtures[0].Name, Is.EqualTo("MathHelperTests"));
-        }
-
-        [Test]
-        public void Should_PopulateWithTestProjectsStoredInFile_When_StoredSettingsAreAvailable_And_SolutionContainsThatProject()
-        {
-            // arrange
-            var coverageSettings = new CoverageSettings();
-            var testProjectSettings = new TestProjectSettings();
-            coverageSettings.Projects.Add(testProjectSettings);
-            _settingsStoreMock.Read().Returns(coverageSettings);
-
-            testProjectSettings.IsCoverageEnabled = true;
-            testProjectSettings.Name = "foo";
-
-            var workspace = new AdhocWorkspace();
-            var project = workspace.AddProject("foo", LanguageNames.CSharp);
-            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixture]class MathHelperTests{ [Test]void Test(){}}");
-
-            workspace.AddDocument(project.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
-
-            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax() });
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
-
-            // act
-            _sut.PopulateWithTestProjects();
+            await _sut.PopulateWithTestProjectsAsync();
 
             // assert
             Assert.That(_sut.TestProjects.Count, Is.EqualTo(1));
-            Assert.That(_sut.TestProjects[0].TestProjectSettings.Name, Is.EqualTo("foo"));
-            Assert.IsTrue(_sut.TestProjects[0].TestProjectSettings.IsCoverageEnabled);
+            Assert.That(_sut.TestProjects[0].TestProjectSettings.Name,Is.EqualTo("foo"));
+            Assert.That(_sut.TestProjects[0].TestProjectSettings.IsCoverageEnabled, Is.EqualTo(testProject.IsCoverageEnabled));
         }
 
         [Test]
-        public void ShouldNot_PopulateWithTestProjectsStoredInFile_When_StoredSettingsAreAvailable_And_SolutionDoesContainsThatProject()
+        public void Should_PopulateTestFixtures_With_FixturesFromTestExplorer()
         {
             // arrange
-            var coverageSettings = new CoverageSettings();
-            var testProjectSettings = new TestProjectSettings();
-            coverageSettings.Projects.Add(testProjectSettings);
-            _settingsStoreMock.Read().Returns(coverageSettings);
-
-            testProjectSettings.IsCoverageEnabled = true;
-            testProjectSettings.Name = "foo";
-
             var workspace = new AdhocWorkspace();
-            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new ClassDeclarationSyntax[0]);
-            _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
+            var project = workspace.AddProject("foo", LanguageNames.CSharp);
+            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
+            workspace.AddDocument(project.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
+
+            var testProject = new TestProject();
+            testProject.Project = project;
+            testProject.IsCoverageEnabled = true;
+            testProject.TestFixtures = new[] { testClass.GetRoot().GetClassDeclarationSyntax() };
+            _testExplorerMock.GetTestProjectsAsync().Returns(new[] { testProject });
 
             // act
-            _sut.PopulateWithTestProjects();
+            _sut.PopulateWithTestProjectsAsync();
 
             // assert
-            Assert.That(_sut.TestProjects.Count, Is.EqualTo(0));
+            Assert.That(_sut.TestProjects[0].TestFixturesViewModel.Length, Is.EqualTo(1));
+            Assert.That(_sut.TestProjects[0].TestFixturesViewModel[0].Name, Is.EqualTo("MathHelperTests"));
+        }
+
+        [Test]
+        public void Should_ClearData_When_RefreshCommandIsCalled_TwoTimesInRow()
+        {
+            // arrange
+            var workspace = new AdhocWorkspace();
+            var project = workspace.AddProject("foo", LanguageNames.CSharp);
+            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
+            workspace.AddDocument(project.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
+
+            var testProject=new TestProject();
+            testProject.Project = project;
+            testProject.TestFixtures = new[] {testClass.GetRoot().GetClassDeclarationSyntax()};
+            _testExplorerMock.GetTestProjectsAsync().Returns(new[] {testProject});
+
+            // act
+            _sut.RefreshCmd.Execute(null);
+            _sut.RefreshCmd.Execute(null);
+
+            // assert
+            Assert.That(_sut.TestProjects.Count, Is.EqualTo(1));
         }
     }
 }

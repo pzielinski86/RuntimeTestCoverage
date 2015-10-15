@@ -14,71 +14,56 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 {
     public sealed class CoverageOverviewViewModel
     {
-        private readonly ISolutionExplorer _solutionExplorer;
-        private readonly ITestsExtractor _testsExtractor;
+        private readonly ITestExplorer _testExplorer;
         private readonly ICoverageSettingsStore _settingsStore;
 
-        public CoverageOverviewViewModel(ISolutionExplorer solutionExplorer, ITestsExtractor testsExtractor, ICoverageSettingsStore settingsStore)
+        public CoverageOverviewViewModel(ITestExplorer testExplorer, ICoverageSettingsStore settingsStore)
         {
-            _solutionExplorer = solutionExplorer;
-            _testsExtractor = testsExtractor;
+            _testExplorer = testExplorer;
             _settingsStore = settingsStore;
-            TestProjects = new ObservableCollection<TestProject>();
-            RefreshCmd = new DelegateCommand(Refresh);
+            TestProjects = new ObservableCollection<TestProjectViewModel>();
+            RefreshCmd = new DelegateCommand(RefreshAsync);
         }
 
         public ICommand RefreshCmd { get; }
 
-        private void Refresh(object obj)
+        private async void RefreshAsync(object obj)
         {
-            PopulateWithTestProjects();
+            await PopulateWithTestProjectsAsync();
         }
 
-        public async void PopulateWithTestProjects()
+        public async Task PopulateWithTestProjectsAsync()
         {
-            _solutionExplorer.Open();
+            TestProjects.Clear();
 
-            CoverageSettings storedSettings = _settingsStore.Read();
+            var testProjects = await _testExplorer.GetTestProjectsAsync();
 
-            foreach (var project in _solutionExplorer.Solution.Projects)
+            foreach (var testProject in testProjects)
             {
-                var fixtures = await GetProjectTestFixtures(project);
-
-                if (fixtures.Count > 0)
-                    CreateTestProject(project, fixtures, storedSettings);
+                CreateTestProject(testProject);
             }
         }
 
-        private async Task<List<TestFixture>> GetProjectTestFixtures(Project project)
+        private void CreateTestProject(TestProject testProject)
         {
-            var testFixturesInProject = new List<TestFixture>();
+            var testFixturesInDocument = testProject.
+               TestFixtures.Select(x => new TestFixtureViewModel(x.Identifier.ValueText)).
+               ToArray();
 
-            foreach (var document in project.Documents)
+            var testProjectViewModel = new TestProjectViewModel(_settingsStore)
             {
-                SyntaxNode root = await document.GetSyntaxRootAsync();
-                ClassDeclarationSyntax[] testClasses = _testsExtractor.GetTestClasses(root);
-                var testFixturesInDocument = testClasses.Select(x => new TestFixture(x.Identifier.ValueText)).ToArray();
+                TestProjectSettings = new TestProjectSettings
+                {
+                    Name = testProject.Project.Name,
+                    IsCoverageEnabled = testProject.IsCoverageEnabled
+                }
+            };
 
-                testFixturesInProject.AddRange(testFixturesInDocument);
-            }
+            testProjectViewModel.TestFixturesViewModel = testFixturesInDocument;
 
-            return testFixturesInProject;
+            TestProjects.Add(testProjectViewModel);
         }
 
-        private void CreateTestProject(Project project, List<TestFixture> testFixtures, CoverageSettings storedSettings)
-        {
-            var testProject = new TestProject(_settingsStore);
-
-            var storedTestProjectSettings = storedSettings.Projects.FirstOrDefault(x => x.Name == project.Name);
-            if (storedTestProjectSettings == null)
-                storedTestProjectSettings = new TestProjectSettings() {Name = project.Name};
-
-            testProject.TestProjectSettings = storedTestProjectSettings;
-            testProject.TestFixtures = testFixtures.ToArray();
-
-            TestProjects.Add(testProject);
-        }
-
-        public ObservableCollection<TestProject> TestProjects { get; }
+        public ObservableCollection<TestProjectViewModel> TestProjects { get; }
     }
 }

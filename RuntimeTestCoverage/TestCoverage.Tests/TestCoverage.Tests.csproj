@@ -111,6 +111,7 @@
     <Compile Include="Rewrite\AuditVariablesWalkerTests.cs" />
     <Compile Include="Rewrite\SolutionRewriterTests.cs" />
     <Compile Include="TestCaseTests.cs" />
+    <Compile Include="TestExplorerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

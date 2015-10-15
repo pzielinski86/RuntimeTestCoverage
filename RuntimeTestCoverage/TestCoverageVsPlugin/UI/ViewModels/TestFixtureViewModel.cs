@@ -1,8 +1,8 @@
 ﻿namespace TestCoverageVsPlugin.UI.ViewModels
 {
-    public class TestFixture
+    public class TestFixtureViewModel
     {
-        public TestFixture(string name)
+        public TestFixtureViewModel(string name)
         {
             Name = name;
         }

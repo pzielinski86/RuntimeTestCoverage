@@ -7,11 +7,11 @@ using TestCoverageVsPlugin.Annotations;
 
 namespace TestCoverageVsPlugin.UI.ViewModels
 {
-    public sealed class TestProject:INotifyPropertyChanged
+    public sealed class TestProjectViewModel:INotifyPropertyChanged
     {
         private readonly ICoverageSettingsStore _coverageSettingsStore;
 
-        public TestProject(ICoverageSettingsStore coverageSettingsStore)
+        public TestProjectViewModel(ICoverageSettingsStore coverageSettingsStore)
         {
             _coverageSettingsStore = coverageSettingsStore;
             FlagProjectCoverageSettingsCmd = new DelegateCommand(FlagProjectCoverageSettings);
@@ -19,7 +19,7 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 
         public TestProjectSettings TestProjectSettings { get; set; }
 
-        public TestFixture[] TestFixtures { get; set; }
+        public TestFixtureViewModel[] TestFixturesViewModel { get; set; }
 
         public ICommand FlagProjectCoverageSettingsCmd { get; set; }
 

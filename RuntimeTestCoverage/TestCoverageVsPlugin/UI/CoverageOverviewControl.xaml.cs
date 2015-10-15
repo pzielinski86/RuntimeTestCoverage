@@ -46,10 +46,10 @@ namespace TestCoverageVsPlugin.UI
             {
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore=new XmlCoverageSettingsStore(dte.Solution.FileName);
+                ITestExplorer testExplorer=new TestExplorer(solutionExplorer,new NUnitTestExtractor(), settingsStore);
 
-                var coverageOverviewViewModel = new CoverageOverviewViewModel(solutionExplorer, new NUnitTestExtractor(),
-                    settingsStore);
-                coverageOverviewViewModel.PopulateWithTestProjects();
+                var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore);
+                coverageOverviewViewModel.PopulateWithTestProjectsAsync();
 
                 DataContext = coverageOverviewViewModel;
             }
