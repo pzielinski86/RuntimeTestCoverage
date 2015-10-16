@@ -46,12 +46,11 @@ namespace TestCoverage.CoverageCalculation
         {
             StringBuilder scriptBuilder = new StringBuilder();
 
+            ClearAudit(auditVariablesMap, scriptBuilder);
             scriptBuilder.AppendLine(testCase.TestFixture.CreateSetupFixtureCode("testFixture"));
             scriptBuilder.AppendLine("string errorMessage=null;");
 
             scriptBuilder.Append("try\n{\n");
-
-            ClearAudit(auditVariablesMap, scriptBuilder);
             scriptBuilder.AppendLine(testCase.CreateCallTestCode("testFixture"));
 
             scriptBuilder.AppendLine("}");
