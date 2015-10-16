@@ -114,6 +114,7 @@
     <Compile Include="CoverageCalculation\ITestsExtractor.cs" />
     <Compile Include="CoverageCalculation\NUnitTestExtractor.cs" />
     <Compile Include="CoverageCalculation\TestCase.cs" />
+    <Compile Include="CoverageCalculation\TestFixtureDetails.cs" />
     <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="CoverageResult.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />

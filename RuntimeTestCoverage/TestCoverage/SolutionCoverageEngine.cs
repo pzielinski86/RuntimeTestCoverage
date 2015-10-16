@@ -29,11 +29,9 @@ namespace TestCoverage
         public CoverageResult CalculateForAllDocuments()
         {
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
-            string[] unIgnoredProjects = _coverageSettingsStore.GetIgnoredTestProjects();
-            Project[] projects =
-                _solutionExplorer.Solution.Projects.Where(x => unIgnoredProjects.Contains(x.Name))
-                    .ToArray();
-
+            
+            //TODO: Change a method to async and don't use .Result
+            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;  
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore, new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine());

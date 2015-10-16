@@ -19,7 +19,7 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 
         public TestProjectSettings TestProjectSettings { get; set; }
 
-        public TestFixtureViewModel[] TestFixturesViewModel { get; set; }
+        public TestFixtureViewModel[] TestFixtures { get; set; }
 
         public ICommand FlagProjectCoverageSettingsCmd { get; set; }
 

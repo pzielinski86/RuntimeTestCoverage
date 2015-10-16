@@ -7,9 +7,9 @@ namespace TestCoverage.CoverageCalculation
 {
     public class NUnitTestExtractor : ITestsExtractor
     {
-        public TestCase[] GetTestCases(ClassDeclarationSyntax testClass)
+        public TestFixtureDetails GetTestFixtureDetails(ClassDeclarationSyntax fixtureNode)
         {
-            return ExtractTestCases(testClass);
+            return ExtractTestCases(fixtureNode);
         }
 
         public ClassDeclarationSyntax[] GetTestClasses(SyntaxNode root)
@@ -19,10 +19,48 @@ namespace TestCoverage.CoverageCalculation
                 .Select(a => a.Parent.Parent).OfType<ClassDeclarationSyntax>().ToArray();
         }
 
-        private static TestCase ExtractTestCase(ClassDeclarationSyntax testClass, AttributeSyntax attribute, string nameSpace)
+        private TestFixtureDetails ExtractTestCases(ClassDeclarationSyntax testClass)
         {
-            var testCase = new TestCase();
-            var methodDeclarationSyntax = (MethodDeclarationSyntax)attribute.Parent.Parent;
+            var testFixture=new TestFixtureDetails();
+            var namespaceNode = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+            testFixture.Namespace = namespaceNode?.Name.ToString();
+            testFixture.ClassName = testClass.Identifier.ValueText;
+
+            foreach (MethodDeclarationSyntax methodNode in testClass.DescendantNodes().OfType<MethodDeclarationSyntax>())
+            {
+                var methodTestCases = new List<TestCase>();
+
+                foreach (AttributeSyntax attribute in methodNode.DescendantNodes().OfType<AttributeSyntax>())
+                {
+                    if (attribute.Name.ToString() == "Test")
+                    {
+                        var testCase = ExtractTest(attribute, testFixture);
+                        methodTestCases.Add(testCase);
+                    }
+
+                    else if (attribute.Name.ToString() == "TestCase")
+                    {
+                        var testCase = ExtractTestCase(attribute, testFixture);
+                        methodTestCases.Add(testCase);
+                    }
+                    else if (attribute.Name.ToString() == "SetUp")
+                        testFixture.SetupMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+                }
+
+                if (methodTestCases.Count > 0)
+                {
+                    int maxPars = methodTestCases.Max(x => x.Arguments.Length);
+                    testFixture.Cases.AddRange(methodTestCases.Where(x => x.Arguments.Length == maxPars));
+                }
+            }
+
+            return testFixture;
+        }
+        
+        private static TestCase ExtractTestCase(AttributeSyntax attribute, TestFixtureDetails testFixture)
+        {
+            var testCase = new TestCase(testFixture);
+            var methodDeclarationSyntax = GetAttributeMethod(attribute);
 
             testCase.Arguments = new object[attribute.ArgumentList.Arguments.Count];
 
@@ -33,57 +71,23 @@ namespace TestCoverage.CoverageCalculation
             }
 
             testCase.SyntaxNode = methodDeclarationSyntax;
-            testCase.Namespace = nameSpace;
-            testCase.ClassName = testClass.Identifier.Text;
             testCase.MethodName = methodDeclarationSyntax.Identifier.ValueText;
 
             return testCase;
         }
 
-        private TestCase[] ExtractTestCases(ClassDeclarationSyntax testClass)
+        private static MethodDeclarationSyntax GetAttributeMethod(AttributeSyntax attribute)
         {
-            var allTestCases = new List<TestCase>();
-            var namespaceNode = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-            string nameSpace = namespaceNode?.Name.ToString();
-
-            foreach (MethodDeclarationSyntax methodNode in testClass.DescendantNodes().OfType<MethodDeclarationSyntax>())
-            {
-                var methodTestCases = new List<TestCase>();
-
-                foreach (AttributeSyntax attribute in methodNode.DescendantNodes().OfType<AttributeSyntax>())
-                {
-                    if (attribute.Name.ToString() == "Test")
-                    {
-                        var testCase = ExtractTest(testClass, attribute, nameSpace);
-                        methodTestCases.Add(testCase);
-                    }
-
-                    else if (attribute.Name.ToString() == "TestCase")
-                    {
-                        var testCase = ExtractTestCase(testClass, attribute, nameSpace);
-                        methodTestCases.Add(testCase);
-                    }
-                }
-
-                if (methodTestCases.Count > 0)
-                {
-                    int maxPars = methodTestCases.Max(x => x.Arguments.Length);
-                    allTestCases.AddRange(methodTestCases.Where(x => x.Arguments.Length == maxPars));
-                }
-            }
-
-            return allTestCases.ToArray();
+            return (MethodDeclarationSyntax)attribute.Parent.Parent;
         }
 
-        private static TestCase ExtractTest(ClassDeclarationSyntax testClass, AttributeSyntax attribute, string nameSpace)
+        private static TestCase ExtractTest(AttributeSyntax attribute, TestFixtureDetails testFixture)
         {
-            var methodDeclarationSyntax = (MethodDeclarationSyntax)attribute.Parent.Parent;
+            var methodDeclarationSyntax = GetAttributeMethod(attribute);
 
-            var testCase = new TestCase
+            var testCase = new TestCase(testFixture)
             {
                 SyntaxNode = methodDeclarationSyntax,
-                Namespace = nameSpace,
-                ClassName = testClass.Identifier.Text,
                 MethodName = methodDeclarationSyntax.Identifier.ValueText,
                 Arguments = new object[0]
             };

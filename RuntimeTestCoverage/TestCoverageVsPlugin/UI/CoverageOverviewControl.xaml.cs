@@ -38,7 +38,7 @@ namespace TestCoverageVsPlugin.UI
             InitDataContext();
         }
 
-        private void InitDataContext()
+        private async void InitDataContext()
         {
             var dte = (DTE) CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof (DTE));
 
@@ -49,7 +49,8 @@ namespace TestCoverageVsPlugin.UI
                 ITestExplorer testExplorer=new TestExplorer(solutionExplorer,new NUnitTestExtractor(), settingsStore);
 
                 var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore);
-                coverageOverviewViewModel.PopulateWithTestProjectsAsync();
+
+                await coverageOverviewViewModel.PopulateWithTestProjectsAsync();
 
                 DataContext = coverageOverviewViewModel;
             }

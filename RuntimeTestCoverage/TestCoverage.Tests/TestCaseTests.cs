@@ -11,7 +11,7 @@ namespace TestCoverage.Tests
         [SetUp]
         public void Setup()
         {
-            _sut=new TestCase();
+            _sut=new TestCase(null);
         }
 
         [Test]
@@ -21,8 +21,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test();";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments=new object[0];
 
             // act
@@ -39,8 +37,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(\"Hello World!\");";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] {"Hello World!"};
 
             // act
@@ -57,8 +53,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(1954);";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] {1954 };
 
             // act
@@ -75,8 +69,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(null);";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] { null };
 
             // act
@@ -93,8 +85,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(false);";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] {false };
 
             // act
@@ -111,8 +101,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(4141.1);";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] { 4141.1 };
 
             // act
@@ -129,8 +117,6 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(1, 2);";
 
             _sut.MethodName = "Test";
-            _sut.ClassName = "MathHelperTests";
-            _sut.Namespace = "Names";
             _sut.Arguments = new object[] { 1,2  };
 
             // act

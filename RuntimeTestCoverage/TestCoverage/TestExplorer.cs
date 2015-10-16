@@ -17,11 +17,12 @@ namespace TestCoverage
         public TestExplorer(ISolutionExplorer solutionExplorer, ITestsExtractor testsExtractor, ICoverageSettingsStore coverageSettingsStore)
         {
             _solutionExplorer = solutionExplorer;
+            _solutionExplorer.Open();
             _testsExtractor = testsExtractor;
             _coverageSettingsStore = coverageSettingsStore;
         }
 
-        public async Task<TestProject[]> GetTestProjectsAsync()
+        public async Task<TestProject[]> GetAllTestProjectsAsync()
         {
             var testProjects = new List<TestProject>();
             var settings = _coverageSettingsStore.Read();
@@ -46,6 +47,57 @@ namespace TestCoverage
             }
 
             return testProjects.ToArray();
+        }
+
+        public async Task<Project[]> GetAllTestProjectsWithCoveredProjectsAsync()
+        {
+            TestProject[] testProjects = await GetAllTestProjectsAsync();
+
+            var allProjects = GetAllReferencedProjects(testProjects);
+
+            return allProjects;
+        }
+
+        public async Task<Project[]> GetUnignoredTestProjectsWithCoveredProjectsAsync()
+        {
+            TestProject[] unignoredTestProjects = await GetUnignoredTestProjectsAsync();
+
+            return GetAllReferencedProjects(unignoredTestProjects);
+        }
+
+        private Project[] GetAllReferencedProjects(TestProject[] testProjects)
+        {
+            var allProjects = new List<Project>();
+
+            foreach (var testProject in testProjects)
+            {
+                allProjects.Add(testProject.Project);
+
+                AddReferencedProjects(testProject.Project, allProjects);
+            }
+            return allProjects.ToArray();
+        }
+
+        private async Task<TestProject[]> GetUnignoredTestProjectsAsync()
+        {
+            var allTestProjects = await GetAllTestProjectsAsync();
+
+            return allTestProjects.Where(x => x.IsCoverageEnabled).ToArray();
+        }
+
+        private void AddReferencedProjects(Project project, List<Project> allProjects)
+        {
+            foreach (ProjectReference projectReference in project.ProjectReferences)
+            {
+                var foundReferencedProject =
+                    _solutionExplorer.Solution.
+                    Projects.
+                    Single(p => p.Id == projectReference.ProjectId);
+
+                allProjects.Add(foundReferencedProject);
+
+                AddReferencedProjects(foundReferencedProject, allProjects);
+            }
         }
 
         private async Task<ClassDeclarationSyntax[]> GetProjectTestFixtures(Project project)

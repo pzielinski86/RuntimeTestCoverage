@@ -6,10 +6,15 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestCase
     {
+        public TestCase(TestFixtureDetails testFixture)
+        {
+            TestFixture = testFixture;
+        }
+
+        public TestFixtureDetails TestFixture { get; }
+
         public object[] Arguments { get; set; }
-        public string MethodName { get; set; }
-        public string ClassName { get; set; }
-        public string Namespace { get; set; }
+        public string MethodName { get; set; }        
         public MethodDeclarationSyntax SyntaxNode { get; set; }
 
         public string CreateCallTestCode(string instanceName)

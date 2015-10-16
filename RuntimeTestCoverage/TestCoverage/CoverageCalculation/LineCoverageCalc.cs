@@ -153,10 +153,10 @@ namespace TestCoverage.CoverageCalculation
 
         private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, ClassDeclarationSyntax testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string testDocPath)
         {
-            TestCase[] testCases = _testsExtractor.GetTestCases(testClass);
+            TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(testClass);
             var coverage = new List<LineCoverage>();
 
-            foreach (TestCase testCase in testCases)
+            foreach (TestCase testCase in testFixtureDetails.Cases)
             {
                 var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies, testCase, auditVariablesMap);
                 var partialCoverage = GetCoverageFromVariableNames(auditVariablesMap, setVariables, testCase, projectName, testDocPath);
@@ -176,7 +176,7 @@ namespace TestCoverage.CoverageCalculation
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
                 LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocName);
-                if (!testRunResult.AssertionFailed)
+                if (testRunResult.ErrorMessage!=null)
                 {
                     if (lineCoverage.Path == lineCoverage.TestPath && varName != testRunResult.SetAuditVars.Last())
                         lineCoverage.IsSuccess = true;

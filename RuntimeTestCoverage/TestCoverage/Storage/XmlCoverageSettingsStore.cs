@@ -27,14 +27,7 @@ namespace TestCoverage.Storage
 
                 return settings;
             }
-        }
-
-        public string[] GetIgnoredTestProjects()
-        {
-            var settings = Read();
-
-            return settings.Projects.Where(x => !x.IsCoverageEnabled).Select(x => x.Name).ToArray();
-        }
+        }    
 
         public void Update(CoverageSettings coverageSettings)
         {

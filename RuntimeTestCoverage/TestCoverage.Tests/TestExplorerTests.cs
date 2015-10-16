@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,7 +47,7 @@ namespace TestCoverage.Tests
             _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
 
             // act
-            TestProject[] projects=await _sut.GetTestProjectsAsync();
+            TestProject[] projects = await _sut.GetAllTestProjectsAsync();
 
             // assert
             Assert.That(projects.Length, Is.EqualTo(1));
@@ -68,7 +69,7 @@ namespace TestCoverage.Tests
             _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
 
             // act
-            TestProject[] projects = await _sut.GetTestProjectsAsync();
+            TestProject[] projects = await _sut.GetAllTestProjectsAsync();
 
             // assert
             Assert.That(projects[0].TestFixtures.Length, Is.EqualTo(1));
@@ -97,7 +98,7 @@ namespace TestCoverage.Tests
             _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
 
             // act
-            TestProject[] projects = await _sut.GetTestProjectsAsync();
+            TestProject[] projects = await _sut.GetAllTestProjectsAsync();
 
             // assert
             Assert.That(projects[0].TestFixtures.Length, Is.EqualTo(1));
@@ -126,7 +127,7 @@ namespace TestCoverage.Tests
             _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
 
             // act
-            TestProject[] projects = await _sut.GetTestProjectsAsync();
+            TestProject[] projects = await _sut.GetAllTestProjectsAsync();
 
             // assert
             Assert.That(projects.Length, Is.EqualTo(1));
@@ -151,10 +152,41 @@ namespace TestCoverage.Tests
             _solutionExplorerMock.Solution.Returns(workspace.CurrentSolution);
 
             // act
-            TestProject[] projects = await _sut.GetTestProjectsAsync();
+            TestProject[] projects = await _sut.GetAllTestProjectsAsync();
 
             // assert
             Assert.That(projects.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async void Should_ReturnTestProjects_With_ReferencedCoveredProjects()
+        {
+            // arrange            
+            _settingsStoreMock.Read().Returns(new CoverageSettings());
+
+            var workspace = new AdhocWorkspace();
+
+            var nestedCoveredProject = workspace.AddProject("MathHelper.Utils", LanguageNames.CSharp);
+            var coveredProject = workspace.AddProject("MathHelper.Logic", LanguageNames.CSharp);
+            var testProject = workspace.AddProject("MathHelper.Tests", LanguageNames.CSharp);
+
+            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
+            workspace.AddDocument(testProject.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
+
+            Solution solution = workspace.CurrentSolution.AddProjectReference(testProject.Id, new ProjectReference(coveredProject.Id));
+            solution = solution.AddProjectReference(coveredProject.Id, new ProjectReference(nestedCoveredProject.Id));
+
+            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax() });
+            _solutionExplorerMock.Solution.Returns(solution);
+
+            // act
+            Project[] projects = await _sut.GetAllTestProjectsWithCoveredProjectsAsync();
+
+            // assert
+            Assert.That(projects.Length, Is.EqualTo(3));
+            CollectionAssert.Contains(projects.Select(x => x.Name), testProject.Name);
+            CollectionAssert.Contains(projects.Select(x => x.Name), coveredProject.Name);
+            CollectionAssert.Contains(projects.Select(x => x.Name), nestedCoveredProject.Name);
         }
     }
 }

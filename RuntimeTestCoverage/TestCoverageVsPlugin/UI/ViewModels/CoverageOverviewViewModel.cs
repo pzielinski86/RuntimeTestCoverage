@@ -36,7 +36,7 @@ namespace TestCoverageVsPlugin.UI.ViewModels
         {
             TestProjects.Clear();
 
-            var testProjects = await _testExplorer.GetTestProjectsAsync();
+            var testProjects = await _testExplorer.GetAllTestProjectsAsync();
 
             foreach (var testProject in testProjects)
             {
@@ -59,7 +59,7 @@ namespace TestCoverageVsPlugin.UI.ViewModels
                 }
             };
 
-            testProjectViewModel.TestFixturesViewModel = testFixturesInDocument;
+            testProjectViewModel.TestFixtures = testFixturesInDocument;
 
             TestProjects.Add(testProjectViewModel);
         }

@@ -23,7 +23,7 @@ namespace TestCoverage.CoverageCalculation
             string script = CreateRunTestScript(testCase, auditVariablesMap);
 
             var options = new ScriptOptions();
-            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.Namespace);
+            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.TestFixture.Namespace);
 
             ScriptState state;
 
@@ -37,18 +37,16 @@ namespace TestCoverage.CoverageCalculation
             }
 
             var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
-            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
             string errorMessage = (string) state.Variables["errorMessage"].Value;           
 
-            return new TestRunResult(coverageAudit.Keys.ToArray(),!assertionFailed, errorMessage);
+            return new TestRunResult(coverageAudit.Keys.ToArray(),errorMessage);
         }
 
         private static string CreateRunTestScript(TestCase testCase, AuditVariablesMap auditVariablesMap)
         {
             StringBuilder scriptBuilder = new StringBuilder();
 
-            scriptBuilder.AppendLine(string.Format("dynamic testFixture = new {0}();", testCase.ClassName));
-            scriptBuilder.AppendLine("bool assertionFailed=false;");
+            scriptBuilder.AppendLine(testCase.TestFixture.CreateSetupFixtureCode("testFixture"));
             scriptBuilder.AppendLine("string errorMessage=null;");
 
             scriptBuilder.Append("try\n{\n");
@@ -57,7 +55,7 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine(testCase.CreateCallTestCode("testFixture"));
 
             scriptBuilder.AppendLine("}");
-            scriptBuilder.AppendLine("catch(NUnit.Framework.AssertionException e){assertionFailed=true;}");
+            scriptBuilder.AppendLine("catch(NUnit.Framework.AssertionException e){errorMessage=e.Message;}");
             scriptBuilder.AppendLine("catch(System.Exception e){errorMessage=e.Message;}");
 
             StoreAudit(auditVariablesMap, scriptBuilder);

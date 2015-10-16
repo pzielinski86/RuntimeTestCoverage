@@ -45,7 +45,7 @@ namespace TestCoverageVsPlugin.Tests.UI
             var testProject = new TestProject();
             testProject.Project = project;
             testProject.IsCoverageEnabled = true;
-            _testExplorerMock.GetTestProjectsAsync().Returns(Task.FromResult(new[] { testProject }));
+            _testExplorerMock.GetAllTestProjectsAsync().Returns(Task.FromResult(new[] { testProject }));
 
             // act
             await _sut.PopulateWithTestProjectsAsync();
@@ -69,14 +69,14 @@ namespace TestCoverageVsPlugin.Tests.UI
             testProject.Project = project;
             testProject.IsCoverageEnabled = true;
             testProject.TestFixtures = new[] { testClass.GetRoot().GetClassDeclarationSyntax() };
-            _testExplorerMock.GetTestProjectsAsync().Returns(new[] { testProject });
+            _testExplorerMock.GetAllTestProjectsAsync().Returns(new[] { testProject });
 
             // act
             _sut.PopulateWithTestProjectsAsync();
 
             // assert
-            Assert.That(_sut.TestProjects[0].TestFixturesViewModel.Length, Is.EqualTo(1));
-            Assert.That(_sut.TestProjects[0].TestFixturesViewModel[0].Name, Is.EqualTo("MathHelperTests"));
+            Assert.That(_sut.TestProjects[0].TestFixtures.Length, Is.EqualTo(1));
+            Assert.That(_sut.TestProjects[0].TestFixtures[0].Name, Is.EqualTo("MathHelperTests"));
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace TestCoverageVsPlugin.Tests.UI
             var testProject=new TestProject();
             testProject.Project = project;
             testProject.TestFixtures = new[] {testClass.GetRoot().GetClassDeclarationSyntax()};
-            _testExplorerMock.GetTestProjectsAsync().Returns(new[] {testProject});
+            _testExplorerMock.GetAllTestProjectsAsync().Returns(new[] {testProject});
 
             // act
             _sut.RefreshCmd.Execute(null);

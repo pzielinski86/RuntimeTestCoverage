@@ -34,7 +34,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExecutorScriptEngine = Substitute.For<ITestExecutorScriptEngine>();
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], true, null));
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], null));
 
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _lineCoverageCalc = new LineCoverageCalc(_solutionExplorerMock,
@@ -68,7 +68,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         public void Should_ReturnLineCoverage_With_Failure_When_AssertionFails()
         {
             // given
-            AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
+            var auditVariablesMap = new AuditVariablesMap();
             auditVariablesMap.Map["1"] = new AuditVariablePlaceholder("path1", string.Empty, 0);
 
             var rewrittenItemsByProject = new Dictionary<Project, List<RewrittenItemInfo>>();
@@ -84,13 +84,14 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails=new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, false, null));
+            Returns(new TestRunResult(new[] { "1" }, "Null reference exception."));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -122,14 +123,16 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+
+            TestFixtureDetails testFixtureDetails=new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases((ClassDeclarationSyntax)testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails((ClassDeclarationSyntax)testClasses[0]).Returns(testFixtureDetails);
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
                 Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-                Returns(new TestRunResult(new[] { "1", "2" }, false, null));
+                Returns(new TestRunResult(new[] { "1", "2" }, null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -160,10 +163,11 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
             _solutionExplorerMock.GetProjectReferences(project1).Returns(expectedTestProjectReferences);
 
             // when
@@ -195,10 +199,11 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
             _compilerMock.Compile(Arg.Any<IEnumerable<CompilationItem>>(), Arg.Any<AuditVariablesMap>())
                 .Returns(expectedAssemblies);
 
@@ -230,10 +235,11 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             var testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -241,7 +247,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                testMethods[0], Arg.Any<AuditVariablesMap>());
+                testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         }
 
         [Test]
@@ -266,13 +272,16 @@ namespace TestCoverage.Tests.CoverageCalculation
             testClasses[0] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot().GetClassDeclarationSyntax();
             testClasses[1] = CSharpSyntaxTree.Create((CSharpSyntaxNode)syntaxTree1.GetRoot()).GetRoot().GetClassDeclarationSyntax();
 
-            TestCase[] testCases = new TestCase[2] { new TestCase(), new TestCase() };
+            var testFixtureDetails = new TestFixtureDetails();
+            TestCase[] testCases = new TestCase[2] { new TestCase(testFixtureDetails), new TestCase(testFixtureDetails) };
             testCases[0].SyntaxNode = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
             testCases[0].SyntaxNode = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+            
+            testFixtureDetails.Cases.AddRange(testCases);
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testCases);
-            _testsExtractor.GetTestCases(testClasses[1]).Returns(testCases);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
+            _testsExtractor.GetTestFixtureDetails(testClasses[1]).Returns(testFixtureDetails);
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -321,14 +330,15 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClasses = new[] { syntaxTree1.GetRoot().GetClassDeclarationSyntax() };
             MethodDeclarationSyntax testMethod = syntaxTree1.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-            _testsExtractor.GetTestCases(testClasses[0]).Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, false, null));
+            Returns(new TestRunResult(new[] { "1" }, null));
 
             _solutionExplorerMock.GetProjectByDocument(documentPath).Returns(project1);
 
@@ -339,7 +349,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-               testMethods[0], Arg.Any<AuditVariablesMap>());
+               testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         }
 
         [Test]
@@ -363,15 +373,16 @@ namespace TestCoverage.Tests.CoverageCalculation
             _coverageStoreMock.ReadAll().Returns(allSolutionCoverage);
 
             MethodDeclarationSyntax testMethod = testCoveringDocumentTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
-            TestCase[] testMethods = { new TestCase() { SyntaxNode = testMethod } };
+            TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
+            testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
             _testsExtractor.GetTestClasses(documentTree.GetRoot()).Returns(new ClassDeclarationSyntax[0]);
-            _testsExtractor.GetTestCases(testCoveringDocumentTree.GetRoot().GetClassDeclarationSyntax())
-                .Returns(testMethods);
+            _testsExtractor.GetTestFixtureDetails(testCoveringDocumentTree.GetRoot().GetClassDeclarationSyntax())
+                .Returns(testFixtureDetails);
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, false, null));
+            Returns(new TestRunResult(new[] { "1" }, null));
 
             _solutionExplorerMock.GetProjectByDocument(allSolutionCoverage[0].TestDocumentPath).Returns(project1);
 
@@ -381,7 +392,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // then
             _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-               testMethods[0], Arg.Any<AuditVariablesMap>());
+               testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         }
     }
 
