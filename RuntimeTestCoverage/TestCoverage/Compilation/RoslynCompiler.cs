@@ -94,12 +94,14 @@ namespace TestCoverage.Compilation
 
         private static CSharpCompilation Compile(string dllName, SyntaxTree[] allTrees, MetadataReference[] references)
         {
+            var settings = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).
+                         WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
+
             CSharpCompilation compilation = CSharpCompilation.Create(
                 dllName,
                 allTrees,
                 references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
+                settings);
 
             return compilation;
         }
