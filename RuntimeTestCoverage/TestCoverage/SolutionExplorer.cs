@@ -39,8 +39,13 @@ namespace TestCoverage
         {
             foreach (var document in GetAllDocuments())
             {
-                string content = File.ReadAllText(PathHelper.GetRewrittenFilePath(document.FilePath));
-                ExtractAuditVariables(auditVariablesMap, content);
+                var rewrittenFilePath = PathHelper.GetRewrittenFilePath(document.FilePath);
+
+                if (File.Exists(rewrittenFilePath))
+                {
+                    string content = File.ReadAllText(rewrittenFilePath);
+                    ExtractAuditVariables(auditVariablesMap, content);
+                }
             }
         }
 
@@ -65,8 +70,11 @@ namespace TestCoverage
                     continue;
 
                 string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(),PathHelper.GetCoverageDllName(project.Name));
-                Assembly assembly = Assembly.LoadFile(assemblyPath);
-                allAssemblies.Add(assembly);
+                if (File.Exists(assemblyPath))
+                {
+                    Assembly assembly = Assembly.LoadFile(assemblyPath);
+                    allAssemblies.Add(assembly);
+                }
             }
 
             return allAssemblies.ToArray();

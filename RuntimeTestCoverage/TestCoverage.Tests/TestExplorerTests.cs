@@ -188,5 +188,34 @@ namespace TestCoverage.Tests
             CollectionAssert.Contains(projects.Select(x => x.Name), coveredProject.Name);
             CollectionAssert.Contains(projects.Select(x => x.Name), nestedCoveredProject.Name);
         }
+
+        [Test]
+        public async void ShouldNot_DuplicateProjects_Which_Were_ReferencesTwoTimes()
+        {
+            // arrange            
+            _settingsStoreMock.Read().Returns(new CoverageSettings());
+
+            var workspace = new AdhocWorkspace();
+
+            var nestedCoveredProject = workspace.AddProject("MathHelper.Utils", LanguageNames.CSharp);
+            var coveredProject = workspace.AddProject("MathHelper.Logic", LanguageNames.CSharp);
+            var testProject = workspace.AddProject("MathHelper.Tests", LanguageNames.CSharp);
+
+            var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
+            workspace.AddDocument(testProject.Id, "MathHelperTests.cs", SourceText.From(testClass.ToString()));
+
+            Solution solution = workspace.CurrentSolution.AddProjectReference(testProject.Id, new ProjectReference(coveredProject.Id));
+            solution = solution.AddProjectReference(coveredProject.Id, new ProjectReference(nestedCoveredProject.Id));
+            solution = solution.AddProjectReference(testProject.Id, new ProjectReference(nestedCoveredProject.Id));
+
+            _testExtractorMock.GetTestClasses(Arg.Any<SyntaxNode>()).Returns(new[] { testClass.GetRoot().GetClassDeclarationSyntax() });
+            _solutionExplorerMock.Solution.Returns(solution);
+
+            // act
+            Project[] projects = await _sut.GetAllTestProjectsWithCoveredProjectsAsync();
+
+            // assert
+            Assert.That(projects.Length, Is.EqualTo(3));
+        }
     }
 }

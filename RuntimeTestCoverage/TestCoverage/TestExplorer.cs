@@ -75,7 +75,7 @@ namespace TestCoverage
 
                 AddReferencedProjects(testProject.Project, allProjects);
             }
-            return allProjects.ToArray();
+            return allProjects.Distinct().ToArray();
         }
 
         private async Task<TestProject[]> GetUnignoredTestProjectsAsync()

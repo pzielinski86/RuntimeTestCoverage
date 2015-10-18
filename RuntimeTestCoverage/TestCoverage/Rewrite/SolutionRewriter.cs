@@ -44,7 +44,7 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToString());
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString());
                     RewrittenItemInfo rewrittenItemInfo = new RewrittenItemInfo(document.FilePath, rewrittenDocument.SyntaxTree);
 
                     if (!rewrittenItems.ContainsKey(document.Project))
