@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage;
+using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin
 {
@@ -41,9 +42,10 @@ namespace TestCoverageVsPlugin
 
             string solutionPath = _dte.Solution.FullName;
             _solutionExplorer = new SolutionExplorer(solutionPath);
-            _vsSolutionTestCoverage = new VsSolutionTestCoverage(_solutionExplorer,
-                () => new AppDomainSolutionCoverageEngine());
-            _vsSolutionTestCoverage.CalculateForAllDocuments();
+            _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_solutionExplorer,
+                () => new AppDomainSolutionCoverageEngine(),new XmlCoverageStore(solutionPath));
+
+            _vsSolutionTestCoverage.LoadCurrentCoverage();
         }
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {

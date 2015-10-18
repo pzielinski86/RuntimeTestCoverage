@@ -10,7 +10,7 @@ namespace Math
     {
         public static string GetRewrittenFilePath(string documentPath)
         {
-            return documentPath + "_testcoverage1";
+            return documentPath + "_testcoverage";
         }
 
         public static string GetCoverageDllName(string assemblyName)

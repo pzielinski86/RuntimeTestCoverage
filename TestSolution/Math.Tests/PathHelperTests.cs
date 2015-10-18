@@ -21,7 +21,7 @@ namespace Math.Tests
 
 
             string rewrittenPath = PathHelper.GetRewrittenFilePath(path);
-
+ 
 
             Assert.That(rewrittenPath, Is.EqualTo(expectedRewrittenPath));
         }

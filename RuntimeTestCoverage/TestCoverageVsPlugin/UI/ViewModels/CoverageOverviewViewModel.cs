@@ -16,16 +16,26 @@ namespace TestCoverageVsPlugin.UI.ViewModels
     {
         private readonly ITestExplorer _testExplorer;
         private readonly ICoverageSettingsStore _settingsStore;
+        private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
 
-        public CoverageOverviewViewModel(ITestExplorer testExplorer, ICoverageSettingsStore settingsStore)
+        public CoverageOverviewViewModel(ITestExplorer testExplorer, ICoverageSettingsStore settingsStore, IVsSolutionTestCoverage vsSolutionTestCoverage)
         {
             _testExplorer = testExplorer;
             _settingsStore = settingsStore;
+            _vsSolutionTestCoverage = vsSolutionTestCoverage;
             TestProjects = new ObservableCollection<TestProjectViewModel>();
             RefreshCmd = new DelegateCommand(RefreshAsync);
+            ResyncCmd=new DelegateCommand(Resync);
         }
 
         public ICommand RefreshCmd { get; }
+
+        public ICommand ResyncCmd { get; }
+
+        private void Resync(object obj)
+        {
+            _vsSolutionTestCoverage.CalculateForAllDocuments();
+        }
 
         private async void RefreshAsync(object obj)
         {

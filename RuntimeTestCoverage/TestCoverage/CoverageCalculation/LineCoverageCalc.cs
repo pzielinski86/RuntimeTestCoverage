@@ -176,7 +176,7 @@ namespace TestCoverage.CoverageCalculation
                 string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
                 LineCoverage lineCoverage = EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocName);
-                if (testRunResult.ErrorMessage!=null)
+                if (testRunResult.AssertionFailed)
                 {
                     if (lineCoverage.Path == lineCoverage.TestPath && varName != testRunResult.SetAuditVars.Last())
                         lineCoverage.IsSuccess = true;

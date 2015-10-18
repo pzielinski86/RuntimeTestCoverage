@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace TestCoverage
@@ -17,7 +18,8 @@ namespace TestCoverage
             _appDomain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
             Type engineType = typeof (SolutionCoverageEngine);
 
-            _coverageEngine = (SolutionCoverageEngine)_appDomain.CreateInstanceFromAndUnwrap(engineType.Assembly.ManifestModule.Name,
+            string path = Path.Combine(Directory.GetCurrentDirectory(), engineType.Assembly.ManifestModule.Name);
+            _coverageEngine = (SolutionCoverageEngine)_appDomain.CreateInstanceFromAndUnwrap(path,
                 engineType.FullName);            
         }
 

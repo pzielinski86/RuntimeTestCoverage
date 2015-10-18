@@ -6,11 +6,11 @@ using TestCoverage.CoverageCalculation;
 
 namespace TestCoverage.Storage
 {
-    public class FileCoverageStore : ICoverageStore
+    public class XmlCoverageStore : ICoverageStore
     {
         private readonly string _filePath;
 
-        public FileCoverageStore(string solutionPath)
+        public XmlCoverageStore(string solutionPath)
         {
             string solutionDir = Path.GetDirectoryName(solutionPath);
             string solutionName = Path.GetFileNameWithoutExtension(solutionPath);

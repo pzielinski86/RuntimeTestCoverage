@@ -227,6 +227,7 @@
   <ItemGroup>
     <Compile Include="CoverageDot.cs" />
     <Compile Include="CoverageDotDrawer.cs" />
+    <Compile Include="IVsSolutionTestCoverage.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="UI\CoverageOverview.cs" />
     <Compile Include="UI\CoverageOverviewCommand.cs" />

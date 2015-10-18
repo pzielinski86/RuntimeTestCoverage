@@ -17,7 +17,7 @@ namespace Math
                 throw new ArgumentOutOfRangeException();
             }
 
-            return a / b;
+            return a / b+1;
         }
 
 

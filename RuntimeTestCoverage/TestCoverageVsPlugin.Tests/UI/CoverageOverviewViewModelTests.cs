@@ -30,7 +30,7 @@ namespace TestCoverageVsPlugin.Tests.UI
             _testExplorerMock = Substitute.For<ITestExplorer>();
             _coverageSettingsStoreMock = Substitute.For<ICoverageSettingsStore>();
 
-            _sut = new CoverageOverviewViewModel(_testExplorerMock,_coverageSettingsStoreMock);
+            _sut = new CoverageOverviewViewModel(_testExplorerMock,_coverageSettingsStoreMock,null);
         }
 
         [Test]

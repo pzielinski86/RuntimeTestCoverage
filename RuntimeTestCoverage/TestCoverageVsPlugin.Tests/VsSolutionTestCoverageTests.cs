@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Media.Media3D;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin.Tests
 {
@@ -15,57 +17,83 @@ namespace TestCoverageVsPlugin.Tests
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ISolutionExplorer _solutionExplorerMock;
-            
+        private ICoverageStore _coverageStoreMock;
+
         [SetUp]
         public void Setup()
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
+            _coverageStoreMock = Substitute.For<ICoverageStore>();
 
-            _sut =new VsSolutionTestCoverage(_solutionExplorerMock, ()=> _solutionCoverageEngineMock);
+            _sut =new VsSolutionTestCoverage(_solutionExplorerMock, ()=> _solutionCoverageEngineMock,_coverageStoreMock);
         }
 
         [Test]
-        public void CalculateForDocument_Should_ClearCoverageForCurrentDocument()
+        public void LoadCurrentCoverage_Should_LoadDataForAllDocuments()
         {
             // arrange
-            const string documentPath = "MathHelperTests.cs";
-            var lineCoverage=new LineCoverage();
-            lineCoverage.TestPath = lineCoverage.Path = "CurrentProject.MathHelperTests";
+            var doc1Coverage = new LineCoverage {DocumentPath = "doc1.cs"};
+            var doc2Coverage = new LineCoverage { DocumentPath = "doc2.cs" };
 
-            _sut.SolutionCoverageByDocument.Add(documentPath,new List<LineCoverage>() { lineCoverage });
-            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
-                Returns(new CoverageResult(new LineCoverage[0]));
+            _coverageStoreMock.ReadAll().Returns(new[] {doc1Coverage, doc2Coverage});
+
             // act
-            _sut.CalculateForDocument("CurrentProject",documentPath,string.Empty);
+            _sut.LoadCurrentCoverage();
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(0));
+            Assert.That(_sut.SolutionCoverageByDocument.Count,Is.EqualTo(2));
+            Assert.That(_sut.SolutionCoverageByDocument["doc1.cs"].Count,Is.EqualTo(1));
+            Assert.That(_sut.SolutionCoverageByDocument["doc2.cs"].Count, Is.EqualTo(1));
+
+            Assert.That(_sut.SolutionCoverageByDocument["doc1.cs"].First(), Is.EqualTo(doc1Coverage));
+            Assert.That(_sut.SolutionCoverageByDocument["doc2.cs"].First(), Is.EqualTo(doc2Coverage));
         }
 
         [Test]
-        public void CalculateForDocument_Should_ClearCoverageOfCodeCoveredByTest()
+        public void LoadCurrentCoverage_Should_ClearPreviousCoverage_BeforeLoadingDataFromStore()
         {
             // arrange
-            const string documentPath = "MathHelperTests.cs";
+            var doc1Coverage = new LineCoverage { DocumentPath = "doc1.cs" };
 
-            var testLineCoverage = new LineCoverage();
-            testLineCoverage.Path = "CurrentProject.MathHelperTests";
-            testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
-
-            var codeLineCoverage = new LineCoverage();
-            codeLineCoverage.Path = "CurrentProject.MathHelper";
-            codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
-
-            _sut.SolutionCoverageByDocument.Add(documentPath, new List<LineCoverage>() { testLineCoverage,codeLineCoverage });
-            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
-                Returns(new CoverageResult(new LineCoverage[0]));
+            _coverageStoreMock.ReadAll().Returns(new[] { doc1Coverage });
+            _sut.SolutionCoverageByDocument.Add("oldDocument.cs",new List<LineCoverage>());
 
             // act
-            _sut.CalculateForDocument("CurrentProject",documentPath, string.Empty);
+            _sut.LoadCurrentCoverage();
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(0));
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(1));
+            Assert.That(_sut.SolutionCoverageByDocument.Keys.First(), Is.EqualTo("doc1.cs"));
+        }
+
+        [Test]
+        public void CalculateForDocument_Should_RemvoeOldCoverageValues()
+        {
+            // arrange
+            const string testDocumentPath = "MathHelperTests.cs";
+
+            var oldTestLineCoverage = new LineCoverage();
+            oldTestLineCoverage.DocumentPath = testDocumentPath;
+            oldTestLineCoverage.Path = "CurrentProject.MathHelperTests";
+            oldTestLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            var newTestLineCoverage = new LineCoverage();
+            newTestLineCoverage.DocumentPath = testDocumentPath;
+            oldTestLineCoverage.Path = "CurrentProject.MathHelperTests";
+            oldTestLineCoverage.TestPath = "CurrentProject.MathHelperTests";
+
+            _sut.SolutionCoverageByDocument.Add(testDocumentPath, new List<LineCoverage>() { oldTestLineCoverage });
+
+            _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
+                Returns(new CoverageResult(new [] { newTestLineCoverage}));
+
+            // act
+            _sut.CalculateForDocument("CurrentProject", testDocumentPath, string.Empty);
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(1));
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].First(), Is.EqualTo(newTestLineCoverage));
         }
 
         [Test]

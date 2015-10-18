@@ -34,7 +34,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExecutorScriptEngine = Substitute.For<ITestExecutorScriptEngine>();
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], null));
+                Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0],false, null));
 
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _lineCoverageCalc = new LineCoverageCalc(_solutionExplorerMock,
@@ -91,7 +91,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testsExtractor.GetTestFixtureDetails(testClasses[0]).Returns(testFixtureDetails);
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, "Null reference exception."));
+            Returns(new TestRunResult(new[] { "1" }, true,null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -132,7 +132,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
                 Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-                Returns(new TestRunResult(new[] { "1", "2" }, null));
+                Returns(new TestRunResult(new[] { "1", "2" }, false,null));
 
             // when
             RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
@@ -338,7 +338,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, null));
+            Returns(new TestRunResult(new[] { "1" }, false,null));
 
             _solutionExplorerMock.GetProjectByDocument(documentPath).Returns(project1);
 
@@ -382,7 +382,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
             Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
-            Returns(new TestRunResult(new[] { "1" }, null));
+            Returns(new TestRunResult(new[] { "1" },false, null));
 
             _solutionExplorerMock.GetProjectByDocument(allSolutionCoverage[0].TestDocumentPath).Returns(project1);
 
@@ -395,5 +395,4 @@ namespace TestCoverage.Tests.CoverageCalculation
                testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         }
     }
-
 }

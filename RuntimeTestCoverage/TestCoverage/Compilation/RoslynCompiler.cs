@@ -50,7 +50,7 @@ namespace TestCoverage.Compilation
         {
             var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 
-            var references = new[] { MetadataReference.CreateFromFile(Assembly.Load("mscorlib").Location) };
+            var references = new[] { MetadataReference.CreateFromFile(typeof(Type).Assembly.Location) };
 
             CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
 

@@ -18,7 +18,7 @@ namespace TestCoverage
         public void Init(string solutionPath)
         {
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
-            _coverageStore = new FileCoverageStore(solutionPath);
+            _coverageStore = new XmlCoverageStore(solutionPath);
             _solutionExplorer = new SolutionExplorer(solutionPath);
             var settingsStore = new XmlCoverageSettingsStore(solutionPath);
             _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), settingsStore);
@@ -29,9 +29,9 @@ namespace TestCoverage
         public CoverageResult CalculateForAllDocuments()
         {
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
-            
+
             //TODO: Change a method to async and don't use .Result
-            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;  
+            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
             var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore, new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine());
@@ -44,6 +44,10 @@ namespace TestCoverage
 
         public CoverageResult CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
+            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
+            if (projects.All(x => x.Name != projectName))
+                return new CoverageResult(new LineCoverage[0]);
+
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(projectName, documentPath, documentContent);
 

@@ -149,7 +149,7 @@
     <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
     <Compile Include="Storage\AllowAllAssemblyVersionsDeserializationBinder.cs" />
     <Compile Include="Storage\CoverageSettings.cs" />
-    <Compile Include="Storage\FileCoverageStore.cs" />
+    <Compile Include="Storage\XmlCoverageStore.cs" />
     <Compile Include="Storage\ICoverageSettingsStore.cs" />
     <Compile Include="Storage\ICoverageStore.cs" />
     <Compile Include="Storage\TestProjectSettings.cs" />

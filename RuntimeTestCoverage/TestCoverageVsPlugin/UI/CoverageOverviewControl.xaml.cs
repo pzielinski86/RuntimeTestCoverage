@@ -30,7 +30,7 @@ namespace TestCoverageVsPlugin.UI
 
             this.InitializeComponent();
             this.Loaded += CoverageOverviewControl_Loaded;
- 
+
         }
 
         private void CoverageOverviewControl_Loaded(object sender, RoutedEventArgs e)
@@ -40,15 +40,18 @@ namespace TestCoverageVsPlugin.UI
 
         private async void InitDataContext()
         {
-            var dte = (DTE) CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof (DTE));
+            var dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
 
             if (!string.IsNullOrEmpty(dte.Solution.FileName))
             {
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
-                ICoverageSettingsStore settingsStore=new XmlCoverageSettingsStore(dte.Solution.FileName);
-                ITestExplorer testExplorer=new TestExplorer(solutionExplorer,new NUnitTestExtractor(), settingsStore);
+                ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore(dte.Solution.FileName);
+                ITestExplorer testExplorer = new TestExplorer(solutionExplorer, new NUnitTestExtractor(), settingsStore);
+                var xmlCoverageStore = new XmlCoverageStore(dte.Solution.FileName);
 
-                var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore);
+                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionExplorer, () => new AppDomainSolutionCoverageEngine(), xmlCoverageStore);
+
+                var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore, vsSolutionTestCoverage);
 
                 await coverageOverviewViewModel.PopulateWithTestProjectsAsync();
 
