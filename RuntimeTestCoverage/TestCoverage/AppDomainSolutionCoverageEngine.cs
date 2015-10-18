@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace TestCoverage
 {
-    public sealed class AppDomainSolutionCoverageEngine:ISolutionCoverageEngine,IDisposable
+    public sealed class AppDomainSolutionCoverageEngine:ISolutionCoverageEngine
     {
         private ISolutionCoverageEngine _coverageEngine;
         private readonly AppDomain _appDomain;
@@ -55,6 +55,7 @@ namespace TestCoverage
         public void Dispose()
         {
             _coverageEngine = null;
+
             AppDomain.Unload(_appDomain);
         }
     }

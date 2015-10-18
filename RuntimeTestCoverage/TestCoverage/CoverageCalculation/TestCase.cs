@@ -13,7 +13,7 @@ namespace TestCoverage.CoverageCalculation
 
         public TestFixtureDetails TestFixture { get; }
 
-        public object[] Arguments { get; set; }
+        public string[] Arguments { get; set; }
         public string MethodName { get; set; }        
         public MethodDeclarationSyntax SyntaxNode { get; set; }
 
@@ -24,12 +24,8 @@ namespace TestCoverage.CoverageCalculation
             stringBuilder.AppendFormat("{0}.{1}(", instanceName, MethodName);
 
             for (int i = 0; i < Arguments.Length; i++)
-            {
-                if (Arguments[i] is string)
-                    stringBuilder.AppendFormat("\"{0}\"", Arguments[i]);
-                else if (Arguments[i] is bool)
-                    stringBuilder.Append(Arguments[i].ToString().ToLower());
-                else if (Arguments[i] == null)
+            {         
+                if (Arguments[i] == null)
                     stringBuilder.Append("null");
                 else
                     stringBuilder.Append(Arguments[i]);

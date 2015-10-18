@@ -44,13 +44,13 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public void ShouldExtract_TestCase_With_Parameters()
+        public void ShouldExtract_TestCase_With_Bool_Parameter()
         {
             // arrange
             const string code = @"namespace Code{
                             public class Tests
                             {
-	                            [TestCase(1,""Test"",true)]
+	                            [TestCase(true)]
 	                            public void TestSomething1()
 	                            {
 
@@ -65,10 +65,86 @@ namespace TestCoverage.Tests
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
-            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(3));
-            Assert.That(testMethods[0].Arguments[0],Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[1], Is.EqualTo("Test"));
-            Assert.That(testMethods[0].Arguments[2], Is.EqualTo(true));
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("true"));
+        }
+
+        [Test]
+        public void ShouldExtract_TestCase_With_String_Parameter()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(""Test"")]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+
+            // assert
+            Assert.That(testMethods.Count, Is.EqualTo(1));
+            Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("\"Test\""));
+        }
+
+        [Test]
+        public void ShouldExtract_TestCase_With_Integer_Expression_Parameter()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(5+9)]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+
+            // assert
+            Assert.That(testMethods.Count, Is.EqualTo(1));
+            Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("5+9"));
+        }
+
+        [Test]
+        public void ShouldExtract_TestCase_With_PositiveIntegerParameter()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(1]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+
+            // assert
+            Assert.That(testMethods.Count, Is.EqualTo(1));
+            Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("1"));
         }
 
         [Test]

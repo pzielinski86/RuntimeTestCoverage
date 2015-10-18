@@ -21,7 +21,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test();";
 
             _sut.MethodName = "Test";
-            _sut.Arguments=new object[0];
+            _sut.Arguments=new string[0];
 
             // act
             string code=_sut.CreateCallTestCode("testExecutor");
@@ -37,7 +37,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(\"Hello World!\");";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] {"Hello World!"};
+            _sut.Arguments = new[] {"\"Hello World!\""};
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");
@@ -53,7 +53,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(1954);";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] {1954 };
+            _sut.Arguments = new string[] {"1954" };
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");
@@ -69,7 +69,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(null);";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] { null };
+            _sut.Arguments = new string[] { null };
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");
@@ -85,7 +85,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(false);";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] {false };
+            _sut.Arguments = new string[] {"false" };
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");
@@ -101,7 +101,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(4141.1);";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] { 4141.1 };
+            _sut.Arguments = new string[] { "4141.1" };
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");
@@ -117,7 +117,7 @@ namespace TestCoverage.Tests
             const string expectedCode = "testExecutor.Test(1, 2);";
 
             _sut.MethodName = "Test";
-            _sut.Arguments = new object[] { 1,2  };
+            _sut.Arguments = new string[] { "1","2"  };
 
             // act
             string code = _sut.CreateCallTestCode("testExecutor");

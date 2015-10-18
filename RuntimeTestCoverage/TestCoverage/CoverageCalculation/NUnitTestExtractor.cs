@@ -62,12 +62,12 @@ namespace TestCoverage.CoverageCalculation
             var testCase = new TestCase(testFixture);
             var methodDeclarationSyntax = GetAttributeMethod(attribute);
 
-            testCase.Arguments = new object[attribute.ArgumentList.Arguments.Count];
+            testCase.Arguments = new string[attribute.ArgumentList.Arguments.Count];
 
             for (int i = 0; i < testCase.Arguments.Length; i++)
             {
                 AttributeArgumentSyntax testCaseArg = attribute.ArgumentList.Arguments[i];
-                testCase.Arguments[i] = testCaseArg.Expression.GetFirstToken().Value;
+                testCase.Arguments[i] = testCaseArg.Expression.GetText().ToString();
             }
 
             testCase.SyntaxNode = methodDeclarationSyntax;
@@ -89,7 +89,7 @@ namespace TestCoverage.CoverageCalculation
             {
                 SyntaxNode = methodDeclarationSyntax,
                 MethodName = methodDeclarationSyntax.Identifier.ValueText,
-                Arguments = new object[0]
+                Arguments = new string[0]
             };
 
             return testCase;
