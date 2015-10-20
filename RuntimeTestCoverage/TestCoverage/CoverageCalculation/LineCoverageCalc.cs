@@ -50,7 +50,7 @@ namespace TestCoverage.CoverageCalculation
                     foreach (ClassDeclarationSyntax testClass in _testsExtractor.GetTestClasses(rewrittenItem.SyntaxTree.GetRoot()))
                     {
                         var partialCoverage = RunAllTests(projectReferences, testClass, assemblies,
-                                                                           rewritenResult.AuditVariablesMap, project.Name, rewrittenItem.DocumentPath);
+                                                                           rewritenResult.AuditVariablesMap, project, rewrittenItem.DocumentPath);
 
                         finalCoverage.AddRange(partialCoverage);
                     }
@@ -76,7 +76,7 @@ namespace TestCoverage.CoverageCalculation
                 foreach (var classDeclarationSyntax in testDocument.Value)
                 {
                     var partialCoverage =
-                    RunAllTests(projectReferences, classDeclarationSyntax, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, testProject.Name, testDocument.Key);
+                    RunAllTests(projectReferences, classDeclarationSyntax, allAssemblies.ToArray(), rewrittenDocument.AuditVariablesMap, testProject, testDocument.Key);
 
                     finalCoverage.AddRange(partialCoverage);
                 }
@@ -151,15 +151,18 @@ namespace TestCoverage.CoverageCalculation
             return lineCoverage;
         }
 
-        private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, ClassDeclarationSyntax testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, string projectName, string testDocPath)
+        private LineCoverage[] RunAllTests(MetadataReference[] testProjectReferences, ClassDeclarationSyntax testClass, Assembly[] assemblies, AuditVariablesMap auditVariablesMap, Project project, string testDocPath)
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(testClass);
+            string testsProjectName = PathHelper.GetCoverageDllName(project.Name);
+            testFixtureDetails.AssemblyName = assemblies.Single(x => x.GetName().Name == testsProjectName).FullName;
+
             var coverage = new List<LineCoverage>();
 
             foreach (TestCase testCase in testFixtureDetails.Cases)
             {
                 var setVariables = _testExecutorScriptEngine.RunTest(testProjectReferences, assemblies, testCase, auditVariablesMap);
-                var partialCoverage = GetCoverageFromVariableNames(auditVariablesMap, setVariables, testCase, projectName, testDocPath);
+                var partialCoverage = GetCoverageFromVariableNames(auditVariablesMap, setVariables, testCase, project.Name, testDocPath);
                 coverage.AddRange(partialCoverage);
             }
 

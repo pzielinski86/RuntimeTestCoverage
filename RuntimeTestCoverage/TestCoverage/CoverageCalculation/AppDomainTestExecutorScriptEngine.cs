@@ -15,15 +15,15 @@ namespace TestCoverage.CoverageCalculation
 {
     public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        public TestRunResult RunTest(MetadataReference[] references, 
-            Assembly[] assemblies, 
-            TestCase testCase, 
+        public TestRunResult RunTest(MetadataReference[] references,
+            Assembly[] assemblies,
+            TestCase testCase,
             AuditVariablesMap auditVariablesMap)
-        {                        
+        {
             string script = CreateRunTestScript(testCase, auditVariablesMap);
 
             var options = new ScriptOptions();
-            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.TestFixture.Namespace);
+            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.TestFixture.Namespace, "System", "System.Reflection");
 
             ScriptState state;
 
@@ -37,10 +37,10 @@ namespace TestCoverage.CoverageCalculation
             }
 
             var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
-            string errorMessage = (string) state.Variables["errorMessage"].Value;
-            bool assertionFailed = (bool) state.Variables["assertionFailed"].Value;        
+            string errorMessage = (string)state.Variables["errorMessage"].Value;
+            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
 
-            return new TestRunResult(coverageAudit.Keys.ToArray(), assertionFailed,errorMessage);
+            return new TestRunResult(coverageAudit.Keys.ToArray(), assertionFailed, errorMessage);
         }
 
         private static string CreateRunTestScript(TestCase testCase, AuditVariablesMap auditVariablesMap)
@@ -56,8 +56,13 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine(testCase.CreateCallTestCode("testFixture"));
 
             scriptBuilder.AppendLine("}");
-            scriptBuilder.AppendLine("catch(NUnit.Framework.AssertionException e){assertionFailed=true;}");
-            scriptBuilder.AppendLine("catch(System.Exception e){errorMessage=e.Message;}");
+            scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
+                                     "{" +
+                                     "if(e.InnerException is NUnit.Framework.AssertionException)" +
+                                     "assertionFailed=true; " +
+                                     "else " +
+                                     "errorMessage=e.Message;" +
+                                     "}");
 
             StoreAudit(auditVariablesMap, scriptBuilder);
 
@@ -70,7 +75,7 @@ namespace TestCoverage.CoverageCalculation
                 auditVariablesMap.AuditVariablesClassName,
                 auditVariablesMap.AuditVariablesDictionaryName));
         }
- 
+
         private static void ClearAudit(AuditVariablesMap auditVariablesMap, StringBuilder scriptBuilder)
         {
             scriptBuilder.AppendLine(string.Format("{0}.{1}.Clear();",

@@ -14,16 +14,19 @@ namespace TestCoverage.CoverageCalculation
         public List<TestCase> Cases { get; set; }
         public string ClassName { get; set; }
         public string Namespace { get; set; }
+        public string AssemblyName { get; set; }
         public string SetupMethodName { get; set; }
+        public string ClassScriptTypeName => "testFixtureType";
 
         public string CreateSetupFixtureCode(string instanceName)
         {
             var codeBuilder = new StringBuilder();
 
-            codeBuilder.AppendLine($"dynamic {instanceName} = new {ClassName}();");
+            codeBuilder.AppendLine($"Type {ClassScriptTypeName} = Type.GetType(\"{Namespace}.{ClassName},{AssemblyName}\");");
+            codeBuilder.AppendLine($"object {instanceName} = System.Activator.CreateInstance(testFixtureType);");
 
             if (SetupMethodName != null)
-                codeBuilder.AppendLine($"{instanceName}.{SetupMethodName}();");
+                codeBuilder.AppendLine($"{ClassScriptTypeName}.GetMethod(\"{SetupMethodName}\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke({instanceName}, null);");
 
             return codeBuilder.ToString();
         }

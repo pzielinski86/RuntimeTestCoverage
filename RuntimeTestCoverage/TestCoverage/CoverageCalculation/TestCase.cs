@@ -21,7 +21,7 @@ namespace TestCoverage.CoverageCalculation
         {
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendFormat("{0}.{1}(", instanceName, MethodName);
+            stringBuilder.Append($"{TestFixture.ClassScriptTypeName}.GetMethod(\"{MethodName}\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke({instanceName}, new object[]{{");
 
             for (int i = 0; i < Arguments.Length; i++)
             {         
@@ -34,7 +34,7 @@ namespace TestCoverage.CoverageCalculation
                     stringBuilder.Append(", ");
             }
 
-            stringBuilder.Append(");");
+            stringBuilder.Append("});");
 
             return stringBuilder.ToString();
         }

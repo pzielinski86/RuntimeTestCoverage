@@ -11,8 +11,11 @@ namespace TestCoverage.Tests
         {
             // arrange
             var sut=new TestFixtureDetails();
-            const string expectedCode = "dynamic testInstance = new MathHelperTests();\r\n";
+            const string expectedCode = "Type testFixtureType = Type.GetType(\"Tests.MathHelperTests,Tests, Version=1.0.0.0\");\r\n" +
+                                         "object testInstance = System.Activator.CreateInstance(testFixtureType);\r\n";
             sut.ClassName = "MathHelperTests";
+            sut.Namespace = "Tests";
+            sut.AssemblyName = "Tests, Version=1.0.0.0";
 
             // act
             string code = sut.CreateSetupFixtureCode("testInstance");
@@ -26,7 +29,7 @@ namespace TestCoverage.Tests
         {
             // arrange
             var sut = new TestFixtureDetails();
-            const string expectedCode = "testInstance.Init();";
+            const string expectedCode = "testFixtureType.GetMethod(\"Init\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testInstance, null);";
             sut.ClassName = "MathHelperTests";
             sut.SetupMethodName = "Init";
 

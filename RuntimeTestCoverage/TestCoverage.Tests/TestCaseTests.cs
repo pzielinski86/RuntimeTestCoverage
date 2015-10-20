@@ -11,14 +11,14 @@ namespace TestCoverage.Tests
         [SetUp]
         public void Setup()
         {
-            _sut=new TestCase(null);
+            _sut=new TestCase(new TestFixtureDetails());
         }
 
         [Test]
         public void Should_Call_TestWithoutParameters()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test();";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{});";
 
             _sut.MethodName = "Test";
             _sut.Arguments=new string[0];
@@ -34,7 +34,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithString()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(\"Hello World!\");";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{\"Hello World!\"});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new[] {"\"Hello World!\""};
@@ -50,7 +50,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithInteger()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(1954);";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{1954});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] {"1954" };
@@ -66,7 +66,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithNull()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(null);";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{null});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] { null };
@@ -82,7 +82,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithBool()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(false);";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{false});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] {"false" };
@@ -98,7 +98,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithFloat()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(4141.1);";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{4141.1});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] { "4141.1" };
@@ -114,7 +114,7 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithTwoParameters()
         {
             // arrange
-            const string expectedCode = "testExecutor.Test(1, 2);";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{1, 2});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] { "1","2"  };
