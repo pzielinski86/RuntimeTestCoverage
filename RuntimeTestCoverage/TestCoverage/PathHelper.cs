@@ -7,7 +7,7 @@ namespace TestCoverage
     {
         public static string GetRewrittenFilePath(string documentPath)
         {
-            return documentPath + "_testcoverage";
+            return documentPath + ".coverage";
         }
 
         public static string GetCoverageDllName(string assemblyName)

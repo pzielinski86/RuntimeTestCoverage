@@ -13,7 +13,7 @@ namespace TestCoverage.Storage
             string solutionDir = Path.GetDirectoryName(solutionPath);
             string solutionName = Path.GetFileNameWithoutExtension(solutionPath);
 
-            _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageSettings.xml");
+            _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageSettings.coverage");
         }
         public CoverageSettings Read()
         {

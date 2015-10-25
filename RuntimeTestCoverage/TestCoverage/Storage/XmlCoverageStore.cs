@@ -15,7 +15,7 @@ namespace TestCoverage.Storage
             string solutionDir = Path.GetDirectoryName(solutionPath);
             string solutionName = Path.GetFileNameWithoutExtension(solutionPath);
 
-            _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageStore");
+            _filePath = Path.Combine(solutionDir, $"{solutionName}.coverage");
         }
 
         public void Append(string documentPath,IEnumerable<LineCoverage> coverage)

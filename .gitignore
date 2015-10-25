@@ -3,7 +3,7 @@
 
 # User-specific files
 *.suo
-*.cs_testcoverage
+*.coverage
 *.jrs
 *.chk
 *.edb
@@ -213,4 +213,3 @@ FakesAssemblies/
 /lines.lc
 /RuntimeTestCoverage/LineCounter.exe
 /RuntimeTestCoverage/lines.lc
-TestSolution/TestSolution_CoverageStore

@@ -14,7 +14,7 @@ namespace TestCoverage.Tests
         public void GetRewrittenFilePath()
         {
             const string path = "c:\test.dll";
-            const string expectedRewrittenPath = "c:\test.dll_testcoverage";
+            const string expectedRewrittenPath = "c:\test.dll.coverage";
 
             string rewrittenPath=PathHelper.GetRewrittenFilePath(path);
             
