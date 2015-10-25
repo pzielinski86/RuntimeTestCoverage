@@ -1,21 +1,28 @@
 ﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NSubstitute;
 using NUnit.Framework;
+using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
 
 namespace TestCoverage.Tests
 {
+   
     [TestFixture]
     public class NUnitTestExtractorTests
     {
         private NUnitTestExtractor _sut;
+        private ISemanticModel _semanticModelMock;
 
         [SetUp]
         public void Setup()
         {
             _sut = new NUnitTestExtractor();
+            _semanticModelMock = Substitute.For<ISemanticModel>();
+            _semanticModelMock.GetSymbolName(Arg.Any<SyntaxNode>()).Returns((string)null);
         }
 
         [Test]
@@ -35,7 +42,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testCases = _sut.GetTestFixtureDetails(tree);
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
             Assert.That(testCases.Cases.Count, Is.EqualTo(1));
@@ -60,7 +67,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
@@ -86,7 +93,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
@@ -112,13 +119,39 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
             Assert.That(testMethods[0].Arguments[0], Is.EqualTo("5+9"));
+        }
+
+        [Test]
+        public void Should_ResolveTypeInTestCase_When_ItsNotLiteral()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(Math.Enums.Constants.PI)]
+	                            public void TestSomething1(float pi)
+	                            {
+
+	                            }	
+                            }}";
+            
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+            var attribute = tree.DescendantNodes().OfType<AttributeArgumentSyntax>().Single();
+            _semanticModelMock.GetSymbolName(attribute.Expression).Returns("Math.Enums.Constants.PI");
+
+            // act
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
+
+            // assert
+            Assert.That(testMethods.Count, Is.EqualTo(1));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("Math.Enums.Constants.PI"));
         }
 
         [Test]
@@ -138,7 +171,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
@@ -165,11 +198,11 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(3));            
+            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(3));
         }
 
         [Test]
@@ -196,7 +229,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(2));
@@ -221,7 +254,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testCases = _sut.GetTestFixtureDetails(tree);
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
             Assert.That(testCases.Cases.Count, Is.EqualTo(1));
@@ -246,7 +279,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(1));
@@ -268,7 +301,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree).Cases;
+            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
             Assert.That(testMethods.Count, Is.EqualTo(0));
@@ -324,7 +357,7 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testFixtureDetails = _sut.GetTestFixtureDetails(tree);
+            var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
             Assert.IsNull(testFixtureDetails.SetupMethodName);
@@ -346,10 +379,10 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testFixtureDetails = _sut.GetTestFixtureDetails(tree);
+            var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
-            Assert.That(testFixtureDetails.SetupMethodName,Is.EqualTo("AnyName"));
+            Assert.That(testFixtureDetails.SetupMethodName, Is.EqualTo("AnyName"));
         }
     }
 }

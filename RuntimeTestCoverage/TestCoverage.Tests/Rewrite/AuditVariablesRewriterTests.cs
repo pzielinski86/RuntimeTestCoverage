@@ -267,7 +267,7 @@ namespace TestCoverage.Tests.Rewrite
 
             _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
             _auditVariablesMap.AuditVariablesClassName.Returns("AuditVariablesClassName");
-            _auditVariablesMap.AuditVariablesDictionaryName.Returns("AuditVariablesDictionaryName");
+            _auditVariablesMap.AuditVariablesListName.Returns("AuditVariablesListName");
             _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
             {
                 {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
@@ -278,7 +278,7 @@ namespace TestCoverage.Tests.Rewrite
 
             SyntaxNode auditNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().First();
 
-            const string expectedNode = "AuditVariablesClassName.AuditVariablesDictionaryName[\"SampleVariableName\"]=true;";
+            const string expectedNode = "AuditVariablesClassName.AuditVariablesListName[\"SampleVariableName\"]=true;";
             const string expectedNodeComment = "//documentPath\n";
 
             Assert.That(auditNode.ToString(), Is.EqualTo(expectedNode));

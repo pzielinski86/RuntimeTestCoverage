@@ -29,7 +29,7 @@ namespace TestCoverage.Rewrite
             classBuilder.AppendLine(string.Format("public static class {0}", AuditVariablesClassName));
             classBuilder.AppendLine("{");
 
-            classBuilder.AppendLine(string.Format("\tpublic static System.Collections.Generic.Dictionary<string,bool> {0} = new  System.Collections.Generic.Dictionary<string,bool>();", AuditVariablesDictionaryName));
+            classBuilder.AppendLine(string.Format("\tpublic static System.Collections.Generic.List<string> {0} = new  System.Collections.Generic.List<string>();", AuditVariablesListName));
 
             classBuilder.Append("}");
 
@@ -40,7 +40,7 @@ namespace TestCoverage.Rewrite
         {
             get { return "AuditVariables"; }
         }
-        public string AuditVariablesDictionaryName
+        public string AuditVariablesListName
         {
             get { return "Coverage"; }
         }

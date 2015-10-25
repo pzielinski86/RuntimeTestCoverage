@@ -22,8 +22,14 @@ namespace TestCoverage.CoverageCalculation
         {
             string script = CreateRunTestScript(testCase, auditVariablesMap);
 
+            // todo: clean-up code to remove hardcoded dlls like mscorlib.
             var options = new ScriptOptions();
-            options = options.AddReferences(references).AddReferences(assemblies).AddNamespaces(testCase.TestFixture.Namespace, "System", "System.Reflection");
+            options = options.
+                AddReferences(references.Where(x=>!x.Display.Contains("mscorlib.dll"))).
+                AddReferences(assemblies).
+                AddReferences(typeof(int).Assembly).
+                AddNamespaces( "System", "System.Reflection").                
+                AddNamespaces(testCase.TestFixture.Namespace);
 
             ScriptState state;
 
@@ -36,11 +42,11 @@ namespace TestCoverage.CoverageCalculation
                 throw new TestCoverageCompilationException(e.Diagnostics.Select(x => x.GetMessage()).ToArray());
             }
 
-            var coverageAudit = (Dictionary<string, bool>)state.Variables["auditLog"].Value;
+            var coverageAudit = (List<string>)state.Variables["auditLog"].Value;
             string errorMessage = (string)state.Variables["errorMessage"].Value;
             bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
 
-            return new TestRunResult(coverageAudit.Keys.ToArray(), assertionFailed, errorMessage);
+            return new TestRunResult(coverageAudit.ToArray(), assertionFailed, errorMessage);
         }
 
         private static string CreateRunTestScript(TestCase testCase, AuditVariablesMap auditVariablesMap)
@@ -73,14 +79,14 @@ namespace TestCoverage.CoverageCalculation
         {
             scriptBuilder.AppendLine(string.Format("\nvar auditLog= {0}.{1};",
                 auditVariablesMap.AuditVariablesClassName,
-                auditVariablesMap.AuditVariablesDictionaryName));
+                auditVariablesMap.AuditVariablesListName));
         }
 
         private static void ClearAudit(AuditVariablesMap auditVariablesMap, StringBuilder scriptBuilder)
         {
             scriptBuilder.AppendLine(string.Format("{0}.{1}.Clear();",
                 auditVariablesMap.AuditVariablesClassName,
-                auditVariablesMap.AuditVariablesDictionaryName));
+                auditVariablesMap.AuditVariablesListName));
         }
     }
 }

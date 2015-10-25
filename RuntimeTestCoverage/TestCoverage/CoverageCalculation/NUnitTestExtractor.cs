@@ -2,14 +2,18 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Compilation;
+using TestCoverage.Extensions;
 
 namespace TestCoverage.CoverageCalculation
 {
     public class NUnitTestExtractor : ITestsExtractor
     {
-        public TestFixtureDetails GetTestFixtureDetails(ClassDeclarationSyntax fixtureNode)
+        public TestFixtureDetails GetTestFixtureDetails(ClassDeclarationSyntax fixtureNode, ISemanticModel semanticModel)
         {
-            return ExtractTestCases(fixtureNode);
+            var fixture = ExtractTestCases(fixtureNode, semanticModel);
+
+            return fixture;
         }
 
         public ClassDeclarationSyntax[] GetTestClasses(SyntaxNode root)
@@ -19,9 +23,9 @@ namespace TestCoverage.CoverageCalculation
                 .Select(a => a.Parent.Parent).OfType<ClassDeclarationSyntax>().ToArray();
         }
 
-        private TestFixtureDetails ExtractTestCases(ClassDeclarationSyntax testClass)
+        private TestFixtureDetails ExtractTestCases(ClassDeclarationSyntax testClass, ISemanticModel semanticModel)
         {
-            var testFixture=new TestFixtureDetails();
+            var testFixture = new TestFixtureDetails();
             var namespaceNode = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
             testFixture.Namespace = namespaceNode?.Name.ToString();
             testFixture.ClassName = testClass.Identifier.ValueText;
@@ -40,7 +44,7 @@ namespace TestCoverage.CoverageCalculation
 
                     else if (attribute.Name.ToString() == "TestCase")
                     {
-                        var testCase = ExtractTestCase(attribute, testFixture);
+                        var testCase = ExtractTestCase(attribute, testFixture, semanticModel);
                         methodTestCases.Add(testCase);
                     }
                     else if (attribute.Name.ToString() == "SetUp")
@@ -56,8 +60,8 @@ namespace TestCoverage.CoverageCalculation
 
             return testFixture;
         }
-        
-        private static TestCase ExtractTestCase(AttributeSyntax attribute, TestFixtureDetails testFixture)
+
+        private static TestCase ExtractTestCase(AttributeSyntax attribute, TestFixtureDetails testFixture, ISemanticModel semanticModel)
         {
             var testCase = new TestCase(testFixture);
             var methodDeclarationSyntax = GetAttributeMethod(attribute);
@@ -67,7 +71,13 @@ namespace TestCoverage.CoverageCalculation
             for (int i = 0; i < testCase.Arguments.Length; i++)
             {
                 AttributeArgumentSyntax testCaseArg = attribute.ArgumentList.Arguments[i];
-                testCase.Arguments[i] = testCaseArg.Expression.GetText().ToString();
+
+                var symbolName = semanticModel.GetSymbolName(testCaseArg.Expression);
+
+                if (symbolName != null)
+                    testCase.Arguments[i] = symbolName;
+                else
+                    testCase.Arguments[i] = testCaseArg.Expression.GetText().ToString();
             }
 
             testCase.SyntaxNode = methodDeclarationSyntax;

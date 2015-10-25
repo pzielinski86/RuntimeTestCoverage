@@ -6,11 +6,12 @@ namespace TestCoverage.Tests
     [TestFixture]
     public class TestFixtureDetailsTests
     {
+
         [Test]
         public void Should_OnlyCreateInstanceOfFixture_When_SetupMethodIsNotAvailable()
         {
             // arrange
-            var sut=new TestFixtureDetails();
+            var sut = new TestFixtureDetails();
             const string expectedCode = "Type testFixtureType = Type.GetType(\"Tests.MathHelperTests,Tests, Version=1.0.0.0\");\r\n" +
                                          "object testInstance = System.Activator.CreateInstance(testFixtureType);\r\n";
             sut.ClassName = "MathHelperTests";

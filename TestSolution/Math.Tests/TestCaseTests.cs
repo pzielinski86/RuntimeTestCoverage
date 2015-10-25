@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Math.Contracts;
+using Math;
 
 namespace Math.Tests
 {
@@ -23,12 +25,8 @@ namespace Math.Tests
 
 
 
-        
-
-
-
-        [Test]
-        public void Should_Call_TestWithoutParameters()
+        [TestCase(Contracts.PersonType.A)]
+        public void Should_Call_TestWithoutParameters(PersonType b)
         {
             // arrange
             const string expectedCode = "testExecutor.Test();";
@@ -41,10 +39,12 @@ namespace Math.Tests
 
             // assert
             Assert.That(code, Is.EqualTo(expectedCode));
+
+            Assert.That(b,Is.EqualTo(PersonType.A));
         }
 
-        [Test]
-        public void Should_Call_TestWithString()
+        [TestCase("test12") ]
+        public void Should_Call_TestWithString(string var)
         {
             // arrange
             const string expectedCode = "testExecutor.Test(\"Hello World!\");";
@@ -57,6 +57,7 @@ namespace Math.Tests
 
             // assert
             Assert.That(code, Is.EqualTo(expectedCode));
+            Assert.That(var, Is.EqualTo("test"));
         }
 
         [Test]

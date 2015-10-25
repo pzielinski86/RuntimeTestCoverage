@@ -10,7 +10,7 @@ namespace TestCoverage.Compilation
 {
     public class RoslynCompiler : ICompiler
     {
-        public Assembly[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
+        public CompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
         {
             var allItemsArray = allItems.ToArray();
 
@@ -24,10 +24,13 @@ namespace TestCoverage.Compilation
 
             compiledItems.Add(compiledAudit);
 
-            return compiledItems.Select(x=>x.EmitAndSave()).ToArray();
+            foreach (var compiledItem in compiledItems)
+                compiledItem.EmitAndSave();
+
+            return compiledItems.ToArray();
         }
 
-        public Assembly[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap)
+        public CompiledItem[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap)
         {
             var compiledItems = new List<CompiledItem>();
             CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
@@ -43,16 +46,20 @@ namespace TestCoverage.Compilation
             compiledItems.Add(new CompiledItem(item.Project,compiledDll));
             compiledItems.Add(compiledAudit);
 
-            return compiledItems.Select(x => x.EmitAndSave()).ToArray();
+            foreach (var compiledItem in compiledItems)
+                compiledItem.EmitAndSave();
+
+            return compiledItems.ToArray();
         }
 
         private CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
         {
             var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 
-            var references = new[] { MetadataReference.CreateFromFile(typeof(Type).Assembly.Location) };
+            // TODO - remove hardcoded .NET 3.5 dll
+            var references = new[] {MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };
 
-            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
+            CSharpCompilation compilation = Compile("Audit", new[] {auditTree}, references);
 
             return new CompiledItem(null, compilation);
         }

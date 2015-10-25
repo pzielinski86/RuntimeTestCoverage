@@ -6,7 +6,7 @@ namespace TestCoverage.Compilation
 {
     public interface ICompiler
     {
-        Assembly[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap);
-        Assembly[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap);
+        CompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap);
+        CompiledItem[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap);
     }
 }

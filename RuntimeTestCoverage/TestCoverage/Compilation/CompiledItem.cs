@@ -9,6 +9,7 @@ namespace TestCoverage.Compilation
 {
     public class CompiledItem
     {
+
         public Project Project { get; private set; }
         public CSharpCompilation Compilation { get; private set; }
         public bool IsEmitted { get; set; }
@@ -46,6 +47,11 @@ namespace TestCoverage.Compilation
             IsEmitted = true;
 
             return Assembly;
+        }
+
+        public ISemanticModel GetSemanticModel(SyntaxTree syntaxTree)
+        {
+            return new RoslynSemanticModel(Compilation.GetSemanticModel(syntaxTree,false));
         }
     }
 }

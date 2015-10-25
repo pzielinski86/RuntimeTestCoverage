@@ -83,7 +83,7 @@ namespace TestCoverage.Rewrite
             string varName = _auditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex]);
             _auditIndex++;
 
-            string auditNodeSourceCode = string.Format("\t{0}.{1}[\"{2}\"]=true;\n", _auditVariableMapping.AuditVariablesClassName, _auditVariableMapping.AuditVariablesDictionaryName, varName);
+            string auditNodeSourceCode = string.Format("\t{0}.{1}.Add(\"{2}\");\n", _auditVariableMapping.AuditVariablesClassName, _auditVariableMapping.AuditVariablesListName, varName);
             StatementSyntax auditNode = SyntaxFactory.ParseStatement(auditNodeSourceCode);
 
             string commentCode = string.Format("//{0}\n", _auditVariableMapping.Map[varName].DocumentPath);

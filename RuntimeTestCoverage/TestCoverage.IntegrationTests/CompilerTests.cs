@@ -25,11 +25,11 @@ namespace TestCoverage.IntegrationTests
 
             var compilationItem = new CompilationItem(project, new[] { syntaxTree });
 
-            Assembly[] result = compiler.Compile(compilationItem, references, auditVariablesMap);
+            var result = compiler.Compile(compilationItem, references, auditVariablesMap);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[0].GetName().Name, Is.StringStarting(project.Name + "_"));
-            Assert.That(result[0].GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
+            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -52,11 +52,11 @@ namespace TestCoverage.IntegrationTests
 
             var compilationItem = new CompilationItem(project, new[] { syntaxTree });
 
-            Assembly[] result = compiler.Compile(compilationItem, references, auditVariablesMap);
+            var result = compiler.Compile(compilationItem, references, auditVariablesMap);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[0].GetName().Name, Is.StringStarting(project.Name + "_"));
-            Assert.That(result[0].GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
+            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -87,11 +87,11 @@ namespace TestCoverage.IntegrationTests
             var compilationItem1 = new CompilationItem(project1, new[] { project1SyntaxTree });
             var compilationItem2 = new CompilationItem(project2, new[] { project2SyntaxTree });
 
-            Assembly[] result = compiler.Compile(new[] { compilationItem1, compilationItem2 }, auditVariablesMap);
+           var result = compiler.Compile(new[] { compilationItem1, compilationItem2 }, auditVariablesMap);
 
             Assert.That(result.Length, Is.EqualTo(3));
-            Assert.That(result[1].GetTypes().First().Name, Is.EqualTo("TestClass"));
-            Assert.That(result[0].GetTypes().First().Name, Is.EqualTo("SampleClass"));
+            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("SampleClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -130,7 +130,7 @@ namespace TestCoverage.IntegrationTests
             var compilationItem2 = new CompilationItem(project2, new[] { project2SyntaxTree });
             var compilationItem3 = new CompilationItem(project3, new[] { project3SyntaxTree });
 
-            Assembly[] result = compiler.Compile(new[] { compilationItem1, compilationItem2, compilationItem3 }, auditVariablesMap);
+           var result = compiler.Compile(new[] { compilationItem1, compilationItem2, compilationItem3 }, auditVariablesMap);
 
             Assert.That(result.Length, Is.EqualTo(4));            
         }
@@ -146,11 +146,11 @@ namespace TestCoverage.IntegrationTests
 
             var compilationItem = new CompilationItem(project, new SyntaxTree[0]);
 
-            Assembly[] result = compiler.Compile(compilationItem, new Assembly[0], auditVariablesMap);
+           var result = compiler.Compile(compilationItem, new Assembly[0], auditVariablesMap);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[1].GetName().Name, Is.StringStarting("Audit"));
-            Assert.That(result[1].GetTypes().First().Name, Is.EqualTo(auditVariablesMap.AuditVariablesClassName));
+            Assert.That(result[1].Assembly.GetName().Name, Is.StringStarting("Audit"));
+            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo(auditVariablesMap.AuditVariablesClassName));
         }
 
     }

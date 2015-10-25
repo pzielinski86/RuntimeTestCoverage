@@ -7,7 +7,7 @@ namespace TestCoverage.Rewrite
         string AddVariable(AuditVariablePlaceholder auditVariablePlaceholder);
         string GenerateSourceCode();
         string AuditVariablesClassName { get; }
-        string AuditVariablesDictionaryName { get; }
+        string AuditVariablesListName { get; }
         Dictionary<string, AuditVariablePlaceholder> Map { get; }
     }
 }

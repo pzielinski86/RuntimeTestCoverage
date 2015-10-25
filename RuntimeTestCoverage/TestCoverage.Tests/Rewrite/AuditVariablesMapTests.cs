@@ -46,7 +46,7 @@ namespace TestCoverage.Tests.Rewrite
         [Test]
         public void Should_ReturnValidDictionaryName()
         {
-            Assert.That(_auditVariablesMap.AuditVariablesDictionaryName, Is.EqualTo("Coverage"));
+            Assert.That(_auditVariablesMap.AuditVariablesListName, Is.EqualTo("Coverage"));
         }
 
         [Test]
