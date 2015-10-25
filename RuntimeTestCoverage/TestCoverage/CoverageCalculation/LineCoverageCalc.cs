@@ -43,9 +43,11 @@ namespace TestCoverage.CoverageCalculation
                 foreach (RewrittenDocument rewrittenItem in rewritenResult.Items[project])
                 {
                     var testProjectCompiltedItem = compiledLibs.Single(x => x.Project == project);
+                    ISemanticModel semanticModel = testProjectCompiltedItem.GetSemanticModel(rewrittenItem.SyntaxTree);
 
                     LineCoverage[] partialCoverage = _testRunner.RunAllTestsInDocument(rewrittenItem,
-                        testProjectCompiltedItem,
+                        semanticModel,
+                        project,
                         allAssemblies);
 
                     if (partialCoverage != null)
@@ -59,10 +61,11 @@ namespace TestCoverage.CoverageCalculation
         {
             CompiledItem[] newCompiledItems;
 
-            Assembly[] allAssemblies = CompileDocument(project,rewrittenDocument, out newCompiledItems);
+            Assembly[] allAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
             string docName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
-            LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, newCompiledItems[0], allAssemblies);
+            ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
+            LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, semanticModel, project, allAssemblies);
 
             if (fullCoverage == null)
             {
@@ -72,10 +75,10 @@ namespace TestCoverage.CoverageCalculation
 
                 foreach (RewrittenDocument referencedTest in referencedTests)
                 {
-                    var testProject=_solutionExplorer.GetProjectByDocument(referencedTest.DocumentPath);
-                    CompiledItem compiletItem=new CompiledItem(testProject,(CSharpCompilation)testProject.GetCompilationAsync().Result);
+                    semanticModel = _solutionExplorer.GetSemanticModelByDocument(referencedTest.DocumentPath);
+                    var testProject = _solutionExplorer.GetProjectByDocument(referencedTest.DocumentPath);
 
-                    var coverage = _testRunner.RunAllTestsInDocument(referencedTest, compiletItem, allAssemblies);
+                    var coverage = _testRunner.RunAllTestsInDocument(referencedTest, semanticModel, testProject, allAssemblies);
                     finalCoverage.AddRange(coverage);
                 }
 

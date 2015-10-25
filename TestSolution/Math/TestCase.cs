@@ -22,6 +22,7 @@ namespace Math
 
         public string CreateCallTestCode(string instanceName)
         {
+            return null;
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendFormat("{0}.{1}(", instanceName, MethodName);
@@ -31,7 +32,7 @@ namespace Math
                 if (Arguments[i] is string)
                     stringBuilder.AppendFormat("\"{0}\"", Arguments[i]);
                 else if (Arguments[i] is bool)
-                    stringBuilder.Append(Arguments[i].ToString().ToLower());
+                    stringBuilder.Append("test");
                 else if (Arguments[i] == null)
                     stringBuilder.Append("null");
                 else

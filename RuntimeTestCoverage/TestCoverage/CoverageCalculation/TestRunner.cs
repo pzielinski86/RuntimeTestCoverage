@@ -20,14 +20,14 @@ namespace TestCoverage.CoverageCalculation
             _testExecutorScriptEngine = testExecutorScriptEngine;
         }
 
-        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, CompiledItem compiledTestProject, Assembly[] allAssemblies)
+        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel sematnModel, Project testProject,Assembly[] allAssemblies)
         { 
             var compiledTestInfo = new CompiledTestFixtureInfo();
-            compiledTestInfo.TestProjectReferences = compiledTestProject.Project.MetadataReferences.ToArray();
+            compiledTestInfo.TestProjectReferences = testProject.MetadataReferences.ToArray();
             compiledTestInfo.TestDocumentPath = rewrittenDocument.DocumentPath;
             compiledTestInfo.AllAssemblies = allAssemblies;
             compiledTestInfo.AuditVariablesMap = rewrittenDocument.AuditVariablesMap;
-            compiledTestInfo.TestProjectCompilationItem = compiledTestProject;
+            compiledTestInfo.SemanticModel = sematnModel;
 
             var coverage = new List<LineCoverage>();
 
@@ -40,22 +40,19 @@ namespace TestCoverage.CoverageCalculation
             {                
                 compiledTestInfo.TestClass = testClass;
 
-                var partialCoverage = RunAllTestsInFixture(compiledTestInfo);
+                var partialCoverage = RunAllTestsInFixture(compiledTestInfo,testProject.Name);
                 coverage.AddRange(partialCoverage);
             }
 
             return coverage.ToArray();
         }
 
-        public LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo)
+        private LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo,string testProjectName)
         {
-            var semanticModel =
-                compiledTestFixtureInfo.TestProjectCompilationItem.GetSemanticModel(
-                    compiledTestFixtureInfo.TestClass.SyntaxTree);
 
-            TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, semanticModel);
+            TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
 
-            string testsProjectName = PathHelper.GetCoverageDllName(compiledTestFixtureInfo.TestProjectCompilationItem.Project.Name);
+            string testsProjectName = PathHelper.GetCoverageDllName(testProjectName);
             testFixtureDetails.AssemblyName = compiledTestFixtureInfo.AllAssemblies.Single(x => x.GetName().Name == testsProjectName).FullName;
 
             var coverage = new List<LineCoverage>();

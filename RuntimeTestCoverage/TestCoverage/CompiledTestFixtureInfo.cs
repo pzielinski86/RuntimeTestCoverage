@@ -13,7 +13,7 @@ namespace TestCoverage
         public AuditVariablesMap AuditVariablesMap { get; set; }
         public string TestDocumentPath { get; set; }
         public ClassDeclarationSyntax TestClass { get; set; }
-        public CompiledItem TestProjectCompilationItem { get; set; }
+        public ISemanticModel SemanticModel { get; set; }
 
     }
 }

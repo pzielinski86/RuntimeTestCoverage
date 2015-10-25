@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
@@ -6,10 +7,7 @@ namespace TestCoverage.CoverageCalculation
 {
     internal interface ITestRunner
     {
-        LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo);
 
-        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
-            CompiledItem compiledTestProject,
-            Assembly[] allAssemblies);
+        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel sematnModel,Project project, Assembly[] allAssemblies);
     }
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp;
+using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage
@@ -32,7 +33,15 @@ namespace TestCoverage
 
         public SyntaxTree OpenFile(string path)
         {
-            return CSharpSyntaxTree.ParseText(File.ReadAllText(path));
+            //TODO Convert to async
+            return GetAllDocuments().First(x => x.FilePath == path).GetSyntaxTreeAsync().Result;
+        }
+
+        public ISemanticModel GetSemanticModelByDocument(string docPath)
+        {            
+            Document document=GetAllDocuments().First(x => x.FilePath == docPath);
+            // TODO - convert to async
+            return new RoslynSemanticModel(document.GetSemanticModelAsync().Result);
         }
 
         public void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap)
