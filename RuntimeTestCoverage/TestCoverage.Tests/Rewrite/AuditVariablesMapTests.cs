@@ -59,8 +59,8 @@ namespace TestCoverage.Tests.Rewrite
         public void Should_GenerateValidSourceCode()
         {
             const string expectedSourceCode = "public static class AuditVariables\r\n" +
-                                              "{\r\n\tpublic static System.Collections.Generic.Dictionary<string,bool> Coverage = " +
-                                              "new  System.Collections.Generic.Dictionary<string,bool>();\r\n" +
+                                              "{\r\n\tpublic static System.Collections.Generic.List<string> Coverage = " +
+                                              "new  System.Collections.Generic.List<string>();\r\n" +
                                               "}";
 
             string classSourceCode = _auditVariablesMap.GenerateSourceCode();

@@ -108,7 +108,7 @@ namespace TestCoverage
 
             while (true)
             {
-                auditVariablePos = content.IndexOf(string.Format("AuditVariables.Coverage[\""), auditVariablePos);
+                auditVariablePos = content.IndexOf(string.Format("AuditVariables.Coverage.Add(\""), auditVariablePos);
                 if (auditVariablePos == -1)
                     break;
 

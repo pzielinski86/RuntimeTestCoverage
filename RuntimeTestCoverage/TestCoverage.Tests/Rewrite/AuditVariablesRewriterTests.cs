@@ -278,7 +278,7 @@ namespace TestCoverage.Tests.Rewrite
 
             SyntaxNode auditNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().First();
 
-            const string expectedNode = "AuditVariablesClassName.AuditVariablesListName[\"SampleVariableName\"]=true;";
+            const string expectedNode = "AuditVariablesClassName.AuditVariablesListName.Add(\"SampleVariableName\");";
             const string expectedNodeComment = "//documentPath\n";
 
             Assert.That(auditNode.ToString(), Is.EqualTo(expectedNode));

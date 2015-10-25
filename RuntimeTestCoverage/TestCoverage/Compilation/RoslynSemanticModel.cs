@@ -15,7 +15,10 @@ namespace TestCoverage.Compilation
         {
             var symbolInfo =_semanticModel.GetSymbolInfo(node);
 
-            return symbolInfo.Symbol?.ToString();
+            if (symbolInfo.Symbol == null || !symbolInfo.Symbol.CanBeReferencedByName)
+                return null;
+
+            return symbolInfo.Symbol.ToString();
         }
     }
 }
