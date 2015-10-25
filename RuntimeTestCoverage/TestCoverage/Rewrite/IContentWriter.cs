@@ -1,7 +1,9 @@
-﻿namespace TestCoverage.Rewrite
+﻿using Microsoft.CodeAnalysis;
+
+namespace TestCoverage.Rewrite
 {
     public interface IContentWriter
     {
-        void Write(RewrittenItemInfo item);
+        void Write(string documentPath, SyntaxTree syntaxTree);
     }
 }

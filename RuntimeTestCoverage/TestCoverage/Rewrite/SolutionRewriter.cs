@@ -18,24 +18,24 @@ namespace TestCoverage.Rewrite
             _contentWriter = contentWriter;
         }
 
-        public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
+        public RewrittenDocument RewriteDocument(Project project, string documentPath, string documentContent)
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode,
+            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(project.Name, documentPath, syntaxNode,
                 auditVariablesMap);
 
-            _contentWriter.Write(new RewrittenItemInfo(documentPath, rewrittenNode.SyntaxTree));
+            _contentWriter.Write(documentPath, rewrittenNode.SyntaxTree);
 
             return new RewrittenDocument(auditVariablesMap, rewrittenNode.SyntaxTree, documentPath);
         }
 
         public RewriteResult RewriteAllClasses(IEnumerable<Project> projects)
         {
-            var rewrittenItems = new Dictionary<Project, List<RewrittenItemInfo>>();
+            var rewrittenItems = new Dictionary<Project, List<RewrittenDocument>>();
             var auditVariablesMap = new AuditVariablesMap();
 
             foreach (Project project in projects)
@@ -44,14 +44,14 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString());
-                    RewrittenItemInfo rewrittenItemInfo = new RewrittenItemInfo(document.FilePath, rewrittenDocument.SyntaxTree);
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project, document.FilePath, syntaxNode.ToFullString());
 
                     if (!rewrittenItems.ContainsKey(document.Project))
-                        rewrittenItems[document.Project] = new List<RewrittenItemInfo>();
+                        rewrittenItems[document.Project] = new List<RewrittenDocument>();
 
-                    rewrittenItems[document.Project].Add(rewrittenItemInfo);
+                    rewrittenItems[document.Project].Add(rewrittenDocument);
                     auditVariablesMap.Map.Merge(rewrittenDocument.AuditVariablesMap.Map);
+                    rewrittenDocument.AuditVariablesMap = auditVariablesMap;
                 }
             }
 

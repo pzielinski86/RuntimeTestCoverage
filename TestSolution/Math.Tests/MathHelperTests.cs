@@ -28,9 +28,6 @@ namespace Math.Tests
 
 
 
-
-
-
             ///////ak55kkkllklkjklmhgjghjg
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(a, b);
@@ -38,6 +35,8 @@ namespace Math.Tests
             Assert.That(result, Is.EqualTo(c));
             //jj
         }
+
+
 
         [Test]
         public void DivideTestZero()
@@ -61,6 +60,8 @@ namespace Math.Tests
         {
             ////
             MathHelper helper = new MathHelper();
+
+
 
 
      //      helper.DoSomething(5); 

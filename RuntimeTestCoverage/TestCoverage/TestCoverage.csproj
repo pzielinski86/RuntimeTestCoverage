@@ -113,12 +113,14 @@
     <Compile Include="Compilation\ICompiler.cs" />
     <Compile Include="Compilation\ISemanticModel.cs" />
     <Compile Include="Compilation\RoslynSemanticModel.cs" />
-    <Compile Include="CompiledTestInfo.cs" />
+    <Compile Include="CompiledTestFixtureInfo.cs" />
     <Compile Include="CoverageCalculation\ITestExecutorScriptEngine.cs" />
+    <Compile Include="CoverageCalculation\ITestRunner.cs" />
     <Compile Include="CoverageCalculation\ITestsExtractor.cs" />
     <Compile Include="CoverageCalculation\NUnitTestExtractor.cs" />
     <Compile Include="CoverageCalculation\TestCase.cs" />
     <Compile Include="CoverageCalculation\TestFixtureDetails.cs" />
+    <Compile Include="CoverageCalculation\TestRunner.cs" />
     <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="CoverageResult.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
@@ -148,7 +150,6 @@
     <Compile Include="SolutionExplorer.cs" />
     <Compile Include="Rewrite\SolutionRewriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rewrite\RewrittenItemInfo.cs" />
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
     <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
     <Compile Include="Storage\AllowAllAssemblyVersionsDeserializationBinder.cs" />

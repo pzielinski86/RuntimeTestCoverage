@@ -4,7 +4,7 @@ namespace TestCoverage.Rewrite
 {
     public class RewrittenDocument
     {
-        public AuditVariablesMap AuditVariablesMap { get; private set; }
+        public AuditVariablesMap AuditVariablesMap { get; set; }
         public SyntaxTree SyntaxTree { get; private set; }
         public string DocumentPath { get;private set; }
 

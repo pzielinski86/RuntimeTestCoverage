@@ -15,7 +15,7 @@ namespace Math.Tests
         public void GetRewrittenFilePath()
         {
             const string path = "c:\test.dll";
-            const string expectedRewrittenPath = "c:\test.dll_testcoverage";
+            const string expectedRewrittenPath = "c:\test.dll_testcove1rage";
 
 
 

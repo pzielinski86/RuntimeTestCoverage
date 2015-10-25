@@ -22,10 +22,9 @@ namespace Math.Tests
 
 
 
+        
 
-
-
-        [TestCase(Contracts.PersonType.A)]
+        [TestCase(Contracts.PersonType.B)]
         public void Should_Call_TestWithoutParameters(PersonType b)
         {
             // arrange
@@ -43,7 +42,7 @@ namespace Math.Tests
             Assert.That(b,Is.EqualTo(PersonType.A));
         }
 
-        [TestCase("test12") ]
+        [TestCase("test") ]
         public void Should_Call_TestWithString(string var)
         {
             // arrange

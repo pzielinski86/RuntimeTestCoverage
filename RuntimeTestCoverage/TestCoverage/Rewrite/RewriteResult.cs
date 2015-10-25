@@ -7,16 +7,16 @@ namespace TestCoverage.Rewrite
 {
     public class RewriteResult
     {
-        private readonly Dictionary<Project, List<RewrittenItemInfo>> _items;
+        private readonly Dictionary<Project, List<RewrittenDocument>> _items;
         private readonly AuditVariablesMap _auditVariablesMap;
 
-        public RewriteResult(Dictionary<Project, List<RewrittenItemInfo>> items, AuditVariablesMap auditVariablesMap)
+        public RewriteResult(Dictionary<Project, List<RewrittenDocument>> items, AuditVariablesMap auditVariablesMap)
         {
             _items = items;
             _auditVariablesMap = auditVariablesMap;
         }
 
-        public Dictionary<Project, List<RewrittenItemInfo>> Items
+        public Dictionary<Project, List<RewrittenDocument>> Items
         {
             get { return _items; }
         }

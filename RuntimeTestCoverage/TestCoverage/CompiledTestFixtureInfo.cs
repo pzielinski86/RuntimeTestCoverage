@@ -6,7 +6,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-    internal class CompiledTestInfo
+    internal class CompiledTestFixtureInfo
     {
         public MetadataReference[] TestProjectReferences { get; set; }
         public Assembly[] AllAssemblies { get; set; }
