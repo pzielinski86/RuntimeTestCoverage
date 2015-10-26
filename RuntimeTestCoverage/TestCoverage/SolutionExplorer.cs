@@ -31,6 +31,31 @@ namespace TestCoverage
             _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
         }
 
+        public MetadataReference[] GetAllReferences(string projectName)
+        {
+            var project = Solution.Projects.First(x => x.Name == projectName);
+            var allReferences = new HashSet<MetadataReference>();
+
+            PopulateWithReferences(allReferences,project);
+
+            return allReferences.ToArray();
+        }
+
+        private void PopulateWithReferences(HashSet<MetadataReference> allReferences, Project project)
+        {
+            foreach (var reference in project.MetadataReferences)
+            {
+                allReferences.Add(reference);
+            }
+
+            foreach (ProjectReference projectReference in project.ProjectReferences)
+            {
+                var referencedProject = Solution.Projects.First(x => x.Id == projectReference.ProjectId);
+
+                PopulateWithReferences(allReferences, referencedProject);
+            }
+        }
+
         public SyntaxTree OpenFile(string path)
         {
             //TODO Convert to async
@@ -38,8 +63,8 @@ namespace TestCoverage
         }
 
         public ISemanticModel GetSemanticModelByDocument(string docPath)
-        {            
-            Document document=GetAllDocuments().First(x => x.FilePath == docPath);
+        {
+            Document document = GetAllDocuments().First(x => x.FilePath == docPath);
             // TODO - convert to async
             return new RoslynSemanticModel(document.GetSemanticModelAsync().Result);
         }
@@ -78,7 +103,7 @@ namespace TestCoverage
                 if (excludedProjects.Contains(project.Name))
                     continue;
 
-                string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(),PathHelper.GetCoverageDllName(project.Name));
+                string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), PathHelper.GetCoverageDllName(project.Name));
                 if (File.Exists(assemblyPath))
                 {
                     Assembly assembly = Assembly.LoadFile(assemblyPath);
@@ -88,7 +113,7 @@ namespace TestCoverage
 
             return allAssemblies.ToArray();
         }
-     
+
         public Solution Solution => _solution;
 
         public string SolutionPath => _solutionPath;
@@ -125,7 +150,7 @@ namespace TestCoverage
                 int endQuote = content.IndexOf("\"", startQuote + 1);
 
                 string varName = content.Substring(startQuote + 1, endQuote - startQuote - 1);
-                
+
                 string fullLine = content.Substring(auditVariablePos,
                     content.IndexOf("\n", auditVariablePos + 1) - auditVariablePos);
 
@@ -135,7 +160,7 @@ namespace TestCoverage
 
                 string nodePath = varName;
 
-                for (int i = nodePath.Length - 1; i >= 0;i--)
+                for (int i = nodePath.Length - 1; i >= 0; i--)
                 {
                     if (nodePath[i] == '_')
                     {

@@ -7,7 +7,7 @@ namespace TestCoverage.CoverageCalculation
 {
     internal interface ITestRunner
     {
-
-        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel sematnModel,Project project, Assembly[] allAssemblies);
+        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel semanticModel,
+            MetadataReference[] allReferences, Assembly[] allAssemblies,string projectName);
     }
 }

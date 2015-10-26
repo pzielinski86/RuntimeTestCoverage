@@ -11,14 +11,19 @@ namespace TestCoverage.Compilation
             _semanticModel = semanticModel;
         }
 
-        public string GetSymbolName(SyntaxNode node)
+        public object GetConstantValue(SyntaxNode node)
         {
             var symbolInfo =_semanticModel.GetSymbolInfo(node);
 
-            if (symbolInfo.Symbol == null || !symbolInfo.Symbol.CanBeReferencedByName)
+            if (symbolInfo.Symbol == null)
                 return null;
 
-            return symbolInfo.Symbol.ToString();
+            Optional<object> value=_semanticModel.GetConstantValue(node);
+
+            if (!value.HasValue)
+                return null;
+
+            return value.Value;
         }
     }
 }

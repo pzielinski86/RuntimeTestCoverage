@@ -72,10 +72,10 @@ namespace TestCoverage.CoverageCalculation
             {
                 AttributeArgumentSyntax testCaseArg = attribute.ArgumentList.Arguments[i];
 
-                var symbolName = semanticModel.GetSymbolName(testCaseArg.Expression);
+                object constantValue = semanticModel.GetConstantValue(testCaseArg.Expression);
 
-                if (symbolName != null)
-                    testCase.Arguments[i] = symbolName;
+                if (constantValue != null)
+                    testCase.Arguments[i] = ConvertValueToCsharpCall(constantValue);
                 else
                     testCase.Arguments[i] = testCaseArg.Expression.GetText().ToString();
             }
@@ -84,6 +84,16 @@ namespace TestCoverage.CoverageCalculation
             testCase.MethodName = methodDeclarationSyntax.Identifier.ValueText;
 
             return testCase;
+        }
+
+        private static string ConvertValueToCsharpCall(object value)
+        {
+            if (value is string)
+                return string.Format($"\"{value}\"");
+            if (value is bool)
+                return value.ToString().ToLowerInvariant();
+
+            return value.ToString();
         }
 
         private static MethodDeclarationSyntax GetAttributeMethod(AttributeSyntax attribute)

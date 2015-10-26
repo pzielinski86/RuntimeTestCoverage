@@ -20,14 +20,18 @@ namespace TestCoverage.CoverageCalculation
             _testExecutorScriptEngine = testExecutorScriptEngine;
         }
 
-        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel sematnModel, Project testProject,Assembly[] allAssemblies)
+        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
+            ISemanticModel semanticModel, 
+            MetadataReference[] allReferences,
+            Assembly[] allAssemblies,
+            string projectName)
         { 
             var compiledTestInfo = new CompiledTestFixtureInfo();
-            compiledTestInfo.TestProjectReferences = testProject.MetadataReferences.ToArray();
+            compiledTestInfo.TestProjectReferences = allReferences;
             compiledTestInfo.TestDocumentPath = rewrittenDocument.DocumentPath;
             compiledTestInfo.AllAssemblies = allAssemblies;
             compiledTestInfo.AuditVariablesMap = rewrittenDocument.AuditVariablesMap;
-            compiledTestInfo.SemanticModel = sematnModel;
+            compiledTestInfo.SemanticModel = semanticModel;
 
             var coverage = new List<LineCoverage>();
 
@@ -40,7 +44,7 @@ namespace TestCoverage.CoverageCalculation
             {                
                 compiledTestInfo.TestClass = testClass;
 
-                var partialCoverage = RunAllTestsInFixture(compiledTestInfo,testProject.Name);
+                var partialCoverage = RunAllTestsInFixture(compiledTestInfo, projectName);
                 coverage.AddRange(partialCoverage);
             }
 

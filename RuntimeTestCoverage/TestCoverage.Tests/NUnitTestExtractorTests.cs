@@ -22,7 +22,7 @@ namespace TestCoverage.Tests
         {
             _sut = new NUnitTestExtractor();
             _semanticModelMock = Substitute.For<ISemanticModel>();
-            _semanticModelMock.GetSymbolName(Arg.Any<SyntaxNode>()).Returns((string)null);
+            _semanticModelMock.GetConstantValue(Arg.Any<SyntaxNode>()).Returns((string)null);
         }
 
         [Test]
@@ -102,6 +102,34 @@ namespace TestCoverage.Tests
             Assert.That(testMethods[0].Arguments[0], Is.EqualTo("\"Test\""));
         }
 
+        [TestCase("test","\"test\"")]
+        [TestCase(5,"5")]
+        [TestCase(5.5, "5.5")]
+        [TestCase(true,"true")]
+        public void Shoul_Convert_SemanticConstantValue_To_CallableValue(object value,string expectedCallValue)
+        {
+            // arrange
+            const string code = @"using Math.Data;
+                                namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(""Test"")]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+            _semanticModelMock.GetConstantValue(Arg.Any<SyntaxNode>()).Returns(value);
+
+            // act
+            var fixture = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(fixture.Cases[0].Arguments[0], Is.EqualTo(expectedCallValue));      
+        }
+
         [Test]
         public void ShouldExtract_TestCase_With_Integer_Expression_Parameter()
         {
@@ -126,33 +154,7 @@ namespace TestCoverage.Tests
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
             Assert.That(testMethods[0].Arguments[0], Is.EqualTo("5+9"));
-        }
-
-        [Test]
-        public void Should_ResolveTypeInTestCase_When_ItsNotLiteral()
-        {
-            // arrange
-            const string code = @"namespace Code{
-                            public class Tests
-                            {
-	                            [TestCase(Math.Enums.Constants.PI)]
-	                            public void TestSomething1(float pi)
-	                            {
-
-	                            }	
-                            }}";
-            
-            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
-            var attribute = tree.DescendantNodes().OfType<AttributeArgumentSyntax>().Single();
-            _semanticModelMock.GetSymbolName(attribute.Expression).Returns("Math.Enums.Constants.PI");
-
-            // act
-            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
-
-            // assert
-            Assert.That(testMethods.Count, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("Math.Enums.Constants.PI"));
-        }
+        } 
 
         [Test]
         public void ShouldExtract_TestCase_With_PositiveIntegerParameter()

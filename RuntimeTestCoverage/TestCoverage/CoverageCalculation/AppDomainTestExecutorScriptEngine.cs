@@ -28,7 +28,7 @@ namespace TestCoverage.CoverageCalculation
                 AddReferences(references.Where(x=>!x.Display.Contains("mscorlib.dll"))).
                 AddReferences(assemblies).
                 AddReferences(typeof(int).Assembly).
-                AddNamespaces( "System", "System.Reflection").                
+                AddNamespaces( "System", "System.Reflection").
                 AddNamespaces(testCase.TestFixture.Namespace);
 
             ScriptState state;

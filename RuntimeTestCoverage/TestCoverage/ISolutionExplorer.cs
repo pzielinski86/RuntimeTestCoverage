@@ -10,6 +10,7 @@ namespace TestCoverage
     {
         void Open();
 
+        MetadataReference[] GetAllReferences(string projectName);
         SyntaxTree OpenFile(string path);
 
         ISemanticModel GetSemanticModelByDocument(string docPath);
