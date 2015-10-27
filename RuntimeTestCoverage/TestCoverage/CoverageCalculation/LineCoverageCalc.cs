@@ -40,8 +40,6 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (Project project in rewritenResult.Items.Keys)
             {
-                var allReferences = _solutionExplorer.GetAllReferences(project.Name);
-
                 foreach (RewrittenDocument rewrittenItem in rewritenResult.Items[project])
                 {
                     var testProjectCompiltedItem = compiledLibs.Single(x => x.Project == project);
@@ -49,9 +47,8 @@ namespace TestCoverage.CoverageCalculation
 
                     LineCoverage[] partialCoverage = _testRunner.RunAllTestsInDocument(rewrittenItem,
                         semanticModel,
-                        allReferences,
-                        allAssemblies,
-                        project.Name);
+                        project,
+                        allAssemblies);
 
                     if (partialCoverage != null)
                         finalCoverage.AddRange(partialCoverage);
@@ -68,8 +65,7 @@ namespace TestCoverage.CoverageCalculation
             string docName = Path.GetFileNameWithoutExtension(rewrittenDocument.DocumentPath);
 
             ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
-            var allReferences = _solutionExplorer.GetAllReferences(project.Name);
-            LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, semanticModel, allReferences, allAssemblies,project.Name);
+            LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, semanticModel, project, allAssemblies);
 
             if (fullCoverage == null)
             {
@@ -81,9 +77,8 @@ namespace TestCoverage.CoverageCalculation
                 {
                     semanticModel = _solutionExplorer.GetSemanticModelByDocument(referencedTest.DocumentPath);
                     var testProject = _solutionExplorer.GetProjectByDocument(referencedTest.DocumentPath);
-                    allReferences = _solutionExplorer.GetAllReferences(testProject.Name);
 
-                    var coverage = _testRunner.RunAllTestsInDocument(referencedTest, semanticModel, allReferences, allAssemblies,testProject.Name);
+                    var coverage = _testRunner.RunAllTestsInDocument(referencedTest, semanticModel, testProject, allAssemblies);
                     finalCoverage.AddRange(coverage);
                 }
 
@@ -93,7 +88,6 @@ namespace TestCoverage.CoverageCalculation
 
             return fullCoverage.ToArray();
         }
-
 
         private RewrittenDocument[] GetReferencedTests(SyntaxNode root, string documentName, AuditVariablesMap auditVariablesMap, string projectName)
         {

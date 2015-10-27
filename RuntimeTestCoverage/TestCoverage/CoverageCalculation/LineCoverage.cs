@@ -1,4 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
@@ -10,7 +15,22 @@ namespace TestCoverage.CoverageCalculation
         public string TestPath { get; set; }
         public string DocumentPath { get; set; }
         public string TestDocumentPath { get; set; }
-
         public bool IsSuccess { get; set; }
+
+        public static LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap,
+            string variableName,
+            SyntaxNode testMethodNode,
+            string testProjectName,
+            string testDocName)
+        {
+            LineCoverage lineCoverage = new LineCoverage
+            {
+                TestPath = NodePathBuilder.BuildPath(testMethodNode, testDocName, testProjectName),
+                Path = auditVariablesMap.Map[variableName].NodePath,
+                Span = auditVariablesMap.Map[variableName].SpanStart
+            };
+
+            return lineCoverage;
+        }
     }
 }

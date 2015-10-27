@@ -34,7 +34,8 @@ namespace TestCoverage
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore, new TestRunner(new NUnitTestExtractor(),new AppDomainTestExecutorScriptEngine()));
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore, 
+                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
             var coverage = lineCoverageCalc.CalculateForAllTests(rewrittenResult);
 
             _coverageStore.WriteAll(coverage);
@@ -47,14 +48,16 @@ namespace TestCoverage
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
             var project = projects.FirstOrDefault(x => x.Name == projectName);
 
-            if (project==null)
+            if (project == null)
                 return new CoverageResult(new LineCoverage[0]);
 
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project, documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore, new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine()));
-            var coverage = lineCoverageCalc.CalculateForDocument(project,rewrittenDocument);
+            var lineCoverageCalc = new LineCoverageCalc(_solutionExplorer, new RoslynCompiler(), _coverageStore,
+                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
+
+            var coverage = lineCoverageCalc.CalculateForDocument(project, rewrittenDocument);
 
             _coverageStore.Append(documentPath, coverage);
 
