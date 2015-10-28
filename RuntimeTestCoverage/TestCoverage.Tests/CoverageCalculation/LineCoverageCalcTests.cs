@@ -16,54 +16,51 @@ using TestCoverage.Storage;
 namespace TestCoverage.Tests.CoverageCalculation
 {
     [TestFixture]
-    [Ignore("24.10.2015 - split LineCoverageCalc class up and use this test class to write test cases.")]
     public class LineCoverageCalcTests
     {
-        //private ISolutionExplorer _solutionExplorerMock;
-        //private ICompiler _compilerMock;
-        //private LineCoverageCalc _lineCoverageCalc;
-        //private ITestsExtractor _testsExtractor;
-        //private ITestExecutorScriptEngine _testExecutorScriptEngine;
-        //private ICoverageStore _coverageStoreMock;
+        private LineCoverageCalc _sut;
 
-        //[SetUp]
-        //public void Setup()
-        //{
-        //    _compilerMock = Substitute.For<ICompiler>();
-        //    _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
-        //    _testsExtractor = Substitute.For<ITestsExtractor>();
-        //    _testExecutorScriptEngine = Substitute.For<ITestExecutorScriptEngine>();
+        private ISolutionExplorer _solutionExplorerMock;
+        private ICompiler _compilerMock;
+        private ICoverageStore _coverageStoreMock;
+        private ITestRunner _testRunnerMock;
 
-        //    _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
-        //        Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).Returns(new TestRunResult(new string[0], false, null));
+        [SetUp]
+        public void Setup()
+        {
+            _compilerMock = Substitute.For<ICompiler>();
+            _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
+            _testRunnerMock = Substitute.For<ITestRunner>();
+            _coverageStoreMock = Substitute.For<ICoverageStore>();
 
-        //    _coverageStoreMock = Substitute.For<ICoverageStore>();
-        //    _lineCoverageCalc = new LineCoverageCalc(_solutionExplorerMock,
-        //        _compilerMock,
-        //        _coverageStoreMock,
-        //        _testsExtractor,
-        //        null);
-        //}
+            _sut = new LineCoverageCalc(_solutionExplorerMock,
+                _compilerMock,
+                _coverageStoreMock,
+                _testRunnerMock);
+        }
 
-        //[Test]
-        //public void Should_CompileProvidedDocuments()
-        //{
-        //    AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
-        //    var rewrittenItemsByProject = new Dictionary<Project, List<RewrittenItemInfo>>();
-        //    var workspace = new AdhocWorkspace();
-        //    var project = workspace.AddProject("foo.dll", LanguageNames.CSharp);
-        //    var syntaxTree = CSharpSyntaxTree.ParseText("class Class{}");
+        [Test]
+        public void CalculateForAllTests_Should_CompileProvidedDocuments()
+        {
+            // arrange
+            var rewrittenItemsByProject = new Dictionary<Project, List<RewrittenDocument>>();
 
-        //    rewrittenItemsByProject[project] = new List<RewrittenItemInfo>();
-        //    rewrittenItemsByProject[project].Add(new RewrittenItemInfo("path", syntaxTree));
+            var workspace = new AdhocWorkspace();
+            var project1 = workspace.AddProject("foo1.dll", LanguageNames.CSharp);
 
-        //    RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
-        //    _lineCoverageCalc.CalculateForAllTests(rewriteResult);
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            var rewrittenTree = CSharpSyntaxTree.ParseText("");
+            var rewrittenDocument1=new RewrittenDocument(null, rewrittenTree,null);
+            rewriteResult.Items[project1] = new List<RewrittenDocument>() {rewrittenDocument1};
 
-        //    _compilerMock.Received(1).Compile(
-        //        Arg.Is<IEnumerable<CompilationItem>>(x => DoesContainExpectedCompilationItems(x, rewrittenItemsByProject)),
-        //        auditVariablesMap);
-        //}
+            // act
+            _sut.CalculateForAllTests(rewriteResult);
+
+            // assert
+            _compilerMock.Received(1).Compile
+                (Arg.Is<IEnumerable<CompilationItem>>(x => x.First().SyntaxTrees[0] == rewriteResult.ToCompilationItems().First().SyntaxTrees[0])
+                , rewriteResult.AuditVariablesMap);
+        }
 
         //[Test]
         //public void Should_ReturnLineCoverage_With_Failure_When_AssertionFails()
@@ -88,9 +85,9 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
-        //    _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _testExecutorScriptEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //    Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
         //    Returns(new TestRunResult(new[] { "1" }, true, null));
 
@@ -128,10 +125,10 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails((ClassDeclarationSyntax)testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails((ClassDeclarationSyntax)testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
 
-        //    _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //        Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
         //        Returns(new TestRunResult(new[] { "1", "2" }, false, null));
 
@@ -167,8 +164,8 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
         //    _solutionExplorerMock.GetProjectReferences(project1).Returns(expectedTestProjectReferences);
 
         //    // when
@@ -176,7 +173,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    _lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
         //    // then
-        //    _testExecutorScriptEngine.Received(1).RunTest(expectedTestProjectReferences, Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.Received(1).RunTest(expectedTestProjectReferences, Arg.Any<Assembly[]>(),
         //        Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
         //}
 
@@ -203,15 +200,15 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
 
         //    // when
         //    RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
         //    _lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
         //    // then
-        //    _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //        testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         //}
 
@@ -244,16 +241,16 @@ namespace TestCoverage.Tests.CoverageCalculation
 
         //    testFixtureDetails.Cases.AddRange(testCases);
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[1], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestFixtureDetails(testClasses[1], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
 
         //    // when
         //    RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, auditVariablesMap);
         //    _lineCoverageCalc.CalculateForAllTests(rewriteResult);
 
         //    // then
-        //    _testExecutorScriptEngine.Received(8).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.Received(8).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //        Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
         //}
 
@@ -298,10 +295,10 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
-        //    _testsExtractor.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
+        //    _sut.GetTestClasses(syntaxTree1.GetRoot()).Returns(testClasses);
+        //    _sut.GetTestFixtureDetails(testClasses[0], Arg.Any<ISemanticModel>()).Returns(testFixtureDetails);
 
-        //    _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //    Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
         //    Returns(new TestRunResult(new[] { "1" }, false, null));
 
@@ -313,7 +310,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    _lineCoverageCalc.CalculateForDocument(rewrittenDocument, project1);
 
         //    // then
-        //    _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //       testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         //}
 
@@ -341,11 +338,11 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    TestFixtureDetails testFixtureDetails = new TestFixtureDetails();
         //    testFixtureDetails.Cases.AddRange(new[] { new TestCase(testFixtureDetails) { SyntaxNode = testMethod } });
 
-        //    _testsExtractor.GetTestClasses(documentTree.GetRoot()).Returns(new ClassDeclarationSyntax[0]);
-        //    _testsExtractor.GetTestFixtureDetails(testCoveringDocumentTree.GetRoot().GetClassDeclarationSyntax(), Arg.Any<ISemanticModel>())
+        //    _sut.GetTestClasses(documentTree.GetRoot()).Returns(new ClassDeclarationSyntax[0]);
+        //    _sut.GetTestFixtureDetails(testCoveringDocumentTree.GetRoot().GetClassDeclarationSyntax(), Arg.Any<ISemanticModel>())
         //        .Returns(testFixtureDetails);
 
-        //    _testExecutorScriptEngine.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //    Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>()).
         //    Returns(new TestRunResult(new[] { "1" }, false, null));
 
@@ -356,7 +353,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         //    _lineCoverageCalc.CalculateForDocument(rewrittenDocument, project1);
 
         //    // then
-        //    _testExecutorScriptEngine.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
+        //    _testExecutorScriptEngineMock.Received(1).RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(),
         //       testFixtureDetails.Cases[0], Arg.Any<AuditVariablesMap>());
         //}
     }

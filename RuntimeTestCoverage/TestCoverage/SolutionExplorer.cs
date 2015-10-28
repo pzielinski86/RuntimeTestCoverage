@@ -31,7 +31,7 @@ namespace TestCoverage
             _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
         }
 
-        public MetadataReference[] GetAllReferences(string projectName)
+        public MetadataReference[] GetAllProjectReferences(string projectName)
         {
             var project = Solution.Projects.First(x => x.Name == projectName);
             var allReferences = new HashSet<MetadataReference>();
@@ -128,11 +128,6 @@ namespace TestCoverage
             var project = _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
 
             return project;
-        }
-
-        public MetadataReference[] GetProjectReferences(Project project)
-        {
-            return project.MetadataReferences.ToArray();
         }
 
         // TODO: Refactor

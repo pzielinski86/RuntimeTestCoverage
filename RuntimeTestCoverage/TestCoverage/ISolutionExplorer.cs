@@ -10,7 +10,7 @@ namespace TestCoverage
     {
         void Open();
 
-        MetadataReference[] GetAllReferences(string projectName);
+        MetadataReference[] GetAllProjectReferences(string projectName);
         SyntaxTree OpenFile(string path);
 
         ISemanticModel GetSemanticModelByDocument(string docPath);
@@ -21,6 +21,5 @@ namespace TestCoverage
         string SolutionPath { get; }
         IEnumerable<Document> GetAllDocuments();
         Project GetProjectByDocument(string documentPath);
-        MetadataReference[] GetProjectReferences(Project project1);
     }
 }

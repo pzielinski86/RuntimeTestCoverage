@@ -6,7 +6,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    public class TestRunResult
+    public class TestRunResult : ITestRunResult
     {
         public string[] SetAuditVars { get; }
         public bool AssertionFailed { get; }
@@ -19,7 +19,7 @@ namespace TestCoverage.CoverageCalculation
             ErrorMessage = errorMessage;
         }
 
-        public LineCoverage[] GetCoverage(AuditVariablesMap auditVariablesMap, 
+        public virtual LineCoverage[] GetCoverage(AuditVariablesMap auditVariablesMap, 
             SyntaxNode testMethod, 
             string testProjectName, 
             string testDocumentPath)

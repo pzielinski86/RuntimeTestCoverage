@@ -27,7 +27,7 @@ namespace TestCoverage.CoverageCalculation
             Project project,
             Assembly[] allAssemblies)
         {
-            var allReferences = _solutionExplorer.GetAllReferences(project.Name);
+            var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 
             var compiledTestInfo = new CompiledTestFixtureInfo
             {
@@ -37,7 +37,6 @@ namespace TestCoverage.CoverageCalculation
                 AuditVariablesMap = rewrittenDocument.AuditVariablesMap,
                 SemanticModel = semanticModel
             };
-
 
             var coverage = new List<LineCoverage>();
 
@@ -66,8 +65,10 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (TestCase testCase in testFixtureDetails.Cases)
             {
-                TestRunResult testResult = _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences, compiledTestFixtureInfo.AllAssemblies, testCase, compiledTestFixtureInfo.AuditVariablesMap);
+                ITestRunResult testResult = _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences, compiledTestFixtureInfo.AllAssemblies, testCase, compiledTestFixtureInfo.AuditVariablesMap);
+
                 var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap, testCase.SyntaxNode, testsProjectName, compiledTestFixtureInfo.TestDocumentPath);
+
                 coverage.AddRange(partialCoverage);
             }
 

@@ -116,6 +116,7 @@
     <Compile Include="CompiledTestFixtureInfo.cs" />
     <Compile Include="CoverageCalculation\ITestExecutorScriptEngine.cs" />
     <Compile Include="CoverageCalculation\ITestRunner.cs" />
+    <Compile Include="CoverageCalculation\ITestRunResult.cs" />
     <Compile Include="CoverageCalculation\ITestsExtractor.cs" />
     <Compile Include="CoverageCalculation\NUnitTestExtractor.cs" />
     <Compile Include="CoverageCalculation\TestCase.cs" />

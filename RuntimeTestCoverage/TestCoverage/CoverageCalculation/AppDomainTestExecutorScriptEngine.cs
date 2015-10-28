@@ -15,7 +15,7 @@ namespace TestCoverage.CoverageCalculation
 {
     public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        public TestRunResult RunTest(MetadataReference[] references,
+        public ITestRunResult RunTest(MetadataReference[] references,
             Assembly[] assemblies,
             TestCase testCase,
             AuditVariablesMap auditVariablesMap)
