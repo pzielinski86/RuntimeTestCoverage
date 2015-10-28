@@ -60,9 +60,7 @@ namespace TestCoverage.CoverageCalculation
         private LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo,string testProjectName)
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
-
             string testsProjectName = PathHelper.GetCoverageDllName(testProjectName);
-            testFixtureDetails.AssemblyName = compiledTestFixtureInfo.AllAssemblies.Single(x => x.GetName().Name == testsProjectName).FullName;
 
             var coverage = new List<LineCoverage>();
 

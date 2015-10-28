@@ -10,7 +10,7 @@ using TestCoverage.Extensions;
 
 namespace TestCoverage.Tests
 {
-   
+
     [TestFixture]
     public class NUnitTestExtractorTests
     {
@@ -23,6 +23,32 @@ namespace TestCoverage.Tests
             _sut = new NUnitTestExtractor();
             _semanticModelMock = Substitute.For<ISemanticModel>();
             _semanticModelMock.GetConstantValue(Arg.Any<SyntaxNode>()).Returns((string)null);
+        }
+
+        [Test]
+        public void ShouldExtract_AssemblyName()
+        {
+            // arrange
+            const string assemblyName = "assembly name";
+            _semanticModelMock.GetAssemblyName().Returns(assemblyName);
+
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [Test]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var fixture = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(fixture.AssemblyName, Is.EqualTo(assemblyName));
         }
 
         [Test]
@@ -102,11 +128,11 @@ namespace TestCoverage.Tests
             Assert.That(testMethods[0].Arguments[0], Is.EqualTo("\"Test\""));
         }
 
-        [TestCase("test","\"test\"")]
-        [TestCase(5,"5")]
+        [TestCase("test", "\"test\"")]
+        [TestCase(5, "5")]
         [TestCase(5.5, "5.5")]
-        [TestCase(true,"true")]
-        public void Shoul_Convert_SemanticConstantValue_To_CallableValue(object value,string expectedCallValue)
+        [TestCase(true, "true")]
+        public void Shoul_Convert_SemanticConstantValue_To_CallableValue(object value, string expectedCallValue)
         {
             // arrange
             const string code = @"using Math.Data;
@@ -127,7 +153,7 @@ namespace TestCoverage.Tests
             var fixture = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
-            Assert.That(fixture.Cases[0].Arguments[0], Is.EqualTo(expectedCallValue));      
+            Assert.That(fixture.Cases[0].Arguments[0], Is.EqualTo(expectedCallValue));
         }
 
         [Test]
@@ -154,7 +180,7 @@ namespace TestCoverage.Tests
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
             Assert.That(testMethods[0].Arguments[0], Is.EqualTo("5+9"));
-        } 
+        }
 
         [Test]
         public void ShouldExtract_TestCase_With_PositiveIntegerParameter()

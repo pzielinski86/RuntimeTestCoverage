@@ -12,6 +12,7 @@ namespace TestCoverage.CoverageCalculation
         public TestFixtureDetails GetTestFixtureDetails(ClassDeclarationSyntax fixtureNode, ISemanticModel semanticModel)
         {
             var fixture = ExtractTestCases(fixtureNode, semanticModel);
+            fixture.Namespace = semanticModel.GetAssemblyName();
 
             return fixture;
         }

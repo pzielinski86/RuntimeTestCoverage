@@ -11,6 +11,11 @@ namespace TestCoverage.Compilation
             _semanticModel = semanticModel;
         }
 
+        public string GetAssemblyName()
+        {
+            return _semanticModel.Compilation.AssemblyName;
+        }
+
         public object GetConstantValue(SyntaxNode node)
         {
             var symbolInfo =_semanticModel.GetSymbolInfo(node);
