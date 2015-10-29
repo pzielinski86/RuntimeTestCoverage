@@ -46,7 +46,9 @@ namespace TestCoverageVsPlugin.UI
             {
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore(dte.Solution.FileName);
-                ITestExplorer testExplorer = new TestExplorer(solutionExplorer, new NUnitTestExtractor(), settingsStore);
+                ICoverageStore coverageStore=new XmlCoverageStore(dte.Solution.FileName);
+
+                ITestExplorer testExplorer = new TestExplorer(solutionExplorer, new NUnitTestExtractor(),coverageStore, settingsStore);
                 var xmlCoverageStore = new XmlCoverageStore(dte.Solution.FileName);
 
                 var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionExplorer, () => new AppDomainSolutionCoverageEngine(), xmlCoverageStore);

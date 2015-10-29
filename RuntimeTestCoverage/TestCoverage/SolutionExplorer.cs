@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.CSharp;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
@@ -94,7 +95,7 @@ namespace TestCoverage
             }
         }
 
-        public Assembly[] LoadCompiledAssemblies(params string[] excludedProjects)
+        public _Assembly[] LoadCompiledAssemblies(params string[] excludedProjects)
         {
             List<Assembly> allAssemblies = new List<Assembly>();
 

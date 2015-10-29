@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Extensions;
+using TestCoverage.Rewrite;
 using TestCoverage.Storage;
 
 namespace TestCoverage
@@ -12,13 +15,18 @@ namespace TestCoverage
     {
         private readonly ISolutionExplorer _solutionExplorer;
         private readonly ITestsExtractor _testsExtractor;
+        private readonly ICoverageStore _coverageStore;
         private readonly ICoverageSettingsStore _coverageSettingsStore;
 
-        public TestExplorer(ISolutionExplorer solutionExplorer, ITestsExtractor testsExtractor, ICoverageSettingsStore coverageSettingsStore)
+        public TestExplorer(ISolutionExplorer solutionExplorer, 
+            ITestsExtractor testsExtractor, 
+            ICoverageStore coverageStore,
+            ICoverageSettingsStore coverageSettingsStore)
         {
             _solutionExplorer = solutionExplorer;
             _solutionExplorer.Open();
             _testsExtractor = testsExtractor;
+            _coverageStore = coverageStore;
             _coverageSettingsStore = coverageSettingsStore;
         }
 
@@ -64,6 +72,34 @@ namespace TestCoverage
 
             return GetAllReferencedProjects(unignoredTestProjects);
         }
+
+        public RewrittenDocument[] GetReferencedTests(RewrittenDocument document, string projectName)
+        {
+            var methods = document.SyntaxTree.GetRoot().GetPublicMethods();
+            string documentName = Path.GetFileNameWithoutExtension(document.DocumentPath);
+            var currentCoverage = _coverageStore.ReadAll();
+            var rewrittenDocuments = new List<RewrittenDocument>();
+
+            foreach (var method in methods)
+            {
+                string path = NodePathBuilder.BuildPath(method, documentName, projectName);
+
+                foreach (var docCoverage in currentCoverage.Where(x => x.Path == path))
+                {
+                    if (rewrittenDocuments.All(x => x.DocumentPath != docCoverage.TestDocumentPath))
+                    {
+                        SyntaxTree testRoot = _solutionExplorer.OpenFile(docCoverage.TestDocumentPath);
+
+                        var rewrittenDocument = new RewrittenDocument(document.AuditVariablesMap, testRoot, docCoverage.TestDocumentPath);
+                        rewrittenDocuments.Add(rewrittenDocument);
+                    }
+                }
+            }
+
+            return rewrittenDocuments.ToArray();
+        }
+
+        public ISolutionExplorer SolutionExplorer => _solutionExplorer;
 
         private Project[] GetAllReferencedProjects(TestProject[] testProjects)
         {

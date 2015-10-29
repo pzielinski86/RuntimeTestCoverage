@@ -110,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDomainSolutionCoverageEngine.cs" />
+    <Compile Include="Compilation\ICompiledItem.cs" />
     <Compile Include="Compilation\ICompiler.cs" />
     <Compile Include="Compilation\ISemanticModel.cs" />
     <Compile Include="Compilation\RoslynSemanticModel.cs" />
@@ -132,7 +133,7 @@
     <Compile Include="Rewrite\AuditVariablePlaceholder.cs" />
     <Compile Include="Rewrite\AuditVariablesMap.cs" />
     <Compile Include="Compilation\CompilationItem.cs" />
-    <Compile Include="Compilation\CompiledItem.cs" />
+    <Compile Include="Compilation\RoslynCompiledItem.cs" />
     <Compile Include="Compilation\RoslynCompiler.cs" />
     <Compile Include="CoverageCalculation\LineCoverage.cs" />
     <Compile Include="CoverageCalculation\LineCoverageCalc.cs" />

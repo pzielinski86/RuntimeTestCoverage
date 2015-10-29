@@ -4,25 +4,26 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Compilation
 {
     public class RoslynCompiler : ICompiler
     {
-        public CompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
+        public ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
         {
             var allItemsArray = allItems.ToArray();
 
-            var compiledItems = new List<CompiledItem>();
-            CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
+            var compiledItems = new List<RoslynCompiledItem>();
+            RoslynCompiledItem roslynCompiledAudit = CompileAudit(auditVariablesMap);
 
             foreach (var compilationItem in allItemsArray)
             {
-                Compile(compilationItem, compiledAudit, allItemsArray, compiledItems);
+                Compile(compilationItem, roslynCompiledAudit, allItemsArray, compiledItems);
             }
 
-            compiledItems.Add(compiledAudit);
+            compiledItems.Add(roslynCompiledAudit);
 
             foreach (var compiledItem in compiledItems)
                 compiledItem.EmitAndSave();
@@ -30,21 +31,21 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        public CompiledItem[] Compile(CompilationItem item, IEnumerable<Assembly> references, AuditVariablesMap auditVariablesMap)
+        public ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references, AuditVariablesMap auditVariablesMap)
         {
-            var compiledItems = new List<CompiledItem>();
-            CompiledItem compiledAudit = CompileAudit(auditVariablesMap);
+            var compiledItems = new List<RoslynCompiledItem>();
+            RoslynCompiledItem roslynCompiledAudit = CompileAudit(auditVariablesMap);
 
             var requiredReferences =
                 item.Project.MetadataReferences.Union(
                     references.Select(r => MetadataReference.CreateFromFile(r.Location))).ToList();
-            requiredReferences.Add(compiledAudit.Compilation.ToMetadataReference());
+            requiredReferences.Add(roslynCompiledAudit.Compilation.ToMetadataReference());
 
             string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
             CSharpCompilation compiledDll = Compile(newDllName, item.SyntaxTrees, requiredReferences.ToArray());
 
-            compiledItems.Add(new CompiledItem(item.Project,compiledDll));
-            compiledItems.Add(compiledAudit);
+            compiledItems.Add(new RoslynCompiledItem(item.Project,compiledDll));
+            compiledItems.Add(roslynCompiledAudit);
 
             foreach (var compiledItem in compiledItems)
                 compiledItem.EmitAndSave();
@@ -52,7 +53,7 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        private CompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
+        private RoslynCompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
         {
             var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
 
@@ -61,10 +62,13 @@ namespace TestCoverage.Compilation
 
             CSharpCompilation compilation = Compile("Audit", new[] {auditTree}, references);
 
-            return new CompiledItem(null, compilation);
+            return new RoslynCompiledItem(null, compilation);
         }
 
-        private void Compile(CompilationItem item, CompiledItem compiledAudit, IEnumerable<CompilationItem> allItems, List<CompiledItem> currentlyCompiledItems)
+        private void Compile(CompilationItem item, 
+            RoslynCompiledItem roslynCompiledAudit, 
+            IEnumerable<CompilationItem> allItems, 
+            List<RoslynCompiledItem> currentlyCompiledItems)
         {
             if (currentlyCompiledItems.Any(c => c.Project == item.Project))
                 return;
@@ -72,28 +76,28 @@ namespace TestCoverage.Compilation
             foreach (ProjectReference projectReference in item.Project.ProjectReferences)
             {
                 CompilationItem referencedItem = allItems.Single(i => i.Project.Id == projectReference.ProjectId);
-                Compile(referencedItem, compiledAudit, allItems, currentlyCompiledItems);
+                Compile(referencedItem, roslynCompiledAudit, allItems, currentlyCompiledItems);
             }
 
             MetadataReference[] projectReferences = GetProjectReferences(item.Project, currentlyCompiledItems);
-            MetadataReference[] auditReferences = { compiledAudit.Compilation.ToMetadataReference() };
+            MetadataReference[] auditReferences = { roslynCompiledAudit.Compilation.ToMetadataReference() };
             MetadataReference[] requiredReferences = projectReferences.Union(item.Project.MetadataReferences).Union(auditReferences).ToArray();
 
             string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
             CSharpCompilation compilation = Compile(newDllName, item.SyntaxTrees, requiredReferences);
 
-            currentlyCompiledItems.Add(new CompiledItem(item.Project, compilation));
+            currentlyCompiledItems.Add(new RoslynCompiledItem(item.Project, compilation));
         }
 
-        private MetadataReference[] GetProjectReferences(Project project, List<CompiledItem> compiledItems)
+        private MetadataReference[] GetProjectReferences(Project project, List<RoslynCompiledItem> compiledItems)
         {
             var metadataReferences = new List<MetadataReference>();
 
             foreach (ProjectReference projectReference in project.AllProjectReferences)
             {
-                CompiledItem compiledItem = compiledItems.Single(i => i.Project.Id == projectReference.ProjectId);
+                RoslynCompiledItem roslynCompiledItem = compiledItems.Single(i => i.Project.Id == projectReference.ProjectId);
 
-                metadataReferences.Add(compiledItem.Compilation.ToMetadataReference());
+                metadataReferences.Add(roslynCompiledItem.Compilation.ToMetadataReference());
             }
 
             return metadataReferences.ToArray();

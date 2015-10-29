@@ -19,6 +19,7 @@ namespace TestCoverage.Tests
         private ITestsExtractor _testExtractorMock;
         private ICoverageSettingsStore _settingsStoreMock;
         private TestExplorer _sut;
+        private ICoverageStore _coverageStoreMock;
 
         [SetUp]
         public void Setup()
@@ -26,13 +27,14 @@ namespace TestCoverage.Tests
             _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
             _testExtractorMock = Substitute.For<ITestsExtractor>();
             _settingsStoreMock = Substitute.For<ICoverageSettingsStore>();
+            _coverageStoreMock = Substitute.For<ICoverageStore>();
 
             _settingsStoreMock.Read().Returns(new CoverageSettings());
 
-            _sut = new TestExplorer(_solutionExplorerMock, _testExtractorMock, _settingsStoreMock);
+            _sut = new TestExplorer(_solutionExplorerMock, _testExtractorMock, _coverageStoreMock,_settingsStoreMock);
         }
 
-
+        //TODO: Write tests for GetReferencedTests
         [Test]
         public async void Should_ReturnIgnoredSolutionTestProject_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
         {

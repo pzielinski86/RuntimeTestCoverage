@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,7 +17,7 @@ namespace TestCoverage.CoverageCalculation
     public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
         public ITestRunResult RunTest(MetadataReference[] references,
-            Assembly[] assemblies,
+            _Assembly[] assemblies,
             TestCase testCase,
             AuditVariablesMap auditVariablesMap)
         {
@@ -26,7 +27,7 @@ namespace TestCoverage.CoverageCalculation
             var options = new ScriptOptions();
             options = options.
                 AddReferences(references.Where(x=>!x.Display.Contains("mscorlib.dll"))).
-                AddReferences(assemblies).
+                AddReferences(assemblies.OfType<Assembly>()).
                 AddReferences(typeof(int).Assembly).
                 AddNamespaces( "System", "System.Reflection").
                 AddNamespaces(testCase.TestFixture.Namespace);

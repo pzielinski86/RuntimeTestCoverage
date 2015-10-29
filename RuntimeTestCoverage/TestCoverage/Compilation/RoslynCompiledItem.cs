@@ -4,26 +4,27 @@ using Microsoft.CodeAnalysis.Emit;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace TestCoverage.Compilation
 {
-    public class CompiledItem
+    public class RoslynCompiledItem : ICompiledItem
     {
 
         public Project Project { get; private set; }
         public CSharpCompilation Compilation { get; private set; }
         public bool IsEmitted { get; set; }
         public string DllPath { get; private set; }
-        public Assembly Assembly { get; private set; }
+        public _Assembly Assembly { get; private set; }
 
-        public CompiledItem(Project project, CSharpCompilation
+        public RoslynCompiledItem(Project project, CSharpCompilation
             compilation)
         {
             Project = project;
             Compilation = compilation;
         }
 
-        public Assembly EmitAndSave()
+        public _Assembly EmitAndSave()
         {
             if (IsEmitted)
                 return Assembly;
@@ -42,7 +43,7 @@ namespace TestCoverage.Compilation
                 }
             }
 
-            Assembly = Assembly.LoadFrom(dllPath);
+            Assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             DllPath = dllPath;
             IsEmitted = true;
 

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
@@ -15,7 +16,9 @@ namespace TestCoverage.CoverageCalculation
         private readonly ITestExecutorScriptEngine _testExecutorScriptEngine;
         private readonly ISolutionExplorer _solutionExplorer;
 
-        public TestRunner(ITestsExtractor testsExtractor,ITestExecutorScriptEngine testExecutorScriptEngine,ISolutionExplorer solutionExplorer)
+        public TestRunner(ITestsExtractor testsExtractor,
+            ITestExecutorScriptEngine testExecutorScriptEngine,
+            ISolutionExplorer solutionExplorer)
         {
             _testsExtractor = testsExtractor;
             _testExecutorScriptEngine = testExecutorScriptEngine;
@@ -25,7 +28,7 @@ namespace TestCoverage.CoverageCalculation
         public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
             ISemanticModel semanticModel, 
             Project project,
-            Assembly[] allAssemblies)
+            _Assembly[] allAssemblies)
         {
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 
@@ -65,9 +68,15 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (TestCase testCase in testFixtureDetails.Cases)
             {
-                ITestRunResult testResult = _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences, compiledTestFixtureInfo.AllAssemblies, testCase, compiledTestFixtureInfo.AuditVariablesMap);
+                ITestRunResult testResult = _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences, 
+                    compiledTestFixtureInfo.AllAssemblies, 
+                    testCase, 
+                    compiledTestFixtureInfo.AuditVariablesMap);
 
-                var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap, testCase.SyntaxNode, testsProjectName, compiledTestFixtureInfo.TestDocumentPath);
+                var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap, 
+                    testCase.SyntaxNode, 
+                    testsProjectName, 
+                    compiledTestFixtureInfo.TestDocumentPath);
 
                 coverage.AddRange(partialCoverage);
             }

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
@@ -10,6 +11,6 @@ namespace TestCoverage.CoverageCalculation
         LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument,
             ISemanticModel semanticModel,
             Project project,
-            Assembly[] allAssemblies);
+            _Assembly[] allAssemblies);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
@@ -16,7 +17,7 @@ namespace TestCoverage
         ISemanticModel GetSemanticModelByDocument(string docPath);
         void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap);
         IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments);
-        Assembly[] LoadCompiledAssemblies(params string[] excludedProjects);
+        _Assembly[] LoadCompiledAssemblies(params string[] excludedProjects);
         Solution Solution { get; }
         string SolutionPath { get; }
         IEnumerable<Document> GetAllDocuments();
