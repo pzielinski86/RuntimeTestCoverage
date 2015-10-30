@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NUnit.Framework;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
-using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
 using TestCoverage.Storage;
 
@@ -23,7 +19,6 @@ namespace TestCoverage.Tests.CoverageCalculation
 
         private ISolutionExplorer _solutionExplorerMock;
         private ICompiler _compilerMock;
-        private ICoverageStore _coverageStoreMock;
         private ITestRunner _testRunnerMock;
         private List<ICompiledItem> _compiledAllItems;
         private List<ICompiledItem> _compiledSingleProjectItems;
@@ -35,7 +30,6 @@ namespace TestCoverage.Tests.CoverageCalculation
             _compilerMock = Substitute.For<ICompiler>();
             _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
             _testRunnerMock = Substitute.For<ITestRunner>();
-            _coverageStoreMock = Substitute.For<ICoverageStore>();
             _compiledAllItems = new List<ICompiledItem>();
             _compiledSingleProjectItems=new List<ICompiledItem>();
             _testExplorerMock = Substitute.For<ITestExplorer>();
@@ -44,7 +38,6 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             _sut = new LineCoverageCalc(_testExplorerMock,
                 _compilerMock,
-                _coverageStoreMock,
                 _testRunnerMock);
 
             _compilerMock.Compile(Arg.Any<CompilationItem>(), Arg.Any<IEnumerable<_Assembly>>(),
@@ -197,7 +190,54 @@ namespace TestCoverage.Tests.CoverageCalculation
             LineCoverage[] output = _sut.CalculateForDocument(testProject, rewrittenDocument1);
 
             // assert
-            Assert.That(output.Length, Is.EqualTo(2));
+            Assert.That(output, Is.EquivalentTo(expectedLineCoverage));
+        }
+
+        [Test]
+        public void CalculateForDocument_Should_Execute_TestsInReferencedTestDocuments_When_ProvidedDocumentIsNotTestDocument()
+        {
+            // arrange
+            var rewrittenItemsByProject = new Dictionary<Project, List<RewrittenDocument>>();
+            var workspace = new AdhocWorkspace();
+            var testProject = workspace.AddProject("TestProject.dll", LanguageNames.CSharp);
+            var businessLogicProject = workspace.AddProject("BusinessLogicProject.dll", LanguageNames.CSharp);
+
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            var rewrittenTree = CSharpSyntaxTree.ParseText("");
+
+            var businessLogicDocument = new RewrittenDocument(null, rewrittenTree, null);
+            var testDocument = new RewrittenDocument(null, rewrittenTree, null);
+
+            rewriteResult.Items[businessLogicProject] = new List<RewrittenDocument>() { businessLogicDocument };
+            rewriteResult.Items[testProject] = new List<RewrittenDocument>() { testDocument };
+
+            var compiledItem1 = Substitute.For<ICompiledItem>();
+            compiledItem1.Project.Returns(testProject);
+            _compiledSingleProjectItems.Add(compiledItem1);
+
+            _testRunnerMock.RunAllTestsInDocument(businessLogicDocument,
+                Arg.Any<ISemanticModel>(),
+                businessLogicProject,
+                Arg.Any<_Assembly[]>())
+                .Returns((LineCoverage[])null);
+
+            var expectedLineCoverage = new[] { new LineCoverage() };
+
+            _testRunnerMock.RunAllTestsInDocument(testDocument,
+                Arg.Any<ISemanticModel>(),
+                testProject,
+                Arg.Any<_Assembly[]>())
+                .Returns(expectedLineCoverage);
+
+            _testExplorerMock.GetReferencedTests(businessLogicDocument, businessLogicProject.Name)
+                .Returns(new[] {testDocument});
+            _solutionExplorerMock.GetProjectByDocument(testDocument.DocumentPath).Returns(testProject);
+
+            // act
+            LineCoverage[] output = _sut.CalculateForDocument(businessLogicProject, businessLogicDocument);
+
+            // assert
+            Assert.That(output, Is.EquivalentTo(expectedLineCoverage));
         }
     }
 }

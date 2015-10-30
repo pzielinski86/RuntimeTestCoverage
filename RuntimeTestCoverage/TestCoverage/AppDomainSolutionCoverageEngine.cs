@@ -23,9 +23,9 @@ namespace TestCoverage
                 engineType.FullName);            
         }
 
-        public void Init(string solutionPath)
+        public void Init(ISolutionExplorer solutionExplorer)
         {
-            _coverageEngine.Init(solutionPath);
+            _coverageEngine.Init(solutionExplorer);
         }
 
         public CoverageResult CalculateForAllDocuments()

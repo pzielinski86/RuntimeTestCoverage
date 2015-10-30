@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
-using TestCoverage.Storage;
 
 namespace TestCoverage.CoverageCalculation
 {
@@ -18,7 +17,6 @@ namespace TestCoverage.CoverageCalculation
 
         public LineCoverageCalc(ITestExplorer testExplorer,
             ICompiler compiler,
-            ICoverageStore coverageStore,
             ITestRunner testRunner)
         {
             _testExplorer = testExplorer;
@@ -52,6 +50,7 @@ namespace TestCoverage.CoverageCalculation
             return finalCoverage.ToArray();
         }
 
+
         public LineCoverage[] CalculateForDocument(Project project, RewrittenDocument rewrittenDocument)
         {
             ICompiledItem[] newCompiledItems;
@@ -62,28 +61,29 @@ namespace TestCoverage.CoverageCalculation
             LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, semanticModel, project, allAssemblies);
 
             if (fullCoverage == null)
-            {
-                List<LineCoverage> finalCoverage = new List<LineCoverage>();
-
-                var referencedTests = _testExplorer.GetReferencedTests(rewrittenDocument, project.Name);
-
-                foreach (RewrittenDocument referencedTest in referencedTests)
-                {
-                    semanticModel = _testExplorer.SolutionExplorer.GetSemanticModelByDocument(referencedTest.DocumentPath);
-                    var testProject = _testExplorer.SolutionExplorer.GetProjectByDocument(referencedTest.DocumentPath);
-
-                    var coverage = _testRunner.RunAllTestsInDocument(referencedTest, semanticModel, testProject, allAssemblies);
-                    finalCoverage.AddRange(coverage);
-                }
-
-                fullCoverage = finalCoverage.ToArray();
-            }
-
+                fullCoverage = CalculateCoverageForReferencedTests(project, rewrittenDocument, allAssemblies);
 
             return fullCoverage.ToArray();
         }
 
-    
+        private LineCoverage[] CalculateCoverageForReferencedTests(Project project, 
+            RewrittenDocument rewrittenDocument,
+            _Assembly[] allAssemblies)
+        {
+            List<LineCoverage> finalCoverage = new List<LineCoverage>();
+            var referencedTests = _testExplorer.GetReferencedTests(rewrittenDocument, project.Name);
+
+            foreach (RewrittenDocument referencedTest in referencedTests)
+            {
+                var semanticModel = _testExplorer.SolutionExplorer.GetSemanticModelByDocument(referencedTest.DocumentPath);
+                var testProject = _testExplorer.SolutionExplorer.GetProjectByDocument(referencedTest.DocumentPath);
+
+                var coverage = _testRunner.RunAllTestsInDocument(referencedTest, semanticModel, testProject, allAssemblies);
+                finalCoverage.AddRange(coverage);
+            }
+
+            return finalCoverage.ToArray();
+        }
 
         private _Assembly[] CompileDocument(Project project, RewrittenDocument rewrittenDocument, out ICompiledItem[] newItems)
         {
@@ -101,6 +101,5 @@ namespace TestCoverage.CoverageCalculation
 
             return assemblies.ToArray();
         }
-
     }
 }

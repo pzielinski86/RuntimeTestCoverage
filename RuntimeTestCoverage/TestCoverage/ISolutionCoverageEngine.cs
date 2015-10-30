@@ -5,7 +5,7 @@ namespace TestCoverage
 {
     public interface ISolutionCoverageEngine:IDisposable
     {
-        void Init(string solutionPath);
+        void Init(ISolutionExplorer solutionPath);
         CoverageResult CalculateForAllDocuments();
         CoverageResult CalculateForDocument(string projectName, string documentPath, string documentContent);
     }

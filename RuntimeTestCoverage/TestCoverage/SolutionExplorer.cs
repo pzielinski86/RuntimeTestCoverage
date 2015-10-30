@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage
 {
-    public class SolutionExplorer : ISolutionExplorer
+    public class SolutionExplorer : MarshalByRefObject,ISolutionExplorer
     {
         private readonly string _solutionPath;
         private readonly MSBuildWorkspace _workspace;
@@ -29,7 +30,8 @@ namespace TestCoverage
 
         public void Open()
         {
-            _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
+            if(_solution==null)
+                _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
         }
 
         public MetadataReference[] GetAllProjectReferences(string projectName)

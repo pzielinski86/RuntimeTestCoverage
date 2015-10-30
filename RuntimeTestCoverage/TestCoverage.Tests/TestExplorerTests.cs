@@ -8,6 +8,7 @@ using NSubstitute;
 using NUnit.Framework;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
+using TestCoverage.Rewrite;
 using TestCoverage.Storage;
 
 namespace TestCoverage.Tests
@@ -31,10 +32,39 @@ namespace TestCoverage.Tests
 
             _settingsStoreMock.Read().Returns(new CoverageSettings());
 
-            _sut = new TestExplorer(_solutionExplorerMock, _testExtractorMock, _coverageStoreMock,_settingsStoreMock);
+            _sut = new TestExplorer(_solutionExplorerMock, _testExtractorMock, _coverageStoreMock, _settingsStoreMock);
         }
 
-        //TODO: Write tests for GetReferencedTests
+        [Test]
+        public void GetReferencedTests_Should_ReturnDocumentContainingTest_When_CoverageWasBeforeCalculated()
+        {
+            // arrange
+            var tree = CSharpSyntaxTree.ParseText("public class MathHelper" +
+                                                  "{ public int Divide(int a,b) {return a/b;}}");
+            var testTree = CSharpSyntaxTree.ParseText(@"class MathHelperTests{ public void DivideTest();}}");
+
+            var lineCoverage = new LineCoverage
+            {
+                Path = "Math.MathHelper.MathHelper.Divide",
+                TestDocumentPath = @"c:\\MathHelperTests.cs",
+                TestPath = "MathTests.MathHelperTests.MathHelperTests.DivideTest"
+            };
+
+            _coverageStoreMock.ReadAll().Returns(new[] { lineCoverage });
+            _solutionExplorerMock.OpenFile(lineCoverage.TestDocumentPath).Returns(testTree);
+
+            var document = new RewrittenDocument(new AuditVariablesMap(), tree, @"c:\MathHelper.cs");
+
+            // act
+            RewrittenDocument[] output = _sut.GetReferencedTests(document, "Math");
+
+            // assert
+            Assert.That(output.Length,Is.EqualTo(1));
+            Assert.That(output[0].DocumentPath,Is.EqualTo(lineCoverage.TestDocumentPath));
+            Assert.That(output[0].AuditVariablesMap, Is.EqualTo(document.AuditVariablesMap));
+            Assert.That(output[0].SyntaxTree, Is.EqualTo(testTree));
+        }
+
         [Test]
         public async void Should_ReturnIgnoredSolutionTestProject_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
         {

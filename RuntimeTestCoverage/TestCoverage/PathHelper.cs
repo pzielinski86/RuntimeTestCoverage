@@ -12,7 +12,10 @@ namespace TestCoverage
 
         public static string GetCoverageDllName(string assemblyName)
         {
-            return string.Format("{0}_{1}.dll", assemblyName, "COVERAGE");
+            if (assemblyName.EndsWith("_COVERAGE.dll"))
+                return assemblyName;
+
+            return $"{assemblyName}_{"COVERAGE"}.dll";
         }
     }
 }

@@ -7,7 +7,7 @@ using TestCoverage.Extensions;
 
 namespace TestCoverage.Rewrite
 {
-    public class SolutionRewriter
+    internal class SolutionRewriter
     {
         private readonly IAuditVariablesRewriter _auditVariablesRewriter;
         private readonly IContentWriter _contentWriter;
@@ -18,14 +18,14 @@ namespace TestCoverage.Rewrite
             _contentWriter = contentWriter;
         }
 
-        public RewrittenDocument RewriteDocument(Project project, string documentPath, string documentContent)
+        public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
         {
             AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(project.Name, documentPath, syntaxNode,
+            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode,
                 auditVariablesMap);
 
             _contentWriter.Write(documentPath, rewrittenNode.SyntaxTree);
@@ -44,7 +44,7 @@ namespace TestCoverage.Rewrite
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project, document.FilePath, syntaxNode.ToFullString());
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString());
 
                     if (!rewrittenItems.ContainsKey(document.Project))
                         rewrittenItems[document.Project] = new List<RewrittenDocument>();

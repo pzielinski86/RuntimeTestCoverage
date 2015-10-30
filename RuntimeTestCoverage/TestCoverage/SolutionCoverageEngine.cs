@@ -15,12 +15,12 @@ namespace TestCoverage
         private IAuditVariablesRewriter _auditVariablesRewriter;
         private ITestExplorer _testExplorer;
 
-        public void Init(string solutionPath)
+        public void Init(ISolutionExplorer solutionPath)
         {
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
-            _coverageStore = new XmlCoverageStore(solutionPath);
-            _solutionExplorer = new SolutionExplorer(solutionPath);
-            var settingsStore = new XmlCoverageSettingsStore(solutionPath);
+            _coverageStore = new XmlCoverageStore(solutionPath.SolutionPath);
+            _solutionExplorer = new SolutionExplorer(solutionPath.SolutionPath);
+            var settingsStore = new XmlCoverageSettingsStore(solutionPath.SolutionPath);
             _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), _coverageStore,settingsStore);
             _solutionExplorer.Open();
 
@@ -34,7 +34,7 @@ namespace TestCoverage
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
-            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(), _coverageStore, 
+            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(), 
                 new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
             var coverage = lineCoverageCalc.CalculateForAllTests(rewrittenResult);
 
@@ -52,9 +52,9 @@ namespace TestCoverage
                 return new CoverageResult(new LineCoverage[0]);
 
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
-            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project, documentPath, documentContent);
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project.Name, documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(), _coverageStore,
+            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
                 new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
 
             var coverage = lineCoverageCalc.CalculateForDocument(project, rewrittenDocument);
