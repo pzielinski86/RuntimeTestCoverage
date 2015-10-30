@@ -2,43 +2,45 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using TestCoverage;
 
 namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\github\TestingSandbox\LeadGenDataService\LeadGenDataService.sln";
+        private const string TestSubjectSlnPath = @"../../../../TestSolution/TestSolution.sln";
 
         private static void Main(string[] args)
         {
-            ISolutionExplorer solutionExplorer=new SolutionExplorer(TestSubjectSlnPath);
-            solutionExplorer.Open();
-
-            using (var engine = new AppDomainSolutionCoverageEngine())
+            for (int i = 0; i < 2; i++)
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                using (var engine = new AppDomainSolutionCoverageEngine())
+                {
+                    engine.Init(TestSubjectSlnPath);
 
-                engine.Init(solutionExplorer);
-                var positions = engine.CalculateForAllDocuments();
+                    Stopwatch stopwatch = Stopwatch.StartNew();
 
-                Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-                Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
-            }
+                    var positions = engine.CalculateForAllDocuments();
 
-            using (var engine = new AppDomainSolutionCoverageEngine())
-            {
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                    Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+                    Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+                }
 
-                engine.Init(solutionExplorer);
+                using (var engine = new AppDomainSolutionCoverageEngine())
+                {
+                    engine.Init(TestSubjectSlnPath);
 
-                string documentPath = @"C:\github\TestingSandbox\LeadGenDataService\src\LeadGenDataService.Utils\UkPhoneNumberNormalizer.cs";
-                string documentContent = File.ReadAllText(documentPath);
+                    Stopwatch stopwatch = Stopwatch.StartNew();
 
-                var positions = engine.CalculateForDocument("LeadGenDataService.Utils", documentPath,documentContent);
+                    string documentPath = @"C:\github\TestingSandbox\LeadGenDataService\src\LeadGenDataService.Utils\UkPhoneNumberNormalizer.cs";
+                    string documentContent = File.ReadAllText(documentPath);
 
-                Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-                Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+                    var positions = engine.CalculateForDocument("Math", documentPath, documentContent);
+
+                    Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+                    Console.WriteLine("Rewrite&run selected document.Time: {0}", stopwatch.ElapsedMilliseconds);
+                }
             }
         }
     }

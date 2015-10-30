@@ -65,6 +65,7 @@ namespace TestCoverageVsPlugin
 
             _documentPath = GetTextDocument().FilePath;
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
+            _vsSolutionTestCoverage.Init();
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
@@ -85,18 +86,26 @@ namespace TestCoverageVsPlugin
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(documentPath)}");
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
 
-
             var projectItem = _solution.FindProjectItem(documentPath);
             var projectName = projectItem.ContainingProject.Name;
+
             _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(projectName, documentPath, documentContent);
-            _currentTask.ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext());
+            _currentTask.
+                ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext())
+                .ContinueWith(PreCreateAppDomain, null, TaskScheduler.Default);
+        }
+
+        private void PreCreateAppDomain(Task task, object o)
+        {
+            _vsSolutionTestCoverage.Init();
+            _taskQueued = false;
+            _currentTask = null;
+
         }
 
         private void CalculationsCompleted(Task task, object o)
         {
-            _taskQueued = false;
             _statusBar.SetText("");
-            _currentTask = null;
             Redraw();
         }
 

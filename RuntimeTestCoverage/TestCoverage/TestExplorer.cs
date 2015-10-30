@@ -24,7 +24,6 @@ namespace TestCoverage
             ICoverageSettingsStore coverageSettingsStore)
         {
             _solutionExplorer = solutionExplorer;
-            _solutionExplorer.Open();
             _testsExtractor = testsExtractor;
             _coverageStore = coverageStore;
             _coverageSettingsStore = coverageSettingsStore;

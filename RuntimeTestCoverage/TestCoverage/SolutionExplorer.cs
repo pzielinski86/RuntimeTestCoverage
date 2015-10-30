@@ -14,25 +14,17 @@ namespace TestCoverage
 {
     public class SolutionExplorer : MarshalByRefObject,ISolutionExplorer
     {
-        private readonly string _solutionPath;
-        private readonly MSBuildWorkspace _workspace;
-        private Solution _solution;
+        private readonly Solution _solution;
 
         public SolutionExplorer(string solutionPath)
         {
             var props = new Dictionary<string, string>();
             props["CheckForSystemRuntimeDependency"] = "true";
 
-            _solutionPath = solutionPath;
-
-            _workspace = MSBuildWorkspace.Create(props);
-        }
-
-        public void Open()
-        {
-            if(_solution==null)
-                _solution = _workspace.OpenSolutionAsync(_solutionPath).Result;
-        }
+            var workspace = MSBuildWorkspace.Create(props);
+            // TODO: Get rid of blocking a thread
+            _solution = workspace.OpenSolutionAsync(solutionPath).Result;
+        }  
 
         public MetadataReference[] GetAllProjectReferences(string projectName)
         {
@@ -119,7 +111,7 @@ namespace TestCoverage
 
         public Solution Solution => _solution;
 
-        public string SolutionPath => _solutionPath;
+        public string SolutionPath => Solution.FilePath;
 
         public IEnumerable<Document> GetAllDocuments()
         {

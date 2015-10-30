@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
+using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
@@ -26,8 +28,8 @@ namespace TestCoverage.CoverageCalculation
             _solutionExplorer = solutionExplorer;
         }
 
-        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
-            ISemanticModel semanticModel, 
+        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument,
+            ISemanticModel semanticModel,
             Project project,
             _Assembly[] allAssemblies)
         {
@@ -50,7 +52,7 @@ namespace TestCoverage.CoverageCalculation
                 return null;
 
             foreach (ClassDeclarationSyntax testClass in testClasses)
-            {                
+            {
                 compiledTestInfo.TestClass = testClass;
 
                 var partialCoverage = RunAllTestsInFixture(compiledTestInfo, project.Name);
@@ -60,27 +62,28 @@ namespace TestCoverage.CoverageCalculation
             return coverage.ToArray();
         }
 
-        private LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo,string testProjectName)
+        private LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo, string testProjectName)
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
             string testsProjectName = PathHelper.GetCoverageDllName(testProjectName);
 
-            var coverage = new List<LineCoverage>();
+            var coverage = new ConcurrentBag<LineCoverage>();
 
-            foreach (TestCase testCase in testFixtureDetails.Cases)
+            Parallel.For(0, testFixtureDetails.Cases.Count, i =>
             {
-                ITestRunResult testResult = _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences, 
-                    compiledTestFixtureInfo.AllAssemblies, 
-                    testCase, 
-                    compiledTestFixtureInfo.AuditVariablesMap);
+                ITestRunResult testResult =
+                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences,
+                        compiledTestFixtureInfo.AllAssemblies,
+                        testFixtureDetails.Cases[i],
+                        compiledTestFixtureInfo.AuditVariablesMap);
 
-                var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap, 
-                    testCase.SyntaxNode, 
-                    testsProjectName, 
+                var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap,
+                     testFixtureDetails.Cases[i].SyntaxNode,
+                    testsProjectName,
                     compiledTestFixtureInfo.TestDocumentPath);
 
                 coverage.AddRange(partialCoverage);
-            }
+            });
 
             return coverage.ToArray();
         }

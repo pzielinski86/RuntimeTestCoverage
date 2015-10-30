@@ -12,24 +12,35 @@ namespace TestCoverageVsPlugin
 {
     public class VsSolutionTestCoverage : IVsSolutionTestCoverage
     {
-        private readonly ISolutionExplorer _solutionExplorer;
+        private readonly string _solutionPath;
         private readonly Func<ISolutionCoverageEngine> _solutionCoverageFactory;
+        private ISolutionCoverageEngine _engine;
         private readonly ICoverageStore _coverageStore;
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
         private static readonly object SyncObject = new object();
 
-        public VsSolutionTestCoverage(ISolutionExplorer solutionExplorer,
+        public VsSolutionTestCoverage(string solutionPath,
             Func<ISolutionCoverageEngine> solutionCoverageFactory,
             ICoverageStore coverageStore)
         {
+            _solutionPath = solutionPath;
             _solutionCoverageFactory = solutionCoverageFactory;
             _coverageStore = coverageStore;
-            _solutionExplorer = solutionExplorer;
-            _solutionExplorer.Open();
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
         }
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(ISolutionExplorer solutionExplorer,
+        public ISolutionCoverageEngine Init()
+        {
+            if (_engine == null || _engine.IsDisposed)
+            {
+                _engine = _solutionCoverageFactory();
+                _engine.Init(_solutionPath);
+            }
+
+            return _engine;
+        }
+
+        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(string solutionPath,
             Func<ISolutionCoverageEngine> solutionCoverageFactory,
             ICoverageStore coverageStore)
         {
@@ -39,7 +50,7 @@ namespace TestCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionExplorer, solutionCoverageFactory,
+                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionPath, solutionCoverageFactory,
                             coverageStore);
                     }
                 }
@@ -59,10 +70,8 @@ namespace TestCoverageVsPlugin
 
         public void CalculateForAllDocuments()
         {
-            using (ISolutionCoverageEngine engine = _solutionCoverageFactory())
+            using (var engine = Init())
             {
-                engine.Init(_solutionExplorer.SolutionPath);
-
                 CoverageResult coverage;
 
                 try
@@ -86,10 +95,8 @@ namespace TestCoverageVsPlugin
 
         public void CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
-            using (var engine = _solutionCoverageFactory())
+            using (var engine = Init())
             {
-                engine.Init(_solutionExplorer.SolutionPath);
-
                 CoverageResult coverage;
 
                 try

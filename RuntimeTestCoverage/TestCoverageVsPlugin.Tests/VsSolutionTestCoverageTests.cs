@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Media3D;
 using NSubstitute;
@@ -16,34 +17,95 @@ namespace TestCoverageVsPlugin.Tests
     {
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
-        private ISolutionExplorer _solutionExplorerMock;
         private ICoverageStore _coverageStoreMock;
+        private readonly string _solutionPath = @"c:\Project.sln";
 
         [SetUp]
         public void Setup()
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
-            _solutionExplorerMock = Substitute.For<ISolutionExplorer>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
 
-            _sut =new VsSolutionTestCoverage(_solutionExplorerMock, ()=> _solutionCoverageEngineMock,_coverageStoreMock);
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => _solutionCoverageEngineMock, _coverageStoreMock);
+        }
+
+        [Test]
+        public void Init_ShouldCreateNewEngine_When_CurrentIsEqualToNull()
+        {
+            // arrange
+            var engine1= Substitute.For<ISolutionCoverageEngine>();
+            var engines = new Stack<ISolutionCoverageEngine>();
+            engines.Push(engine1);
+
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+
+            // act
+            var newEngine = _sut.Init();
+
+            // assert
+            Assert.That(engines.Count,Is.EqualTo(0));
+            Assert.That(newEngine,Is.SameAs(engine1));
+        }
+
+        [Test]
+        public void Init_ShouldCreateNewEngine_When_CurrentEngineWasDisposed()
+        {
+            // arrange
+            var engine1 = Substitute.For<ISolutionCoverageEngine>();
+            var engine2 = Substitute.For<ISolutionCoverageEngine>();
+            engine1.IsDisposed.Returns(false);
+            engine2.IsDisposed.Returns(true);
+
+            var engines = new Stack<ISolutionCoverageEngine>();
+            engines.Push(engine1);
+            engines.Push(engine2);
+
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+            _sut.Init();
+            // act
+            var newEngine = _sut.Init();
+
+            // assert
+            Assert.That(engines.Count, Is.EqualTo(0));
+            Assert.That(newEngine, Is.SameAs(engine1));
+        }
+
+        [Test]
+        public void Init_ShouldNotCreateNewEngine_When_CurrentIsNotNull()
+        {
+            // arrange
+            var engine1 = Substitute.For<ISolutionCoverageEngine>();
+            var engine2 = Substitute.For<ISolutionCoverageEngine>();
+            var engines = new Stack<ISolutionCoverageEngine>();
+            engines.Push(engine1);
+            engines.Push(engine2);
+
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+            _sut.Init();
+
+            // act
+            var newEngine = _sut.Init();
+
+            // assert
+            Assert.That(engines.Count, Is.EqualTo(1));
+            Assert.That(newEngine, Is.SameAs(engine2));
         }
 
         [Test]
         public void LoadCurrentCoverage_Should_LoadDataForAllDocuments()
         {
             // arrange
-            var doc1Coverage = new LineCoverage {DocumentPath = "doc1.cs"};
+            var doc1Coverage = new LineCoverage { DocumentPath = "doc1.cs" };
             var doc2Coverage = new LineCoverage { DocumentPath = "doc2.cs" };
 
-            _coverageStoreMock.ReadAll().Returns(new[] {doc1Coverage, doc2Coverage});
+            _coverageStoreMock.ReadAll().Returns(new[] { doc1Coverage, doc2Coverage });
 
             // act
             _sut.LoadCurrentCoverage();
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument.Count,Is.EqualTo(2));
-            Assert.That(_sut.SolutionCoverageByDocument["doc1.cs"].Count,Is.EqualTo(1));
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(2));
+            Assert.That(_sut.SolutionCoverageByDocument["doc1.cs"].Count, Is.EqualTo(1));
             Assert.That(_sut.SolutionCoverageByDocument["doc2.cs"].Count, Is.EqualTo(1));
 
             Assert.That(_sut.SolutionCoverageByDocument["doc1.cs"].First(), Is.EqualTo(doc1Coverage));
@@ -57,7 +119,7 @@ namespace TestCoverageVsPlugin.Tests
             var doc1Coverage = new LineCoverage { DocumentPath = "doc1.cs" };
 
             _coverageStoreMock.ReadAll().Returns(new[] { doc1Coverage });
-            _sut.SolutionCoverageByDocument.Add("oldDocument.cs",new List<LineCoverage>());
+            _sut.SolutionCoverageByDocument.Add("oldDocument.cs", new List<LineCoverage>());
 
             // act
             _sut.LoadCurrentCoverage();
@@ -86,7 +148,7 @@ namespace TestCoverageVsPlugin.Tests
             _sut.SolutionCoverageByDocument.Add(testDocumentPath, new List<LineCoverage>() { oldTestLineCoverage });
 
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
-                Returns(new CoverageResult(new [] { newTestLineCoverage}));
+                Returns(new CoverageResult(new[] { newTestLineCoverage }));
 
             // act
             _sut.CalculateForDocument("CurrentProject", testDocumentPath, string.Empty);
@@ -102,14 +164,14 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string newDocumentPath = "MathHelper.cs";
 
-            var coverage = new LineCoverage {DocumentPath = newDocumentPath};
+            var coverage = new LineCoverage { DocumentPath = newDocumentPath };
 
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
                 Returns(new CoverageResult(new[] { coverage }));
 
             // act
 
-            _sut.CalculateForDocument("CurrentProject","MathHelperTests.cs", string.Empty);
+            _sut.CalculateForDocument("CurrentProject", "MathHelperTests.cs", string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[newDocumentPath].Count, Is.EqualTo(1));
@@ -133,7 +195,7 @@ namespace TestCoverageVsPlugin.Tests
                 Throws(new TestCoverageCompilationException(new string[0]));
 
             // act
-            _sut.CalculateForDocument("CurrentProject","test.xml", string.Empty);
+            _sut.CalculateForDocument("CurrentProject", "test.xml", string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
@@ -174,7 +236,7 @@ namespace TestCoverageVsPlugin.Tests
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
                 Returns(new CoverageResult(new LineCoverage[0]));
             // act
-            _sut.CalculateForDocument("CurrentProject",documentPath, string.Empty);
+            _sut.CalculateForDocument("CurrentProject", documentPath, string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(1));

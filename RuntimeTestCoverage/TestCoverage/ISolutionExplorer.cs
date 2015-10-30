@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -9,11 +10,8 @@ namespace TestCoverage
 {
     public interface ISolutionExplorer
     {
-        void Open();
-
         MetadataReference[] GetAllProjectReferences(string projectName);
         SyntaxTree OpenFile(string path);
-
         ISemanticModel GetSemanticModelByDocument(string docPath);
         void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap);
         IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments);

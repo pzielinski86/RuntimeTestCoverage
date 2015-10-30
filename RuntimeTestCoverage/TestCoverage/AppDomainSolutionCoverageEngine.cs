@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 
 namespace TestCoverage
 {
@@ -8,6 +9,7 @@ namespace TestCoverage
     {
         private ISolutionCoverageEngine _coverageEngine;
         private readonly AppDomain _appDomain;
+        private bool _isDisposed;
 
         public AppDomainSolutionCoverageEngine()
         {
@@ -23,9 +25,9 @@ namespace TestCoverage
                 engineType.FullName);            
         }
 
-        public void Init(ISolutionExplorer solutionExplorer)
+        public void Init(string solutionPath)
         {
-            _coverageEngine.Init(solutionExplorer);
+            _coverageEngine.Init(solutionPath);
         }
 
         public CoverageResult CalculateForAllDocuments()
@@ -37,6 +39,8 @@ namespace TestCoverage
         {
             return _coverageEngine.CalculateForDocument(projectName, documentPath, documentContent);
         }
+
+        public bool IsDisposed => _isDisposed;
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
@@ -55,7 +59,7 @@ namespace TestCoverage
         public void Dispose()
         {
             _coverageEngine = null;
-
+            _isDisposed = true;
             AppDomain.Unload(_appDomain);
         }
     }

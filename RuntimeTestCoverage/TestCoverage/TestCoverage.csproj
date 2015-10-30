@@ -125,8 +125,9 @@
     <Compile Include="CoverageCalculation\TestRunner.cs" />
     <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="CoverageResult.cs" />
+    <Compile Include="Extensions\ConcurrentBagExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Extensions\SyntaxNode.cs" />
+    <Compile Include="Extensions\SyntaxNodeExtensions.cs" />
     <Compile Include="ISolutionCoverageEngine.cs" />
     <Compile Include="ISolutionExplorer.cs" />
     <Compile Include="ITestExplorer.cs" />
