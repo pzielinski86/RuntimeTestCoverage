@@ -22,6 +22,8 @@ namespace Math.Tests
 
 
 
+       
+
         
 
         [TestCase(Contracts.PersonType.B)]
@@ -41,7 +43,7 @@ namespace Math.Tests
 
             Assert.That(b,Is.EqualTo(PersonType.A));
         }
-
+                   
         [TestCase("test") ]
         public void Should_Call_TestWithString(string var)
         {

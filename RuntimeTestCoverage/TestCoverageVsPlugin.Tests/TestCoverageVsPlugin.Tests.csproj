@@ -109,6 +109,8 @@
   <ItemGroup>
     <Compile Include="CoverageDotDrawerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskCoverageManagerTests.cs" />
+    <Compile Include="TimerMock.cs" />
     <Compile Include="UI\CoverageOverviewViewModelTests.cs" />
     <Compile Include="UI\TestProjectTests.cs" />
     <Compile Include="VsSolutionTestCoverageTests.cs" />

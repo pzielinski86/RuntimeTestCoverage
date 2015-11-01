@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Math
-{
+{                 
     public class TestCase
     {
         public TestCase(TestFixtureDetails testFixture)

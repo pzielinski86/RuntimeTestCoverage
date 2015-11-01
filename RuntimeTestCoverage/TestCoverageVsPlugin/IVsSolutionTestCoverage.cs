@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin
@@ -11,5 +12,6 @@ namespace TestCoverageVsPlugin
         void CalculateForAllDocuments();
         Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent);
         void CalculateForDocument(string projectName, string documentPath, string documentContent);
+        ISolutionCoverageEngine Init();
     }
 }

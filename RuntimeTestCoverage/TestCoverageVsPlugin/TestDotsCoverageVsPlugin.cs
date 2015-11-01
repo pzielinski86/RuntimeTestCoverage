@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Formatting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -32,13 +33,13 @@ namespace TestCoverageVsPlugin
         private readonly IVsStatusbar _statusBar;
         private readonly Solution _solution;
         private readonly Canvas _canvas;
-        private readonly DispatcherTimer _timer;
+        private readonly ITaskCoverageManager _taskCoverageManager;
 
         private Task _currentTask;
-        private readonly string _documentPath;
+        private string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
-        private bool _taskQueued;
+        private string _projectName;
 
         /// <summary>
         /// Creates a <see cref="TestDotsCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
@@ -58,63 +59,41 @@ namespace TestCoverageVsPlugin
             this.ClipToBounds = true;
             this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(2);
-            _timer.Tick += RecalculateTimerElapsed;
-            textView.TextBuffer.Changing += TextBuffer_Changing;
+            textView.TextBuffer.Changed += TextBuffer_Changed;
 
-            _documentPath = GetTextDocument().FilePath;
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
             _vsSolutionTestCoverage.Init();
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
+            _taskCoverageManager.DocumentCoverageTaskCompleted += DocumentCoverageTaskCompleted;
+            _taskCoverageManager.DocumentCoverageTaskStarted += DocumentCoverageTaskStarted;
+
+            InitProperties();
+        }
+
+        private void DocumentCoverageTaskStarted(object sender, DocumentCoverageTaskCompletedArgs e)
+        {
+            _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(e.DocPath)}");
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
-        private void RecalculateTimerElapsed(object sender, EventArgs eventArgs)
-        {
-            if (_currentTask != null)
-                return;
-
-            _timer.Stop();
-
-            ITextDocument textDocument = GetTextDocument();
-            if (textDocument == null)
-                return;
-
-            string documentPath = textDocument.FilePath;
-            string documentContent = _textView.TextBuffer.CurrentSnapshot.GetText();
-
-            _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(documentPath)}");
-            CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
-
-            var projectItem = _solution.FindProjectItem(documentPath);
-            var projectName = projectItem.ContainingProject.Name;
-
-            _currentTask = _vsSolutionTestCoverage.CalculateForDocumentAsync(projectName, documentPath, documentContent);
-            _currentTask.
-                ContinueWith(CalculationsCompleted, null, TaskScheduler.FromCurrentSynchronizationContext())
-                .ContinueWith(PreCreateAppDomain, null, TaskScheduler.Default);
-        }
-
-        private void PreCreateAppDomain(Task task, object o)
-        {
-            _vsSolutionTestCoverage.Init();
-      
-
-        }
-
-        private void CalculationsCompleted(Task task, object o)
+        private void DocumentCoverageTaskCompleted(object sender, DocumentCoverageTaskCompletedArgs e)
         {
             _statusBar.SetText("");
-            _taskQueued = false;
-            _currentTask = null;
             Redraw();
         }
 
-        private void TextBuffer_Changing(object sender, TextContentChangingEventArgs e)
+        private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
         {
-            _taskQueued = true;
-            _timer.Stop();
-            _timer.Start();
+            string documentContent = e.After.GetText();
+            _taskCoverageManager.EnqueueDocumentTask(_projectName, _documentPath, documentContent);
+
+        }
+
+        private void InitProperties()
+        {
+            _documentPath = GetTextDocument().FilePath;
+            var projectItem = _solution.FindProjectItem(_documentPath);
+            _projectName = projectItem.ContainingProject.Name;
         }
 
         private ITextDocument GetTextDocument()
@@ -152,7 +131,7 @@ namespace TestCoverageVsPlugin
 
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
 
-            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskQueued))
+            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending))
             {
                 Ellipse ellipse = new Ellipse();
                 ellipse.Fill = dotCoverage.Color;
