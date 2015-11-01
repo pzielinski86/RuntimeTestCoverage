@@ -98,14 +98,15 @@ namespace TestCoverageVsPlugin
         private void PreCreateAppDomain(Task task, object o)
         {
             _vsSolutionTestCoverage.Init();
-            _taskQueued = false;
-            _currentTask = null;
+      
 
         }
 
         private void CalculationsCompleted(Task task, object o)
         {
             _statusBar.SetText("");
+            _taskQueued = false;
+            _currentTask = null;
             Redraw();
         }
 

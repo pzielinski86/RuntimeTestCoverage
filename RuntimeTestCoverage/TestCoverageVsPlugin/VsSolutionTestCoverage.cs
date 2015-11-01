@@ -18,6 +18,7 @@ namespace TestCoverageVsPlugin
         private readonly ICoverageStore _coverageStore;
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
         private static readonly object SyncObject = new object();
+        private object _sync = new object();
 
         public VsSolutionTestCoverage(string solutionPath,
             Func<ISolutionCoverageEngine> solutionCoverageFactory,
@@ -31,10 +32,13 @@ namespace TestCoverageVsPlugin
 
         public ISolutionCoverageEngine Init()
         {
-            if (_engine == null || _engine.IsDisposed)
+            lock (_sync)
             {
-                _engine = _solutionCoverageFactory();
-                _engine.Init(_solutionPath);
+                if (_engine == null || _engine.IsDisposed)
+                {
+                    _engine = _solutionCoverageFactory();
+                    _engine.Init(_solutionPath);
+                }
             }
 
             return _engine;

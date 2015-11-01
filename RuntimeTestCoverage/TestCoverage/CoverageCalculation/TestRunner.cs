@@ -69,21 +69,21 @@ namespace TestCoverage.CoverageCalculation
 
             var coverage = new ConcurrentBag<LineCoverage>();
 
-            Parallel.For(0, testFixtureDetails.Cases.Count, i =>
-            {
-                ITestRunResult testResult =
-                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences,
-                        compiledTestFixtureInfo.AllAssemblies,
-                        testFixtureDetails.Cases[i],
-                        compiledTestFixtureInfo.AuditVariablesMap);
+            Parallel.For(0, testFixtureDetails.Cases.Count, new ParallelOptions { MaxDegreeOfParallelism = 1 }, i =>
+               {
+                   ITestRunResult testResult =
+                       _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences,
+                           compiledTestFixtureInfo.AllAssemblies,
+                           testFixtureDetails.Cases[i],
+                           compiledTestFixtureInfo.AuditVariablesMap);
 
-                var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap,
-                     testFixtureDetails.Cases[i].SyntaxNode,
-                    testsProjectName,
-                    compiledTestFixtureInfo.TestDocumentPath);
+                   var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap,
+                        testFixtureDetails.Cases[i].SyntaxNode,
+                       testsProjectName,
+                       compiledTestFixtureInfo.TestDocumentPath);
 
-                coverage.AddRange(partialCoverage);
-            });
+                   coverage.AddRange(partialCoverage);
+               });
 
             return coverage.ToArray();
         }

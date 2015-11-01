@@ -26,6 +26,11 @@ namespace TestCoverage
 
         }
 
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
+
         public CoverageResult CalculateForAllDocuments()
         {
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
