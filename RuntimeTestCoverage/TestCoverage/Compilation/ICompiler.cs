@@ -7,7 +7,7 @@ namespace TestCoverage.Compilation
 {
     public interface ICompiler
     {
-        ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap);
-        ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references, AuditVariablesMap auditVariablesMap);
+        ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems);
+        ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references);
     }
 }

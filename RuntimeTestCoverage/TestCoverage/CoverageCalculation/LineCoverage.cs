@@ -17,8 +17,8 @@ namespace TestCoverage.CoverageCalculation
         public string TestDocumentPath { get; set; }
         public bool IsSuccess { get; set; }
 
-        public static LineCoverage EvaluateAuditVariable(AuditVariablesMap auditVariablesMap,
-            string variableName,
+        public static LineCoverage EvaluateAuditVariable(
+            AuditVariablePlaceholder variableName,
             SyntaxNode testMethodNode,
             string testProjectName,
             string testDocName)
@@ -26,8 +26,8 @@ namespace TestCoverage.CoverageCalculation
             LineCoverage lineCoverage = new LineCoverage
             {
                 TestPath = NodePathBuilder.BuildPath(testMethodNode, testDocName, testProjectName),
-                Path = auditVariablesMap.Map[variableName].NodePath,
-                Span = auditVariablesMap.Map[variableName].SpanStart
+                Path = variableName.NodePath,
+                Span = variableName.SpanStart
             };
 
             return lineCoverage;

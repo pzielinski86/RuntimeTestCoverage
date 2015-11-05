@@ -13,7 +13,6 @@ namespace TestCoverage
         MetadataReference[] GetAllProjectReferences(string projectName);
         SyntaxTree OpenFile(string path);
         ISemanticModel GetSemanticModelByDocument(string docPath);
-        void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap);
         IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments);
         _Assembly[] LoadCompiledAssemblies(params string[] excludedProjects);
         Solution Solution { get; }

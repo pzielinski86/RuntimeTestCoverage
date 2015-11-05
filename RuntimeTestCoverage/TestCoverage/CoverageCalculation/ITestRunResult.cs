@@ -5,11 +5,11 @@ namespace TestCoverage.CoverageCalculation
 {
     public interface ITestRunResult
     {
-        string[] SetAuditVars { get; }
+        AuditVariablePlaceholder[] SetAuditVars { get; }
         bool AssertionFailed { get; }
         string ErrorMessage { get; }
 
-        LineCoverage[] GetCoverage(AuditVariablesMap auditVariablesMap, 
+        LineCoverage[] GetCoverage(
             SyntaxNode testMethod, 
             string testProjectName, 
             string testDocumentPath);

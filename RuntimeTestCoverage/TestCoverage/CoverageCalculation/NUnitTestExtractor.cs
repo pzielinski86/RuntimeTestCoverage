@@ -27,9 +27,7 @@ namespace TestCoverage.CoverageCalculation
         private TestFixtureDetails ExtractTestCases(ClassDeclarationSyntax testClass, ISemanticModel semanticModel)
         {
             var testFixture = new TestFixtureDetails();
-            var namespaceNode = testClass.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-            testFixture.Namespace = namespaceNode?.Name.ToString();
-            testFixture.ClassName = testClass.Identifier.ValueText;
+            testFixture.FullClassName = semanticModel.GetFullName(testClass);
 
             foreach (MethodDeclarationSyntax methodNode in testClass.DescendantNodes().OfType<MethodDeclarationSyntax>())
             {

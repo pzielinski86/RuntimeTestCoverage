@@ -8,7 +8,6 @@ namespace TestCoverage.Rewrite
 {
     public class AuditVariablesRewriter : CSharpSyntaxRewriter, IAuditVariablesRewriter
     {
-        private IAuditVariablesMap _auditVariableMapping;
         private readonly IAuditVariablesWalker _auditVariablesWalker;
         private int _auditIndex;
         private AuditVariablePlaceholder[] _auditVariablePlaceholders;
@@ -18,10 +17,9 @@ namespace TestCoverage.Rewrite
             _auditVariablesWalker = auditVariablesWalker;
         }
 
-        public void Init(IAuditVariablesMap auditVariableMapping)
+        public void Init()
         {
             _auditIndex = 0;
-            _auditVariableMapping = auditVariableMapping;
         }
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
@@ -71,25 +69,24 @@ namespace TestCoverage.Rewrite
             return null;
         }
 
-        public SyntaxNode Rewrite(string projectName, string documentPath, SyntaxNode root, IAuditVariablesMap auditVariableMapping)
+        public SyntaxNode Rewrite(string projectName, string documentPath, SyntaxNode root)
         {
             _auditVariablePlaceholders = _auditVariablesWalker.Walk(projectName, documentPath, root);
-            Init(auditVariableMapping);
+            Init();
 
             return Visit(root);
         }
         private StatementSyntax CreateLineAuditNode()
         {
-            string varName = _auditVariableMapping.AddVariable(_auditVariablePlaceholders[_auditIndex]);
+
+            string initVariableCode = _auditVariablePlaceholders[_auditIndex].ToString();
+            string auditNodeSourceCode =
+                $"\t{AuditVariablesMap.AuditVariablesListClassName}.{AuditVariablesMap.AuditVariablesListName}.Add({initVariableCode});\n";
+
             _auditIndex++;
 
-            string auditNodeSourceCode = string.Format("\t{0}.{1}.Add(\"{2}\");\n", _auditVariableMapping.AuditVariablesClassName, _auditVariableMapping.AuditVariablesListName, varName);
-            StatementSyntax auditNode = SyntaxFactory.ParseStatement(auditNodeSourceCode);
+            return SyntaxFactory.ParseStatement(auditNodeSourceCode);
 
-            string commentCode = string.Format("//{0}\n", _auditVariableMapping.Map[varName].DocumentPath);
-            SyntaxTriviaList comment = SyntaxFactory.ParseTrailingTrivia(commentCode);
-
-            return auditNode.WithTrailingTrivia(comment);
         }
     }
 }

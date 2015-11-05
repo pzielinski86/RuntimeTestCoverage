@@ -266,7 +266,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public void ShouldExtract_NamespaceWithClassName_For_TestMethod()
+        public void ShouldExtract_FullClassName_For_TestMethod()
         {
             // arrange
             const string code = @"namespace Code{
@@ -281,13 +281,14 @@ namespace TestCoverage.Tests
 
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
+            _semanticModelMock.GetFullName(tree).Returns("Tests.Code");
+
             // act
             var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
             Assert.That(testCases.Cases.Count, Is.EqualTo(1));
-            Assert.That(testCases.Namespace, Is.EqualTo("Code"));
-            Assert.That(testCases.ClassName, Is.EqualTo("Tests"));
+            Assert.That(testCases.FullClassName, Is.EqualTo("Tests.Code"));
         }
 
         [Test]
@@ -351,7 +352,6 @@ namespace TestCoverage.Tests
             // assert
             Assert.That(testClasses.Length, Is.EqualTo(1));
         }
-
 
         [Test]
         public void ShouldNot_ExtractClassesWhichAreNotTestFixtures()

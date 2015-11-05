@@ -11,12 +11,12 @@ namespace TestCoverage.Compilation
 {
     public class RoslynCompiler : ICompiler
     {
-        public ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems, AuditVariablesMap auditVariablesMap)
+        public ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems)
         {
             var allItemsArray = allItems.ToArray();
 
             var compiledItems = new List<RoslynCompiledItem>();
-            RoslynCompiledItem roslynCompiledAudit = CompileAudit(auditVariablesMap);
+            RoslynCompiledItem roslynCompiledAudit = CompileAudit();
 
             foreach (var compilationItem in allItemsArray)
             {
@@ -31,10 +31,10 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        public ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references, AuditVariablesMap auditVariablesMap)
+        public ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references)
         {
             var compiledItems = new List<RoslynCompiledItem>();
-            RoslynCompiledItem roslynCompiledAudit = CompileAudit(auditVariablesMap);
+            RoslynCompiledItem roslynCompiledAudit = CompileAudit();
 
             var requiredReferences =
                 item.Project.MetadataReferences.Union(
@@ -53,9 +53,9 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        private RoslynCompiledItem CompileAudit(AuditVariablesMap auditVariablesMap)
+        private RoslynCompiledItem CompileAudit()
         {
-            var auditTree = CSharpSyntaxTree.ParseText(auditVariablesMap.ToString());
+            var auditTree = CSharpSyntaxTree.ParseText(AuditVariablesMap.GenerateCode());
 
             // TODO - remove hardcoded .NET 3.5 dll
             var references = new[] {MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };

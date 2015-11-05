@@ -54,14 +54,14 @@ namespace TestCoverage.Tests.CoverageCalculation
                 .Returns(new[] { testClass });
             _testExtractorMock.GetTestFixtureDetails(testClass, Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
 
-            var rewrittenDocument = new RewrittenDocument(new AuditVariablesMap(), testNode, null);
+            var rewrittenDocument = new RewrittenDocument( testNode, null);
 
             // act
             _sut.RunAllTestsInDocument(rewrittenDocument, null, project, null);
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest(allProjectReferences, Arg.Any<Assembly[]>(), Arg.Any<TestCase>(),Arg.Any<AuditVariablesMap>());
+                RunTest(allProjectReferences, Arg.Any<Assembly[]>(), Arg.Any<TestCase>());
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExtractorMock.GetTestClasses(Arg.Any<CSharpSyntaxNode>())
                 .Returns(new[] { testClass });
             _testExtractorMock.GetTestFixtureDetails(testClass, Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
-            var rewrittenDocument = new RewrittenDocument(new AuditVariablesMap(), testNode, null);
+            var rewrittenDocument = new RewrittenDocument( testNode, null);
 
 
             // act
@@ -92,7 +92,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest(Arg.Any<MetadataReference[]>(), allAssemblies, Arg.Any<TestCase>(), Arg.Any<AuditVariablesMap>());
+                RunTest(Arg.Any<MetadataReference[]>(), allAssemblies, Arg.Any<TestCase>());
         }
 
         [Test]
@@ -100,7 +100,6 @@ namespace TestCoverage.Tests.CoverageCalculation
         {
             // arrange
             var project = CreateProject("SampleTestsProject");
-            AuditVariablesMap auditMap=new AuditVariablesMap();
 
             var testNode = CSharpSyntaxTree.ParseText("[TestFixture]class HelloWorldTests{" +
                                              " [Test] public void TestMethod()" +
@@ -115,7 +114,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExtractorMock.GetTestClasses(Arg.Any<CSharpSyntaxNode>())
                 .Returns(new[] { testClass });
             _testExtractorMock.GetTestFixtureDetails(testClass, Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
-            var rewrittenDocument = new RewrittenDocument(auditMap, testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null);
 
 
             // act
@@ -123,7 +122,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), Arg.Any<TestCase>(), auditMap);
+                RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), Arg.Any<TestCase>());
         }
 
         [Test]
@@ -137,7 +136,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                                              "{}" +
                                              "}");
 
-            var rewrittenDocument = new RewrittenDocument(null, testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null);
 
             // act
             _sut.RunAllTestsInDocument(rewrittenDocument, null, project, null);
@@ -167,7 +166,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 .Returns(new[] { testClass });
 
             _testExtractorMock.GetTestFixtureDetails(Arg.Any<ClassDeclarationSyntax>(), Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
-            var rewrittenDocument = new RewrittenDocument(null, testNode, null);
+            var rewrittenDocument = new RewrittenDocument( testNode, null);
 
 
             // act
@@ -198,15 +197,14 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testRunResultMock = Substitute.For<ITestRunResult>();
             var expectedLineCoverage = new[] { new LineCoverage() };
 
-            testRunResultMock.GetCoverage(Arg.Any<AuditVariablesMap>(), Arg.Any<SyntaxNode>(), Arg.Any<string>(),
+            testRunResultMock.GetCoverage(Arg.Any<SyntaxNode>(), Arg.Any<string>(),
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), testCase,
-                Arg.Any<AuditVariablesMap>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), testCase).Returns(testRunResultMock);
 
             var project = CreateProject("SampleTestsProject");
-            var rewrittenDocument = new RewrittenDocument(new AuditVariablesMap(), testNode, null);
+            var rewrittenDocument = new RewrittenDocument( testNode, null);
 
             // act
             LineCoverage[] output = _sut.RunAllTestsInDocument(rewrittenDocument, null, project, null);
@@ -237,15 +235,14 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testRunResultMock = Substitute.For<ITestRunResult>();
             var expectedLineCoverage = new[] { new LineCoverage() };
 
-            testRunResultMock.GetCoverage(Arg.Any<AuditVariablesMap>(), Arg.Any<SyntaxNode>(), Arg.Any<string>(),
+            testRunResultMock.GetCoverage(Arg.Any<SyntaxNode>(), Arg.Any<string>(),
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), testCase,
-                Arg.Any<AuditVariablesMap>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTest(Arg.Any<MetadataReference[]>(), Arg.Any<Assembly[]>(), testCase).Returns(testRunResultMock);
 
             var project = CreateProject("SampleTestsProject");
-            var rewrittenDocument = new RewrittenDocument(new AuditVariablesMap(), testNode, null);
+            var rewrittenDocument = new RewrittenDocument( testNode, null);
 
             // act
             LineCoverage[] output = _sut.RunAllTestsInDocument(rewrittenDocument, null, project, null);

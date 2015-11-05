@@ -15,9 +15,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         public void EvaluateAuditVariable_Should_Extract_TestPath()
         {
             // arrange
-            const string varName = "HelloWorldSample.HelloWorld.HelloWorld.Method_243";
-            var auditVariablesMap = new AuditVariablesMap();
-            auditVariablesMap.Map[varName] = new AuditVariablePlaceholder(@"c:\HelloWorld.cs", "node_path", 243);
+            var variable = new AuditVariablePlaceholder(null,"HelloWorldSample.HelloWorld.HelloWorld.Method_243",1);
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
                                                       " public void Method()" +
                                                       "{}" +
@@ -26,7 +24,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
 
             // act
-            var coverage = LineCoverage.EvaluateAuditVariable(auditVariablesMap, varName, testMethodNode, "HelloWorldTestsSample", "HelloWorldTests");
+            var coverage = LineCoverage.EvaluateAuditVariable(variable, testMethodNode, "HelloWorldTestsSample", "HelloWorldTests");
 
             // act
             Assert.That(coverage.TestPath,Is.EqualTo("HelloWorldTestsSample.HelloWorldTests.HelloWorldTests.Method"));
@@ -36,13 +34,12 @@ namespace TestCoverage.Tests.CoverageCalculation
         public void EvaluateAuditVariable_Should_Extract_Path()
         {
             // arrange
-            const string varName = "HelloWorldSample.HelloWorld.HelloWorld.Method_243";
-            var auditVariablesMap = new AuditVariablesMap();
-            auditVariablesMap.Map[varName] = new AuditVariablePlaceholder(@"c:\HelloWorld.cs", "node_path", 243);
+            var variable = new AuditVariablePlaceholder(@"c:\HelloWorld.cs", "node_path", 243);
+          
             var testNode = CSharpSyntaxTree.ParseText("");
 
             // act
-            var coverage = LineCoverage.EvaluateAuditVariable(auditVariablesMap, varName, testNode.GetRoot(), "HelloWorldTestsSample", "HelloWorldTests");
+            var coverage = LineCoverage.EvaluateAuditVariable(variable,testNode.GetRoot(), "HelloWorldTestsSample", "HelloWorldTests");
 
             // act
             Assert.That(coverage.Path, Is.EqualTo("node_path"));
@@ -52,13 +49,11 @@ namespace TestCoverage.Tests.CoverageCalculation
         public void EvaluateAuditVariable_Should_Extract_Span()
         {
             // arrange
-            const string varName = "HelloWorldSample.HelloWorld.HelloWorld.Method_243";
-            var auditVariablesMap = new AuditVariablesMap();
-            auditVariablesMap.Map[varName] = new AuditVariablePlaceholder(@"c:\HelloWorld.cs", "node_path", 243);
+            var variable = new AuditVariablePlaceholder(@"c:\HelloWorld.cs", "node_path", 243);
             var testNode = CSharpSyntaxTree.ParseText("");
 
             // act
-            var coverage = LineCoverage.EvaluateAuditVariable(auditVariablesMap, varName, testNode.GetRoot(), "HelloWorldTestsSample", "HelloWorldTests");
+            var coverage = LineCoverage.EvaluateAuditVariable(variable, testNode.GetRoot(), "HelloWorldTestsSample", "HelloWorldTests");
 
             // act
             Assert.That(coverage.Span, Is.EqualTo(243));

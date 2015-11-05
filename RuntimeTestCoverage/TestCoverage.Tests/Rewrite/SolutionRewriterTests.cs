@@ -34,34 +34,12 @@ namespace TestCoverage.Tests.Rewrite
             const string documentPath = "documentPath";
 
             SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).Returns(rewrittenNode);
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
 
             RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocument("projectName", documentPath, sourceCode);
 
             Assert.That(rewrittenDocument.DocumentPath, Is.EqualTo(documentPath));
             Assert.That(rewrittenDocument.SyntaxTree, Is.EqualTo(rewrittenNode.SyntaxTree));
-        }
-
-        [Test]
-        public void Should_ReturnRewrittenAuditNodeMap()
-        {
-            const string sourceCode = "class SampleClass{" +
-                                         "public void Test(int a){}" +
-                                      "}";
-
-            const string documentPath = "documentPath";
-            const string variableToAddName = "sample variable_115";
-
-            SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>())
-                .Returns(rewrittenNode)
-                .AndDoes(x => x.Arg<IAuditVariablesMap>().Map.Add(variableToAddName, null));
-
-            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocument("projectName", documentPath, sourceCode);
-
-            Assert.That(rewrittenDocument.AuditVariablesMap.Map.Keys.First(), Is.EqualTo(variableToAddName));
         }
 
 
@@ -75,8 +53,7 @@ namespace TestCoverage.Tests.Rewrite
             const string documentPath = "documentPath";
 
             SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).Returns(rewrittenNode);
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
 
             _solutionRewriter.RewriteDocument("projectName", documentPath, sourceCode);
 
@@ -98,8 +75,7 @@ namespace TestCoverage.Tests.Rewrite
             Document document = workspace.AddDocument(documentInfo);
 
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).Returns(node);
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>()).Returns(node);
 
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
@@ -130,8 +106,7 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).Returns(node);
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
@@ -159,44 +134,13 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).Returns(node);
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
             Assert.That(result.Items.Count, Is.EqualTo(2));
             Assert.That(result.Items.Keys.First().Id, Is.EqualTo(project1.Id));
             Assert.That(result.Items.Keys.Last().Id, Is.EqualTo(project2.Id));
-        }
-
-        [Test]
-        public void Should_ReturnAuditMapForAllDocuments_When_RewriteAllClasses_IsCalled()
-        {
-            // arrange 
-            const string sourceCode = "class SampleClass{}";
-            const string auditVariableDoc1 = "variable doc1";
-            const string auditVariableDoc2 = "variable doc2";
-
-            var variablesStack = new Stack<string>();
-            variablesStack.Push(auditVariableDoc2);
-            variablesStack.Push(auditVariableDoc1);
-
-            SyntaxNode node = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-
-            var solution = SetupSolutionWithOneProject("Main.cs", "Tests.cs");
-
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>(),
-                Arg.Any<IAuditVariablesMap>()).
-                Returns(node).
-                AndDoes(x => x.Arg<IAuditVariablesMap>().Map.Add(variablesStack.Pop(), null));
-
-            // act
-            RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);
-
-            // assert
-            Assert.That(result.AuditVariablesMap.Map.Keys.Count, Is.EqualTo(2));
-            Assert.IsTrue(result.AuditVariablesMap.Map.ContainsKey(auditVariableDoc1));
-            Assert.IsTrue(result.AuditVariablesMap.Map.ContainsKey(auditVariableDoc2));
         }
 
         private Solution SetupSolutionWithOneProject(params string[] documentNames)

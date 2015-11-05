@@ -20,23 +20,19 @@ namespace TestCoverage.Rewrite
 
         public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
         {
-            AuditVariablesMap auditVariablesMap = new AuditVariablesMap();
-
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent);
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent,CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode,
-                auditVariablesMap);
+            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
 
             _contentWriter.Write(documentPath, rewrittenNode.SyntaxTree);
 
-            return new RewrittenDocument(auditVariablesMap, rewrittenNode.SyntaxTree, documentPath);
+            return new RewrittenDocument(rewrittenNode.SyntaxTree, documentPath);
         }
 
         public RewriteResult RewriteAllClasses(IEnumerable<Project> projects)
         {
             var rewrittenItems = new Dictionary<Project, List<RewrittenDocument>>();
-            var auditVariablesMap = new AuditVariablesMap();
 
             foreach (Project project in projects)
             {
@@ -50,12 +46,10 @@ namespace TestCoverage.Rewrite
                         rewrittenItems[document.Project] = new List<RewrittenDocument>();
 
                     rewrittenItems[document.Project].Add(rewrittenDocument);
-                    auditVariablesMap.Map.Merge(rewrittenDocument.AuditVariablesMap.Map);
-                    rewrittenDocument.AuditVariablesMap = auditVariablesMap;
                 }
             }
 
-            return new RewriteResult(rewrittenItems, auditVariablesMap);
+            return new RewriteResult(rewrittenItems);
         }
     }
 }

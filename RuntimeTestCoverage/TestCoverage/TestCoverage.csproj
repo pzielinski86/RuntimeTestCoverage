@@ -127,6 +127,7 @@
     <Compile Include="CoverageResult.cs" />
     <Compile Include="Extensions\ConcurrentBagExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\SymbolExtensions.cs" />
     <Compile Include="Extensions\SyntaxNodeExtensions.cs" />
     <Compile Include="ISolutionCoverageEngine.cs" />
     <Compile Include="ISolutionExplorer.cs" />
@@ -139,7 +140,6 @@
     <Compile Include="CoverageCalculation\LineCoverage.cs" />
     <Compile Include="CoverageCalculation\LineCoverageCalc.cs" />
     <Compile Include="Rewrite\ContentWriter.cs" />
-    <Compile Include="Rewrite\IAuditVariablesMap.cs" />
     <Compile Include="Rewrite\IAuditVariablesRewriter.cs" />
     <Compile Include="Rewrite\IAuditVariablesWalker.cs" />
     <Compile Include="Rewrite\IContentWriter.cs" />

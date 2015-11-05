@@ -12,5 +12,17 @@ namespace TestCoverage.Rewrite
             NodePath = nodePath;
             SpanStart = spanStart;
         }
+
+        public static string AuditVariableStructureName
+        {
+            get { return "AuditVariable"; }
+        }
+
+        public override string ToString()
+        {
+            string initVarCode = $"new {AuditVariableStructureName}(){{NodePath=\"{NodePath}\",DocumentPath=@\"{DocumentPath}\",Span={SpanStart}}}";
+
+            return initVarCode;
+        }
     }
 }

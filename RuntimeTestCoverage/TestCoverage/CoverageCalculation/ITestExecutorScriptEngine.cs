@@ -9,6 +9,6 @@ namespace TestCoverage.CoverageCalculation
 {
     public interface ITestExecutorScriptEngine
     {
-        ITestRunResult RunTest(MetadataReference[] references, _Assembly[] assemblies, TestCase method, AuditVariablesMap auditVariablesMap);
+        ITestRunResult RunTest(MetadataReference[] references, _Assembly[] assemblies, TestCase method);
     }
 }

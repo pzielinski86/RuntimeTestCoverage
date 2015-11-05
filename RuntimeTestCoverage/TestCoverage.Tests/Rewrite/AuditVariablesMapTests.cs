@@ -8,96 +8,43 @@ namespace TestCoverage.Tests.Rewrite
     [TestFixture]
     public class AuditVariablesMapTests
     {
-        private AuditVariablesMap _auditVariablesMap;
-
-        [SetUp]
-        public void Setup()
-        {
-            _auditVariablesMap = new AuditVariablesMap();
-        }
-
-        [Test]
-        public void Should_NameVariableWithNodePathAndSpan()
-        {
-            var auditVariablePlaceholder = new AuditVariablePlaceholder("c:\\test\\HelloWorld.cs", "nodePath", 115);
-
-            string variableName = _auditVariablesMap.AddVariable(auditVariablePlaceholder);
-
-            const string expectedNodePath = "nodePath_115";
-
-            Assert.That(variableName, Is.EqualTo(expectedNodePath));
-            Assert.That(_auditVariablesMap.Map.Keys.First(), Is.EqualTo(expectedNodePath));
-            Assert.That(_auditVariablesMap.Map.Values.First(), Is.EqualTo(auditVariablePlaceholder));
-        }
-
-        [Test]
-        public void Should_OverrideVariableValue_When_VariableAlreadyExists()
-        {
-            var auditVariablePlaceholder = new AuditVariablePlaceholder("c:\\test\\HelloWorld.cs", "nodePath", 115);
-            _auditVariablesMap.AddVariable(auditVariablePlaceholder);
-
-            var newAuditVariablePlaceholder = new AuditVariablePlaceholder("c:\\test\\HelloWorld.cs", "nodePath", 115);
-            _auditVariablesMap.AddVariable(newAuditVariablePlaceholder);
-
-            Assert.That(_auditVariablesMap.Map.Count, Is.EqualTo(1));
-            Assert.That(_auditVariablesMap.Map.Values.First(), Is.EqualTo(newAuditVariablePlaceholder));
-        }
 
         [Test]
         public void Should_ReturnValidDictionaryName()
         {
-            Assert.That(_auditVariablesMap.AuditVariablesListName, Is.EqualTo("Coverage"));
+            Assert.That(AuditVariablesMap.AuditVariablesListName, Is.EqualTo("Coverage"));
         }
 
         [Test]
         public void Should_ReturnValidClassName()
         {
-            Assert.That(_auditVariablesMap.AuditVariablesClassName, Is.EqualTo("AuditVariables"));
+            Assert.That(AuditVariablesMap.AuditVariablesListClassName, Is.EqualTo("AuditVariables"));
         }
 
         [Test]
-        public void Should_GenerateValidSourceCode()
+        public void Should_GenerateValidSourceCode_Of_AuditVariable()
+        {
+            const string expectedSourceCode = "public struct AuditVariable\r\n" +
+                                              "{\r\npublic System.String NodePath, DocumentPath;" +
+                                              "\r\npublic int Span;\r\n" +
+                                              "}\r\n";
+
+            string auditVariableSourceCode = AuditVariablesMap.GenerateAuditVariableSourceCode();
+
+            Assert.That(auditVariableSourceCode, Is.EqualTo(expectedSourceCode));
+        }
+
+        [Test]
+        public void Should_GenerateValidVariablesListSourceCode()
         {
             const string expectedSourceCode = "public static class AuditVariables\r\n" +
-                                              "{\r\n\tpublic static System.Collections.Generic.List<string> Coverage = " +
-                                              "new  System.Collections.Generic.List<string>();\r\n" +
+                                              "{\r\n\tpublic static System.Collections.Generic.List<AuditVariable> Coverage = " +
+                                              "new  System.Collections.Generic.List<AuditVariable>();\r\n" +
                                               "}";
 
-            string classSourceCode = _auditVariablesMap.GenerateSourceCode();
+            string classSourceCode = AuditVariablesMap.GenerateVariablesListSourceCode();
 
             Assert.That(classSourceCode, Is.EqualTo(expectedSourceCode));
-        }
-
-        [Test]
-        public void ExtractPathFromVariableName_When_VariableHasNoUnderscores()
-        {
-            string nodePath = AuditVariablesMap.ExtractPathFromVariableName("a.b.c.d.e.f_115");
-
-            Assert.That(nodePath,Is.EqualTo("a.b.c.d.e.f"));
-        }
-
-        [Test]
-        public void ExtractPathFromVariableName_When_VariableHasUnderscores()
-        {
-            string nodePath = AuditVariablesMap.ExtractPathFromVariableName("a_b.b.c_d.d.e.f_115");
-
-            Assert.That(nodePath, Is.EqualTo("a_b.b.c_d.d.e.f"));
-        }
-
-        [Test]
-        public void ExtractSpanFromVariableName_When_VariableHasNoUnderscores()
-        {
-            int span = AuditVariablesMap.ExtractSpanFromVariableName("a.b.c.d.e.f_115");
-
-            Assert.That(span, Is.EqualTo(115));
-        }
-
-        [Test]
-        public void ExtractSpanFromVariableName_When_VariableHasUnderscores()
-        {
-            int span = AuditVariablesMap.ExtractSpanFromVariableName("a_b.b.c_d.d.e.f_115");
-
-            Assert.That(span, Is.EqualTo(115));
         }
     }
 }

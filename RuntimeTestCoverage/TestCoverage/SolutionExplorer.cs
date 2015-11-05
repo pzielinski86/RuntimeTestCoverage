@@ -64,20 +64,6 @@ namespace TestCoverage
             return new RoslynSemanticModel(document.GetSemanticModelAsync().Result);
         }
 
-        public void PopulateWithRewrittenAuditNodes(AuditVariablesMap auditVariablesMap)
-        {
-            foreach (var document in GetAllDocuments())
-            {
-                var rewrittenFilePath = PathHelper.GetRewrittenFilePath(document.FilePath);
-
-                if (File.Exists(rewrittenFilePath))
-                {
-                    string content = File.ReadAllText(rewrittenFilePath);
-                    ExtractAuditVariables(auditVariablesMap, content);
-                }
-            }
-        }
-
         public IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments)
         {
             foreach (var document in project.Documents)
@@ -125,45 +111,5 @@ namespace TestCoverage
             return project;
         }
 
-        // TODO: Refactor
-        private static void ExtractAuditVariables(AuditVariablesMap auditVariablesMap, string content)
-        {
-            int auditVariablePos = 0;
-
-            while (true)
-            {
-                auditVariablePos = content.IndexOf(string.Format("AuditVariables.Coverage.Add(\""), auditVariablePos);
-                if (auditVariablePos == -1)
-                    break;
-
-                int startQuote = content.IndexOf("\"", auditVariablePos + 1);
-                int endQuote = content.IndexOf("\"", startQuote + 1);
-
-                string varName = content.Substring(startQuote + 1, endQuote - startQuote - 1);
-
-                string fullLine = content.Substring(auditVariablePos,
-                    content.IndexOf("\n", auditVariablePos + 1) - auditVariablePos);
-
-                int startCommentPos = fullLine.IndexOf(@"//", 0);
-
-                string documentPath = fullLine.Substring(startCommentPos + 2, fullLine.Length - startCommentPos - 2);
-
-                string nodePath = varName;
-
-                for (int i = nodePath.Length - 1; i >= 0; i--)
-                {
-                    if (nodePath[i] == '_')
-                    {
-                        nodePath = nodePath.Substring(0, i);
-                        break;
-                    }
-                }
-
-                var placeholder = new AuditVariablePlaceholder(documentPath, nodePath, AuditVariablesMap.ExtractSpanFromVariableName(varName));
-                auditVariablesMap.Map[varName] = placeholder;
-
-                auditVariablePos = endQuote + 1;
-            }
-        }
     }
 }

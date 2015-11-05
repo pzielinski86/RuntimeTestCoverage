@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
 using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
@@ -26,7 +27,7 @@ namespace TestCoverage.CoverageCalculation
 
         public LineCoverage[] CalculateForAllTests(RewriteResult rewritenResult)
         {
-            var compiledItems = _compiler.Compile(rewritenResult.ToCompilationItems(), rewritenResult.AuditVariablesMap);
+            var compiledItems = _compiler.Compile(rewritenResult.ToCompilationItems());
             var allAssemblies = compiledItems.Select(x => x.Assembly).ToArray();
 
             var finalCoverage = new List<LineCoverage>();
@@ -89,12 +90,10 @@ namespace TestCoverage.CoverageCalculation
         {
             List<_Assembly> assemblies = _testExplorer.SolutionExplorer.LoadCompiledAssemblies(project.Name).ToList();
 
-            _testExplorer.SolutionExplorer.PopulateWithRewrittenAuditNodes(rewrittenDocument.AuditVariablesMap);
-
             SyntaxTree[] projectTrees = _testExplorer.SolutionExplorer.LoadProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
 
             var allProjectTrees = projectTrees.Union(new[] { rewrittenDocument.SyntaxTree }).ToArray();
-            var compiledItems = _compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies, rewrittenDocument.AuditVariablesMap);
+            var compiledItems = _compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies);
             assemblies.AddRange(compiledItems.Select(x => x.Assembly));
 
             newItems = compiledItems;

@@ -21,11 +21,10 @@ namespace TestCoverage.IntegrationTests
             var project = workspace.AddProject("foo.dll", LanguageNames.CSharp);
             var syntaxTree = CSharpSyntaxTree.ParseText("class TestClass{}");
             var references = new[] { typeof(object).Assembly };
-            var auditVariablesMap = new AuditVariablesMap();
 
             var compilationItem = new CompilationItem(project, new[] { syntaxTree });
 
-            var result = compiler.Compile(compilationItem, references, auditVariablesMap);
+            var result = compiler.Compile(compilationItem, references);
 
             Assert.That(result.Length, Is.EqualTo(2));
             Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
@@ -48,11 +47,10 @@ namespace TestCoverage.IntegrationTests
                                                         "}");
 
             var references = new[] { typeof(object).Assembly };
-            var auditVariablesMap = new AuditVariablesMap();
 
             var compilationItem = new CompilationItem(project, new[] { syntaxTree });
 
-            var result = compiler.Compile(compilationItem, references, auditVariablesMap);
+            var result = compiler.Compile(compilationItem, references);
 
             Assert.That(result.Length, Is.EqualTo(2));
             Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
@@ -81,13 +79,10 @@ namespace TestCoverage.IntegrationTests
 
             var project2SyntaxTree = CSharpSyntaxTree.ParseText("namespace Project2 {public class SampleClass{}}");
 
-
-            var auditVariablesMap = new AuditVariablesMap();
-
             var compilationItem1 = new CompilationItem(project1, new[] { project1SyntaxTree });
             var compilationItem2 = new CompilationItem(project2, new[] { project2SyntaxTree });
 
-           var result = compiler.Compile(new[] { compilationItem1, compilationItem2 }, auditVariablesMap);
+            var result = compiler.Compile(new[] { compilationItem1, compilationItem2 });
 
             Assert.That(result.Length, Is.EqualTo(3));
             Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
@@ -123,16 +118,13 @@ namespace TestCoverage.IntegrationTests
                                                                     "}}}");
             var project3SyntaxTree = CSharpSyntaxTree.ParseText("namespace Project3 {public class SampleClass2{}}");
 
-
-            var auditVariablesMap = new AuditVariablesMap();
-
             var compilationItem1 = new CompilationItem(project1, new[] { project1SyntaxTree });
             var compilationItem2 = new CompilationItem(project2, new[] { project2SyntaxTree });
             var compilationItem3 = new CompilationItem(project3, new[] { project3SyntaxTree });
 
-           var result = compiler.Compile(new[] { compilationItem1, compilationItem2, compilationItem3 }, auditVariablesMap);
+            var result = compiler.Compile(new[] { compilationItem1, compilationItem2, compilationItem3 });
 
-            Assert.That(result.Length, Is.EqualTo(4));            
+            Assert.That(result.Length, Is.EqualTo(4));
         }
 
         [Test, RunInApplicationDomain]
@@ -142,15 +134,14 @@ namespace TestCoverage.IntegrationTests
 
             var workspace = new AdhocWorkspace();
             var project = workspace.AddProject("foo.dll", LanguageNames.CSharp);
-            var auditVariablesMap = new AuditVariablesMap();
 
             var compilationItem = new CompilationItem(project, new SyntaxTree[0]);
 
-           var result = compiler.Compile(compilationItem, new Assembly[0], auditVariablesMap);
+            var result = compiler.Compile(compilationItem, new Assembly[0]);
 
             Assert.That(result.Length, Is.EqualTo(2));
             Assert.That(result[1].Assembly.GetName().Name, Is.StringStarting("Audit"));
-            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo(auditVariablesMap.AuditVariablesClassName));
+            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo(AuditVariablesMap.AuditVariablesListClassName));
         }
 
     }

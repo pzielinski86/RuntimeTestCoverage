@@ -115,6 +115,7 @@
     <Compile Include="NUnitTestExtractorTests.cs" />
     <Compile Include="PathHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rewrite\AuditVariablePlaceholderTests.cs" />
     <Compile Include="Rewrite\AuditVariablesMapTests.cs" />
     <Compile Include="Rewrite\AuditVariablesRewriterTests.cs" />
     <Compile Include="Rewrite\AuditVariablesWalkerTests.cs" />

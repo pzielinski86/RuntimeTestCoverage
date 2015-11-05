@@ -89,7 +89,7 @@ namespace TestCoverage
                     {
                         SyntaxTree testRoot = _solutionExplorer.OpenFile(docCoverage.TestDocumentPath);
 
-                        var rewrittenDocument = new RewrittenDocument(document.AuditVariablesMap, testRoot, docCoverage.TestDocumentPath);
+                        var rewrittenDocument = new RewrittenDocument(testRoot, docCoverage.TestDocumentPath);
                         rewrittenDocuments.Add(rewrittenDocument);
                     }
                 }

@@ -1,4 +1,7 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Extensions;
 
 namespace TestCoverage.Compilation
 {
@@ -14,6 +17,12 @@ namespace TestCoverage.Compilation
         public string GetAssemblyName()
         {
             return _semanticModel.Compilation.AssemblyName;
+        }
+
+        public string GetFullName(ClassDeclarationSyntax classDeclarationSyntax)
+        {
+
+            return _semanticModel.GetDeclaredSymbol(classDeclarationSyntax).GetFullMetadataName();
         }
 
         public object GetConstantValue(SyntaxNode node)

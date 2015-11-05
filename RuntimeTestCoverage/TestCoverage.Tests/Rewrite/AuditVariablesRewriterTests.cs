@@ -16,14 +16,12 @@ namespace TestCoverage.Tests.Rewrite
     [TestFixture]
     public class AuditVariablesRewriterTests
     {
-        private IAuditVariablesMap _auditVariablesMap;
         private IAuditVariablesWalker _auditVariablesWalkerMock;
         private AuditVariablesRewriter _rewriter;
 
         [SetUp]
         public void Setup()
         {
-            _auditVariablesMap = Substitute.For<IAuditVariablesMap>();
             _auditVariablesWalkerMock = Substitute.For<IAuditVariablesWalker>();
             _rewriter = new AuditVariablesRewriter(_auditVariablesWalkerMock);
         }
@@ -59,53 +57,12 @@ namespace TestCoverage.Tests.Rewrite
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
                 .Returns(auditVariablePlaceholders);
 
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder(documentPath,"nodePath",115)}
-            });
-
-
             SyntaxNode root = tree.GetRoot();
-            _rewriter.Rewrite(projectName, documentPath, root, _auditVariablesMap);
+            _rewriter.Rewrite(projectName, documentPath, root);
 
             _auditVariablesWalkerMock.Received(1).Walk(projectName, documentPath, root);
         }
 
-        [Test]
-        public void Should_AddVariableToMap()
-        {
-            const string sourceCode = @"namespace SampleNamespace
-                                {
-                                    class SampleClass
-                                    {
-                                        public void SampleMethod()
-                                        {
-                                            int a=4;
-                                        }
-                                    }
-                                }";
-
-            var tree = CSharpSyntaxTree.ParseText(sourceCode);
-
-            AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[1];
-            auditVariablePlaceholders[0] = new AuditVariablePlaceholder("c:\\1.cs", "path", 115);
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-
-            _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
-                .Returns(auditVariablePlaceholders);
-
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
-
-            _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
-
-            _auditVariablesMap.Received(1).AddVariable(auditVariablePlaceholders[0]);
-        }
 
         [Test]
         public void Should_RewriteInlineIf_To_BlockStatementWithAuditVariable()
@@ -131,14 +88,8 @@ namespace TestCoverage.Tests.Rewrite
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
                 .Returns(auditVariablePlaceholders);
 
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
             // act
-            var rewrittenNode=_rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
+            var rewrittenNode=_rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
             
             // assert
             var ifStatement = rewrittenNode.DescendantNodes().OfType<IfStatementSyntax>().Single();
@@ -181,14 +132,8 @@ namespace TestCoverage.Tests.Rewrite
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
                 .Returns(auditVariablePlaceholders);
 
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
             // act
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
+            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
             // assert
             var ifStatement = rewrittenNode.DescendantNodes().OfType<IfStatementSyntax>().Single();
@@ -204,46 +149,6 @@ namespace TestCoverage.Tests.Rewrite
             Assert.That(statements[0].ToFullString(), Is.StringContaining("SampleVariableName"));
         }
 
-        [Test]
-        public void Should_RewriteNestedIfs()
-        {
-            const string sourceCode = @"namespace SampleNamespace
-                                {
-                                    class SampleClass
-                                    {
-                                        public void SampleMethod()
-                                        {
-                                            if(true)
-                                            {
-                                               if(true)
-                                               {
-                                                    
-                                               }
-                                            }                    
-                                        }
-                                    }
-                                }";
-
-            var tree = CSharpSyntaxTree.ParseText(sourceCode);
-
-            AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[2];
-            auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
-            auditVariablePlaceholders[1] = new AuditVariablePlaceholder(null, null, 0);
-
-            _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
-                .Returns(auditVariablePlaceholders);
-
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
-
-            _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
-
-            _auditVariablesMap.Received(2).AddVariable(Arg.Any<AuditVariablePlaceholder>());
-        }
 
         [Test]
         public void Should_AddAuditNodeWithCommentContainingDocumentPath()
@@ -265,20 +170,11 @@ namespace TestCoverage.Tests.Rewrite
             auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(auditVariablePlaceholders);
 
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-            _auditVariablesMap.AuditVariablesClassName.Returns("AuditVariablesClassName");
-            _auditVariablesMap.AuditVariablesListName.Returns("AuditVariablesListName");
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
-
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
+            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
             SyntaxNode auditNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().First();
 
-            const string expectedNode = "AuditVariablesClassName.AuditVariablesListName.Add(\"SampleVariableName\");";
+            const string expectedNode = "AuditVariablesListClassName.AuditVariablesListName.Add(\"SampleVariableName\");";
             const string expectedNodeComment = "//documentPath\n";
 
             Assert.That(auditNode.ToString(), Is.EqualTo(expectedNode));
@@ -305,14 +201,7 @@ namespace TestCoverage.Tests.Rewrite
             auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(auditVariablePlaceholders);
 
-            _auditVariablesMap.AddVariable(Arg.Any<AuditVariablePlaceholder>()).Returns("SampleVariableName");
-            _auditVariablesMap.Map.Returns(new Dictionary<string, AuditVariablePlaceholder>()
-            {
-                {"SampleVariableName", new AuditVariablePlaceholder("documentPath","nodePath",115)}
-            });
-
-
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot(), _auditVariablesMap);
+            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
             SyntaxNode originalNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().Last();
 

@@ -8,18 +8,18 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestRunResult : ITestRunResult
     {
-        public string[] SetAuditVars { get; }
+        public AuditVariablePlaceholder[] SetAuditVars { get; }
         public bool AssertionFailed { get; }
         public string ErrorMessage { get; }
 
-        public TestRunResult(string[] setAuditVars, bool assertionFailed, string errorMessage)
+        public TestRunResult(AuditVariablePlaceholder[] setAuditVars, bool assertionFailed, string errorMessage)
         {
             SetAuditVars = setAuditVars;
             AssertionFailed = assertionFailed;
             ErrorMessage = errorMessage;
         }
 
-        public virtual LineCoverage[] GetCoverage(AuditVariablesMap auditVariablesMap, 
+        public virtual LineCoverage[] GetCoverage( 
             SyntaxNode testMethod, 
             string testProjectName, 
             string testDocumentPath)
@@ -27,15 +27,14 @@ namespace TestCoverage.CoverageCalculation
             List<LineCoverage> coverage = new List<LineCoverage>();
             string testDocName = Path.GetFileNameWithoutExtension(testDocumentPath);
 
-            foreach (string varName in SetAuditVars)
+            foreach (var variable in SetAuditVars)
             {
-                string docPath = auditVariablesMap.Map[varName].DocumentPath;
 
-                LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(auditVariablesMap, varName, testMethod, testProjectName, testDocName);
+                LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
 
                 if (AssertionFailed)
                 {
-                    if (lineCoverage.Path == lineCoverage.TestPath && varName != SetAuditVars.Last())
+                    if (lineCoverage.Path == lineCoverage.TestPath && variable != SetAuditVars.Last())
                         lineCoverage.IsSuccess = true;
                     else
                         lineCoverage.IsSuccess = false;
@@ -44,7 +43,7 @@ namespace TestCoverage.CoverageCalculation
                     lineCoverage.IsSuccess = true;
 
 
-                lineCoverage.DocumentPath = docPath;
+                lineCoverage.DocumentPath = variable.DocumentPath;
                 lineCoverage.TestDocumentPath = testDocumentPath;
 
                 coverage.Add(lineCoverage);

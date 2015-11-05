@@ -40,11 +40,10 @@ namespace TestCoverage.Tests.CoverageCalculation
                 _compilerMock,
                 _testRunnerMock);
 
-            _compilerMock.Compile(Arg.Any<CompilationItem>(), Arg.Any<IEnumerable<_Assembly>>(),
-                Arg.Any<AuditVariablesMap>())
+            _compilerMock.Compile(Arg.Any<CompilationItem>(), Arg.Any<IEnumerable<_Assembly>>())
                 .Returns((x) => _compiledSingleProjectItems.ToArray());
 
-            _compilerMock.Compile(Arg.Any<IEnumerable<CompilationItem>>(), Arg.Any<AuditVariablesMap>())
+            _compilerMock.Compile(Arg.Any<IEnumerable<CompilationItem>>())
                 .Returns((x) => _compiledAllItems.ToArray());
         }
 
@@ -57,10 +56,10 @@ namespace TestCoverage.Tests.CoverageCalculation
             var workspace = new AdhocWorkspace();
             var project1 = workspace.AddProject("foo1.dll", LanguageNames.CSharp);
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject);
             var rewrittenTree = CSharpSyntaxTree.ParseText("");
 
-            var rewrittenDocument1 = new RewrittenDocument(null, rewrittenTree, null);
+            var rewrittenDocument1 = new RewrittenDocument( rewrittenTree, null);
             rewriteResult.Items[project1] = new List<RewrittenDocument>() { rewrittenDocument1 };
 
             var compiledItem = Substitute.For<ICompiledItem>();
@@ -73,8 +72,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             // assert
             _compilerMock.Received(1).Compile
                 (Arg.Is<IEnumerable<CompilationItem>>(x => x.First().SyntaxTrees[0] ==
-                rewriteResult.ToCompilationItems().First().SyntaxTrees[0]),
-                rewriteResult.AuditVariablesMap);
+                rewriteResult.ToCompilationItems().First().SyntaxTrees[0]));
         }
 
         [Test]
@@ -85,10 +83,10 @@ namespace TestCoverage.Tests.CoverageCalculation
             var workspace = new AdhocWorkspace();
             var project1 = workspace.AddProject("foo1.dll", LanguageNames.CSharp);
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject);
             var rewrittenTree = CSharpSyntaxTree.ParseText("");
 
-            var rewrittenDocument1 = new RewrittenDocument(null, rewrittenTree, null);
+            var rewrittenDocument1 = new RewrittenDocument( rewrittenTree, null);
             rewriteResult.Items[project1] = new List<RewrittenDocument>() { rewrittenDocument1 };
 
             var semanticModel = Substitute.For<ISemanticModel>();
@@ -123,10 +121,10 @@ namespace TestCoverage.Tests.CoverageCalculation
             var project1 = workspace.AddProject("foo1.dll", LanguageNames.CSharp);
             var project2 = workspace.AddProject("foo2.dll", LanguageNames.CSharp);
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject);
             var rewrittenTree = CSharpSyntaxTree.ParseText("");
 
-            var rewrittenDocument1 = new RewrittenDocument(null, rewrittenTree, null);
+            var rewrittenDocument1 = new RewrittenDocument(rewrittenTree, null);
             rewriteResult.Items[project1] = new List<RewrittenDocument>() { rewrittenDocument1 };
             rewriteResult.Items[project2] = new List<RewrittenDocument>() { rewrittenDocument1 };
 
@@ -167,10 +165,10 @@ namespace TestCoverage.Tests.CoverageCalculation
             var workspace = new AdhocWorkspace();
             var testProject = workspace.AddProject("TestProject.dll", LanguageNames.CSharp);
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject);
             var rewrittenTree = CSharpSyntaxTree.ParseText("");
 
-            var rewrittenDocument1 = new RewrittenDocument(null, rewrittenTree, null);
+            var rewrittenDocument1 = new RewrittenDocument( rewrittenTree, null);
             rewriteResult.Items[testProject] = new List<RewrittenDocument>() { rewrittenDocument1 };
 
             var compiledItem1 = Substitute.For<ICompiledItem>();
@@ -202,11 +200,11 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testProject = workspace.AddProject("TestProject.dll", LanguageNames.CSharp);
             var businessLogicProject = workspace.AddProject("BusinessLogicProject.dll", LanguageNames.CSharp);
 
-            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject, new AuditVariablesMap());
+            RewriteResult rewriteResult = new RewriteResult(rewrittenItemsByProject);
             var rewrittenTree = CSharpSyntaxTree.ParseText("");
 
-            var businessLogicDocument = new RewrittenDocument(null, rewrittenTree, null);
-            var testDocument = new RewrittenDocument(null, rewrittenTree, null);
+            var businessLogicDocument = new RewrittenDocument( rewrittenTree, null);
+            var testDocument = new RewrittenDocument( rewrittenTree, null);
 
             rewriteResult.Items[businessLogicProject] = new List<RewrittenDocument>() { businessLogicDocument };
             rewriteResult.Items[testProject] = new List<RewrittenDocument>() { testDocument };

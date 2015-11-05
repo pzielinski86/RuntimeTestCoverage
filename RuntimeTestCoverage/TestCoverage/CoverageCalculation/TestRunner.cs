@@ -40,7 +40,6 @@ namespace TestCoverage.CoverageCalculation
                 TestProjectReferences = allReferences,
                 TestDocumentPath = rewrittenDocument.DocumentPath,
                 AllAssemblies = allAssemblies,
-                AuditVariablesMap = rewrittenDocument.AuditVariablesMap,
                 SemanticModel = semanticModel
             };
 
@@ -74,10 +73,9 @@ namespace TestCoverage.CoverageCalculation
                    ITestRunResult testResult =
                        _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences,
                            compiledTestFixtureInfo.AllAssemblies,
-                           testFixtureDetails.Cases[i],
-                           compiledTestFixtureInfo.AuditVariablesMap);
+                           testFixtureDetails.Cases[i]);
 
-                   var partialCoverage = testResult.GetCoverage(compiledTestFixtureInfo.AuditVariablesMap,
+                   var partialCoverage = testResult.GetCoverage(
                         testFixtureDetails.Cases[i].SyntaxNode,
                        testsProjectName,
                        compiledTestFixtureInfo.TestDocumentPath);

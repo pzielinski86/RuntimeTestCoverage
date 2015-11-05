@@ -53,7 +53,7 @@ namespace TestCoverage.Tests
             _coverageStoreMock.ReadAll().Returns(new[] { lineCoverage });
             _solutionExplorerMock.OpenFile(lineCoverage.TestDocumentPath).Returns(testTree);
 
-            var document = new RewrittenDocument(new AuditVariablesMap(), tree, @"c:\MathHelper.cs");
+            var document = new RewrittenDocument( tree, @"c:\MathHelper.cs");
 
             // act
             RewrittenDocument[] output = _sut.GetReferencedTests(document, "Math");
@@ -61,7 +61,6 @@ namespace TestCoverage.Tests
             // assert
             Assert.That(output.Length,Is.EqualTo(1));
             Assert.That(output[0].DocumentPath,Is.EqualTo(lineCoverage.TestDocumentPath));
-            Assert.That(output[0].AuditVariablesMap, Is.EqualTo(document.AuditVariablesMap));
             Assert.That(output[0].SyntaxTree, Is.EqualTo(testTree));
         }
 
