@@ -20,7 +20,7 @@ namespace TestCoverage
         {
             _solutionExplorer = new SolutionExplorer(solutionPath);
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
-            _coverageStore = new XmlCoverageStore(_solutionExplorer.SolutionPath);
+            _coverageStore = new SqlCompactCoverageStore(_solutionExplorer.SolutionPath);
             var settingsStore = new XmlCoverageSettingsStore(_solutionExplorer.SolutionPath);
             _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), _coverageStore,settingsStore);
 

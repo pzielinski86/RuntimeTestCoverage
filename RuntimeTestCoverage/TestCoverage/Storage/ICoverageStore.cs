@@ -11,6 +11,5 @@ namespace TestCoverage.Storage
 
         LineCoverage[] ReadAll();
 
-        LineCoverage[] ReadByDocument(string documentPath);
     }
 }

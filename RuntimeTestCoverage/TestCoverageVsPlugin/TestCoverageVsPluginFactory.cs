@@ -43,7 +43,7 @@ namespace TestCoverageVsPlugin
             string solutionPath = _dte.Solution.FullName;
             _solutionExplorer = new SolutionExplorer(solutionPath);
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
-                () => new AppDomainSolutionCoverageEngine(),new XmlCoverageStore(solutionPath));
+                () => new AppDomainSolutionCoverageEngine(),new SqlCompactCoverageStore(solutionPath));
 
             _vsSolutionTestCoverage.LoadCurrentCoverage();
         }
