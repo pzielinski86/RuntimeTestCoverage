@@ -83,7 +83,7 @@ namespace TestCoverage.Tests.Rewrite
 
             AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[2];
             auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
-            auditVariablePlaceholders[1] = new AuditVariablePlaceholder(null, null, 0);
+            auditVariablePlaceholders[1] = new AuditVariablePlaceholder(null, "IfNode", 0);
 
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
                 .Returns(auditVariablePlaceholders);
@@ -102,7 +102,7 @@ namespace TestCoverage.Tests.Rewrite
                     .ToArray();
 
             Assert.That(statements.Length, Is.EqualTo(2));
-            Assert.That(statements[0].ToFullString(),Is.StringContaining("SampleVariableName"));
+            Assert.That(statements[0].ToFullString(),Is.StringContaining("IfNode"));
         }
 
         [Test]
@@ -125,9 +125,9 @@ namespace TestCoverage.Tests.Rewrite
             var tree = CSharpSyntaxTree.ParseText(sourceCode);
 
             AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[3];
-            auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
+            auditVariablePlaceholders[0] = new AuditVariablePlaceholder("", null, 0);
             auditVariablePlaceholders[1] = new AuditVariablePlaceholder(null, null, 0);
-            auditVariablePlaceholders[2] = new AuditVariablePlaceholder(null, null, 0);
+            auditVariablePlaceholders[2] = new AuditVariablePlaceholder(null, "ElseNode", 0);
 
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
                 .Returns(auditVariablePlaceholders);
@@ -146,40 +146,9 @@ namespace TestCoverage.Tests.Rewrite
                     .ToArray();
 
             Assert.That(statements.Length, Is.EqualTo(2));
-            Assert.That(statements[0].ToFullString(), Is.StringContaining("SampleVariableName"));
+            Assert.That(statements[0].ToFullString(), Is.StringContaining("ElseNode"));
         }
 
-
-        [Test]
-        public void Should_AddAuditNodeWithCommentContainingDocumentPath()
-        {
-            const string sourceCode = @"namespace SampleNamespace
-                                {
-                                    class SampleClass
-                                    {
-                                        public void SampleMethod()
-                                        {
-                                            int a=4;
-                                        }
-                                    }
-                                }";
-
-            var tree = CSharpSyntaxTree.ParseText(sourceCode);
-
-            AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[1];
-            auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
-            _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(auditVariablePlaceholders);
-
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
-
-            SyntaxNode auditNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().First();
-
-            const string expectedNode = "AuditVariablesListClassName.AuditVariablesListName.Add(\"SampleVariableName\");";
-            const string expectedNodeComment = "//documentPath\n";
-
-            Assert.That(auditNode.ToString(), Is.EqualTo(expectedNode));
-            Assert.That(auditNode.GetTrailingTrivia().ToString(), Is.EqualTo(expectedNodeComment));
-        }
 
         [Test]
         public void ShouldNot_RemoveOriginalNodeContainingLocalVariable()

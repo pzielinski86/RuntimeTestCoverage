@@ -48,7 +48,7 @@ namespace TestCoverage.Tests
             var fixture = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
-            Assert.That(fixture.AssemblyName, Is.EqualTo(assemblyName));
+            Assert.That(fixture.AssemblyName, Is.EqualTo("assembly name_COVERAGE.dll"));
         }
 
         [Test]
