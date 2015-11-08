@@ -12,6 +12,6 @@ namespace TestCoverageVsPlugin
         void CalculateForAllDocuments();
         Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent);
         void CalculateForDocument(string projectName, string documentPath, string documentContent);
-        ISolutionCoverageEngine Init();
+        Task<ISolutionCoverageEngine> InitAsync(bool forcToRecreate);
     }
 }

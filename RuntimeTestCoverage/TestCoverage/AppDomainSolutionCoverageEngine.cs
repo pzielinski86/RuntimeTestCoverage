@@ -20,7 +20,8 @@ namespace TestCoverage
             _appDomain = AppDomain.CreateDomain("coverage", null, appDomainSetup);
             Type engineType = typeof (SolutionCoverageEngine);
 
-            string path = Path.Combine(Directory.GetCurrentDirectory(), engineType.Assembly.ManifestModule.Name);
+            string currentDir = Path.GetDirectoryName(GetType().Assembly.Location);
+            string path = Path.Combine(currentDir, engineType.Assembly.ManifestModule.Name);
             _coverageEngine = (SolutionCoverageEngine)_appDomain.CreateInstanceFromAndUnwrap(path,
                 engineType.FullName);            
         }

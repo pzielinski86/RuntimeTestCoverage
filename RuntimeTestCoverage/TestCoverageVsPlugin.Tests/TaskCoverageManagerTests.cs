@@ -59,7 +59,7 @@ namespace TestCoverageVsPlugin.Tests
             while (_sut.IsBusy) { }
 
             // assert
-            _vsSolutionTestCoverageMock.Received(1).Init();
+            _vsSolutionTestCoverageMock.Received(1).InitAsync(false);
         }
 
         [Test]

@@ -8,13 +8,13 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestRunResult : ITestRunResult
     {
-        public AuditVariablePlaceholder[] SetAuditVars { get; }
+        public AuditVariablePlaceholder[] AuditVariables { get; }
         public bool AssertionFailed { get; }
         public string ErrorMessage { get; }
 
-        public TestRunResult(AuditVariablePlaceholder[] setAuditVars, bool assertionFailed, string errorMessage)
+        public TestRunResult(AuditVariablePlaceholder[] auditVariables, bool assertionFailed, string errorMessage)
         {
-            SetAuditVars = setAuditVars;
+            AuditVariables = auditVariables;
             AssertionFailed = assertionFailed;
             ErrorMessage = errorMessage;
         }
@@ -27,14 +27,13 @@ namespace TestCoverage.CoverageCalculation
             List<LineCoverage> coverage = new List<LineCoverage>();
             string testDocName = Path.GetFileNameWithoutExtension(testDocumentPath);
 
-            foreach (var variable in SetAuditVars)
+            foreach (var variable in AuditVariables)
             {
-
                 LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
 
                 if (AssertionFailed)
                 {
-                    if (lineCoverage.Path == lineCoverage.TestPath && variable != SetAuditVars.Last())
+                    if (lineCoverage.NodePath == lineCoverage.TestPath && variable != AuditVariables.Last())
                         lineCoverage.IsSuccess = true;
                     else
                         lineCoverage.IsSuccess = false;

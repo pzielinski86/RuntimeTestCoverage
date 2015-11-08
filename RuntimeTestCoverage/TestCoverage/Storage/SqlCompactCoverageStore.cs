@@ -29,8 +29,6 @@ namespace TestCoverage.Storage
 
         public void Append(string documentPath, IEnumerable<LineCoverage> coverage)
         {
-            Stopwatch s = Stopwatch.StartNew();
-
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
                 connection.Open();
@@ -42,7 +40,6 @@ namespace TestCoverage.Storage
                 InsertLineCoverage(connection, coverage.ToArray());
             }
 
-            long e = s.ElapsedMilliseconds;
         }
 
         public void WriteAll(IEnumerable<LineCoverage> coverage)
@@ -97,7 +94,7 @@ namespace TestCoverage.Storage
                 foreach (var lineCoverage in coverage)
                 {
                     DataRow row = table.NewRow();
-                    row["NodePath"] = lineCoverage.Path;
+                    row["NodePath"] = lineCoverage.NodePath;
                     row["TestPath"] = lineCoverage.TestPath;
                     row["DocumentPath"] = lineCoverage.DocumentPath;
                     row["TestDocumentPath"] = lineCoverage.TestDocumentPath;

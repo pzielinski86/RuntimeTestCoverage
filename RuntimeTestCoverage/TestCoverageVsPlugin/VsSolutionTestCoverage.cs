@@ -30,11 +30,16 @@ namespace TestCoverageVsPlugin
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
         }
 
-        public ISolutionCoverageEngine Init()
+        public Task<ISolutionCoverageEngine> InitAsync(bool forcToRecreate)
+        {
+            return Task.Run(() => Init(forcToRecreate));
+        }
+
+        private ISolutionCoverageEngine Init(bool forcToRecreate)
         {
             lock (_sync)
             {
-                if (_engine == null || _engine.IsDisposed)
+                if (_engine == null || _engine.IsDisposed|| forcToRecreate)
                 {
                     _engine = _solutionCoverageFactory();
                     _engine.Init(_solutionPath);
@@ -74,7 +79,7 @@ namespace TestCoverageVsPlugin
 
         public void CalculateForAllDocuments()
         {
-            using (var engine = Init())
+            using (var engine = Init(false))
             {
                 CoverageResult coverage;
 
@@ -94,12 +99,12 @@ namespace TestCoverageVsPlugin
 
         public Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
         {
-            return Task.Factory.StartNew(() => CalculateForDocument(projectName, documentPath, documentContent));
+            return Task.Run(() => CalculateForDocument(projectName, documentPath, documentContent));
         }
 
         public void CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
-            using (var engine = Init())
+            using (var engine = Init(false))
             {
                 CoverageResult coverage;
 

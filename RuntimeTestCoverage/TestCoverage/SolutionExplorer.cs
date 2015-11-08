@@ -23,7 +23,7 @@ namespace TestCoverage
 
             var workspace = MSBuildWorkspace.Create(props);
             // TODO: Get rid of blocking a thread
-            _solution = workspace.OpenSolutionAsync(solutionPath).Result;
+            _solution = workspace.OpenSolutionAsync(solutionPath).Result;            
         }  
 
         public MetadataReference[] GetAllProjectReferences(string projectName)

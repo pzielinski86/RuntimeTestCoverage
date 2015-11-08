@@ -45,7 +45,7 @@ namespace TestCoverage.Tests
 
             var lineCoverage = new LineCoverage
             {
-                Path = "Math.MathHelper.MathHelper.Divide",
+                NodePath = "Math.MathHelper.MathHelper.Divide",
                 TestDocumentPath = @"c:\\MathHelperTests.cs",
                 TestPath = "MathTests.MathHelperTests.MathHelperTests.DivideTest"
             };

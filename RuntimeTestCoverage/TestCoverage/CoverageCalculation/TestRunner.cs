@@ -64,7 +64,6 @@ namespace TestCoverage.CoverageCalculation
         private LineCoverage[] RunAllTestsInFixture(CompiledTestFixtureInfo compiledTestFixtureInfo, string testProjectName)
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
-            string testsProjectName = PathHelper.GetCoverageDllName(testProjectName);
 
             var coverage = new ConcurrentBag<LineCoverage>();
 
@@ -77,7 +76,7 @@ namespace TestCoverage.CoverageCalculation
 
                    var partialCoverage = testResult.GetCoverage(
                         testFixtureDetails.Cases[i].SyntaxNode,
-                       testsProjectName,
+                       testProjectName,
                        compiledTestFixtureInfo.TestDocumentPath);
 
                    coverage.AddRange(partialCoverage);

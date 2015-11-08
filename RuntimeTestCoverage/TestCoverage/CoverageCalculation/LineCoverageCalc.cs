@@ -74,6 +74,7 @@ namespace TestCoverage.CoverageCalculation
             List<LineCoverage> finalCoverage = new List<LineCoverage>();
             var referencedTests = _testExplorer.GetReferencedTests(rewrittenDocument, project.Name);
 
+
             foreach (RewrittenDocument referencedTest in referencedTests)
             {
                 var semanticModel = _testExplorer.SolutionExplorer.GetSemanticModelByDocument(referencedTest.DocumentPath);

@@ -11,7 +11,7 @@ namespace TestCoverage.CoverageCalculation
     public class LineCoverage
     {
         public int Span { get; set; }
-        public string Path { get; set; }
+        public string NodePath { get; set; }
         public string TestPath { get; set; }
         public string DocumentPath { get; set; }
         public string TestDocumentPath { get; set; }
@@ -26,7 +26,7 @@ namespace TestCoverage.CoverageCalculation
             LineCoverage lineCoverage = new LineCoverage
             {
                 TestPath = NodePathBuilder.BuildPath(testMethodNode, testDocName, testProjectName),
-                Path = variableName.NodePath,
+                NodePath = variableName.NodePath,
                 Span = variableName.SpanStart
             };
 

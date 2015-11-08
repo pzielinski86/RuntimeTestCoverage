@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
@@ -78,12 +80,11 @@ namespace TestCoverage
             string documentName = Path.GetFileNameWithoutExtension(document.DocumentPath);
             var currentCoverage = _coverageStore.ReadAll();
             var rewrittenDocuments = new List<RewrittenDocument>();
-
             foreach (var method in methods)
             {
                 string path = NodePathBuilder.BuildPath(method, documentName, projectName);
 
-                foreach (var docCoverage in currentCoverage.Where(x => x.Path == path))
+                foreach (var docCoverage in currentCoverage.Where(x => x.NodePath == path))
                 {
                     if (rewrittenDocuments.All(x => x.DocumentPath != docCoverage.TestDocumentPath))
                     {

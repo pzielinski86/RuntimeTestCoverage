@@ -40,7 +40,7 @@ namespace TestCoverageVsPlugin.Tests
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
 
             // act
-            var newEngine = _sut.Init();
+            var newEngine = _sut.InitAsync(false);
 
             // assert
             Assert.That(engines.Count,Is.EqualTo(0));
@@ -61,9 +61,9 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine2);
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
-            _sut.Init();
+            _sut.InitAsync(false);
             // act
-            var newEngine = _sut.Init();
+            var newEngine = _sut.InitAsync(false);
 
             // assert
             Assert.That(engines.Count, Is.EqualTo(0));
@@ -81,10 +81,10 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine2);
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
-            _sut.Init();
+            _sut.InitAsync(false);
 
             // act
-            var newEngine = _sut.Init();
+            var newEngine = _sut.InitAsync(false);
 
             // assert
             Assert.That(engines.Count, Is.EqualTo(1));
@@ -137,12 +137,12 @@ namespace TestCoverageVsPlugin.Tests
 
             var oldTestLineCoverage = new LineCoverage();
             oldTestLineCoverage.DocumentPath = testDocumentPath;
-            oldTestLineCoverage.Path = "CurrentProject.MathHelperTests";
+            oldTestLineCoverage.NodePath = "CurrentProject.MathHelperTests";
             oldTestLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             var newTestLineCoverage = new LineCoverage();
             newTestLineCoverage.DocumentPath = testDocumentPath;
-            oldTestLineCoverage.Path = "CurrentProject.MathHelperTests";
+            oldTestLineCoverage.NodePath = "CurrentProject.MathHelperTests";
             oldTestLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             _sut.SolutionCoverageByDocument.Add(testDocumentPath, new List<LineCoverage>() { oldTestLineCoverage });
@@ -183,11 +183,11 @@ namespace TestCoverageVsPlugin.Tests
         {
             // arrange
             var testLineCoverage = new LineCoverage();
-            testLineCoverage.Path = "CurrentProject.MathHelperTests";
+            testLineCoverage.NodePath = "CurrentProject.MathHelperTests";
             testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             var codeLineCoverage = new LineCoverage();
-            codeLineCoverage.Path = "CurrentProject.MathHelper";
+            codeLineCoverage.NodePath = "CurrentProject.MathHelper";
             codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             _sut.SolutionCoverageByDocument.Add("doc1.xml", new List<LineCoverage>() { testLineCoverage, codeLineCoverage });
@@ -206,11 +206,11 @@ namespace TestCoverageVsPlugin.Tests
         {
             // arrange
             var testLineCoverage = new LineCoverage();
-            testLineCoverage.Path = "CurrentProject.MathHelperTests";
+            testLineCoverage.NodePath = "CurrentProject.MathHelperTests";
             testLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             var codeLineCoverage = new LineCoverage();
-            codeLineCoverage.Path = "CurrentProject.MathHelper";
+            codeLineCoverage.NodePath = "CurrentProject.MathHelper";
             codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             _sut.SolutionCoverageByDocument.Add("doc1.xml", new List<LineCoverage>() { testLineCoverage, codeLineCoverage });
@@ -230,7 +230,7 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string documentPath = "EmployeeRepository.cs";
             var lineCoverage = new LineCoverage();
-            lineCoverage.TestPath = lineCoverage.Path = "CurrentProject.MathHelperTests";
+            lineCoverage.TestPath = lineCoverage.NodePath = "CurrentProject.MathHelperTests";
 
             _sut.SolutionCoverageByDocument.Add(documentPath, new List<LineCoverage>() { lineCoverage });
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).

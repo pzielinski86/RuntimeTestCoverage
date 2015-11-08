@@ -35,7 +35,6 @@ namespace TestCoverageVsPlugin
         private readonly Canvas _canvas;
         private readonly ITaskCoverageManager _taskCoverageManager;
 
-        private Task _currentTask;
         private string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
@@ -62,12 +61,10 @@ namespace TestCoverageVsPlugin
             textView.TextBuffer.Changed += TextBuffer_Changed;
 
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _vsSolutionTestCoverage.Init();
+            _vsSolutionTestCoverage.InitAsync(false);
             _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
             _taskCoverageManager.DocumentCoverageTaskCompleted += DocumentCoverageTaskCompleted;
-            _taskCoverageManager.DocumentCoverageTaskStarted += DocumentCoverageTaskStarted;
-
-            InitProperties();
+            _taskCoverageManager.DocumentCoverageTaskStarted += DocumentCoverageTaskStarted;            
         }
 
         private void DocumentCoverageTaskStarted(object sender, DocumentCoverageTaskCompletedArgs e)
@@ -91,6 +88,10 @@ namespace TestCoverageVsPlugin
 
         private void InitProperties()
         {
+            if (_documentPath != null)
+                return;
+
+
             _documentPath = GetTextDocument().FilePath;
             var projectItem = _solution.FindProjectItem(_documentPath);
             _projectName = projectItem.ContainingProject.Name;
@@ -117,6 +118,7 @@ namespace TestCoverageVsPlugin
 
         private void Redraw()
         {
+            InitProperties();
             _canvas.Children.Clear();
 
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();

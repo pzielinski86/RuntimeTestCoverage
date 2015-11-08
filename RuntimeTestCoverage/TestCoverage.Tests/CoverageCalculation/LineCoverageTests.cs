@@ -42,7 +42,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             var coverage = LineCoverage.EvaluateAuditVariable(variable,testNode.GetRoot(), "HelloWorldTestsSample", "HelloWorldTests");
 
             // act
-            Assert.That(coverage.Path, Is.EqualTo("node_path"));
+            Assert.That(coverage.NodePath, Is.EqualTo("node_path"));
         }
 
         [Test]
