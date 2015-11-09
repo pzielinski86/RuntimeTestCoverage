@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Media3D;
+using Microsoft.VisualStudio.Shell.Interop;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -18,6 +19,7 @@ namespace TestCoverageVsPlugin.Tests
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
+        private IVsActivityLog _logger;
         private readonly string _solutionPath = @"c:\Project.sln";
 
         [SetUp]
@@ -25,8 +27,9 @@ namespace TestCoverageVsPlugin.Tests
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
+            _logger = Substitute.For<IVsActivityLog>();
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => _solutionCoverageEngineMock, _coverageStoreMock);
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => _solutionCoverageEngineMock, _coverageStoreMock, _logger);
         }
 
         [Test]
@@ -37,7 +40,7 @@ namespace TestCoverageVsPlugin.Tests
             var engines = new Stack<ISolutionCoverageEngine>();
             engines.Push(engine1);
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
 
             // act
             var newEngine = _sut.InitAsync(false);
@@ -60,7 +63,7 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine1);
             engines.Push(engine2);
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
             _sut.InitAsync(false);
             // act
             var newEngine = _sut.InitAsync(false);
@@ -80,7 +83,7 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine1);
             engines.Push(engine2);
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock);
+            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
             _sut.InitAsync(false);
 
             // act

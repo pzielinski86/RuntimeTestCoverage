@@ -5,6 +5,7 @@
 //------------------------------------------------------------------------------
 
 using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Storage;
@@ -46,12 +47,17 @@ namespace TestCoverageVsPlugin.UI
             {
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore(dte.Solution.FileName);
-                ICoverageStore coverageStore=new SqlCompactCoverageStore(dte.Solution.FileName);
+                ICoverageStore coverageStore = new SqlCompactCoverageStore(dte.Solution.FileName);
+                var logger = CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
 
-                ITestExplorer testExplorer = new TestExplorer(solutionExplorer, new NUnitTestExtractor(),coverageStore, settingsStore);
+                ITestExplorer testExplorer = new TestExplorer(solutionExplorer,
+                    new NUnitTestExtractor(), coverageStore, settingsStore);
                 var xmlCoverageStore = new SqlCompactCoverageStore(dte.Solution.FileName);
 
-                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(dte.Solution.FileName, () => new AppDomainSolutionCoverageEngine(), xmlCoverageStore);
+                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(dte.Solution.FileName,
+                    () => new AppDomainSolutionCoverageEngine(), 
+                    xmlCoverageStore,
+                    logger);
 
                 var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore, vsSolutionTestCoverage);
 
