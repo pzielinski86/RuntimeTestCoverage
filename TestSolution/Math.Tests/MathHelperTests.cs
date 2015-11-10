@@ -24,10 +24,7 @@ namespace Math.Tests
         [TestCase(20, 10, 2)]
         public void DivideTest(int a,int b,int c)
         {
-
-                                  
-
-
+                               
             ///////ak55kkkllklkjklmhgjghjg
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(a, b);

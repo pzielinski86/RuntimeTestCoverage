@@ -19,7 +19,7 @@ namespace TestCoverageVsPlugin.Tests
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
-        private IVsActivityLog _logger;
+        private ILogger _logger;
         private readonly string _solutionPath = @"c:\Project.sln";
 
         [SetUp]
@@ -27,7 +27,7 @@ namespace TestCoverageVsPlugin.Tests
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
-            _logger = Substitute.For<IVsActivityLog>();
+            _logger = Substitute.For<ILogger>();
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => _solutionCoverageEngineMock, _coverageStoreMock, _logger);
         }

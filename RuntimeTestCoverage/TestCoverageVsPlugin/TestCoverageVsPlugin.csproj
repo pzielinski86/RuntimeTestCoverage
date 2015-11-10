@@ -228,6 +228,8 @@
     <Compile Include="CoverageDot.cs" />
     <Compile Include="CoverageDotDrawer.cs" />
     <Compile Include="DocumentCoverageTaskCompletedArgs.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="VsDispatchTimer.cs" />
     <Compile Include="ITaskCoverageManager.cs" />
     <Compile Include="ITimer.cs" />

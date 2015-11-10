@@ -79,10 +79,8 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine("}");
             scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
                                      "{" +
-                                     "if(e.InnerException is NUnit.Framework.AssertionException)" +
                                      "assertionFailed=true; " +
-                                     "else " +
-                                     "errorMessage=e.Message;" +
+                                     "errorMessage=e.ToString();" +
                                      "}");
 
             StoreAudit(scriptBuilder);

@@ -29,7 +29,6 @@ namespace TestCoverageVsPlugin
         private IVsStatusbar _statusBar;
         private DTE _dte;
         private readonly ProjectItemsEvents _projectItemsEvents;
-        private IVsActivityLog _logger;
 
         static MarginFactory()
         {
@@ -44,12 +43,12 @@ namespace TestCoverageVsPlugin
             _projectItemsEvents = ((Events2)_dte.Events).ProjectItemsEvents;
             _projectItemsEvents.ItemAdded += ProjectItemAdded;
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
-            _logger = serviceProvider.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
+            
             string solutionPath = _dte.Solution.FullName;
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
                 () => new AppDomainSolutionCoverageEngine(), 
                 new SqlCompactCoverageStore(solutionPath),
-                _logger);
+                new Logger(serviceProvider));
 
             _vsSolutionTestCoverage.LoadCurrentCoverage();
         }

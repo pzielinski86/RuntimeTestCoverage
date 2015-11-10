@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Storage;
+using Task = System.Threading.Tasks.Task;
 
 namespace TestCoverageVsPlugin
 {
@@ -17,15 +17,15 @@ namespace TestCoverageVsPlugin
         private readonly Func<ISolutionCoverageEngine> _solutionCoverageFactory;
         private ISolutionCoverageEngine _engine;
         private readonly ICoverageStore _coverageStore;
-        private readonly IVsActivityLog _logger;
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
         private static readonly object SyncObject = new object();
         private readonly object _sync = new object();
+        private ILogger _logger;
 
         public VsSolutionTestCoverage(string solutionPath,
             Func<ISolutionCoverageEngine> solutionCoverageFactory,
             ICoverageStore coverageStore,
-            IVsActivityLog logger)
+            ILogger logger)
         {
             _solutionPath = solutionPath;
             _solutionCoverageFactory = solutionCoverageFactory;
@@ -53,7 +53,7 @@ namespace TestCoverageVsPlugin
             return _engine;
         }
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(string solutionPath, Func<ISolutionCoverageEngine> solutionCoverageFactory, ICoverageStore coverageStore, IVsActivityLog logger)
+        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(string solutionPath, Func<ISolutionCoverageEngine> solutionCoverageFactory, ICoverageStore coverageStore, ILogger logger)
         {
             if (_vsSolutionTestCoverage == null)
             {
@@ -92,8 +92,7 @@ namespace TestCoverageVsPlugin
                 catch (TestCoverageCompilationException e)
                 {
                     SolutionCoverageByDocument.Clear();
-                    _logger.LogEntry((uint) __ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION, "CalculateForAllDocuments",
-                        e.ToString());
+                    _logger.Write(e.ToString());
                     return;
                 }
 
@@ -119,8 +118,7 @@ namespace TestCoverageVsPlugin
                 catch (TestCoverageCompilationException e)
                 {
                     SolutionCoverageByDocument.Clear();
-                    _logger.LogEntry((uint) __ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION, "CalculateForAllDocuments",
-                        e.ToString());
+                    _logger.Write(e.ToString());
                     return;
                 }
 
