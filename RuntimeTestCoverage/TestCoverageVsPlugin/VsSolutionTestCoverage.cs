@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Extensions;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Extensions;
 using Task = System.Threading.Tasks.Task;
 
 namespace TestCoverageVsPlugin
@@ -100,6 +105,38 @@ namespace TestCoverageVsPlugin
             }
         }
 
+        public Task CalculateForSelectedMethodAsync(string projectName, int span, SyntaxNode rootNode)
+        {
+            var task = Task.Run(() =>
+            {
+                // TODO: get rid of Result and use await
+                MethodDeclarationSyntax method = rootNode.GetMethodAt(span);
+                
+                if (method != null)
+                {
+                    using (var engine = Init(false))
+                    {
+                        List<LineCoverage> coverage;
+
+                        try
+                        {
+                            var result = engine.CalculateForMethod(projectName, rootNode.SyntaxTree.FilePath, rootNode.ToFullString(),method.Identifier.ToString());
+                            coverage = result.CoverageByDocument.SelectMany(x => x.Value).ToList();
+                        }
+                        catch (TestCoverageCompilationException e)
+                        {
+                            SolutionCoverageByDocument.Clear();
+                            _logger.Write(e.ToString());
+                            return;
+                        }
+
+                        SolutionCoverageByDocument.MergeByNodePath(coverage, coverage[0].TestPath);
+                    }
+                }
+            });
+
+            return task;
+        }
         public Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
         {
             return Task.Run(() => CalculateForDocument(projectName, documentPath, documentContent));

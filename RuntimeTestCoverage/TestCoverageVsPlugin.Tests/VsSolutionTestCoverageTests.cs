@@ -33,25 +33,25 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void Init_ShouldCreateNewEngine_When_CurrentIsEqualToNull()
+        public async void Init_ShouldCreateNewEngine_When_CurrentIsEqualToNull()
         {
             // arrange
-            var engine1= Substitute.For<ISolutionCoverageEngine>();
+            var engine1 = Substitute.For<ISolutionCoverageEngine>();
             var engines = new Stack<ISolutionCoverageEngine>();
             engines.Push(engine1);
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
 
             // act
-            var newEngine = _sut.InitAsync(false);
+            var newEngine = await _sut.InitAsync(false);
 
             // assert
-            Assert.That(engines.Count,Is.EqualTo(0));
-            Assert.That(newEngine,Is.SameAs(engine1));
+            Assert.That(engines.Count, Is.EqualTo(0));
+            Assert.That(newEngine, Is.SameAs(engine1));
         }
 
         [Test]
-        public void Init_ShouldCreateNewEngine_When_CurrentEngineWasDisposed()
+        public async  void Init_ShouldCreateNewEngine_When_CurrentEngineWasDisposed()
         {
             // arrange
             var engine1 = Substitute.For<ISolutionCoverageEngine>();
@@ -64,9 +64,9 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine2);
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
-            _sut.InitAsync(false);
+            await _sut.InitAsync(false);
             // act
-            var newEngine = _sut.InitAsync(false);
+            var newEngine =await _sut.InitAsync(false);
 
             // assert
             Assert.That(engines.Count, Is.EqualTo(0));
@@ -74,7 +74,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void Init_ShouldNotCreateNewEngine_When_CurrentIsNotNull()
+        public async void Init_ShouldNotCreateNewEngine_When_CurrentIsNotNull()
         {
             // arrange
             var engine1 = Substitute.For<ISolutionCoverageEngine>();
@@ -84,10 +84,10 @@ namespace TestCoverageVsPlugin.Tests
             engines.Push(engine2);
 
             _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
-            _sut.InitAsync(false);
+            await _sut.InitAsync(false);
 
             // act
-            var newEngine = _sut.InitAsync(false);
+            var newEngine =await  _sut.InitAsync(false);
 
             // assert
             Assert.That(engines.Count, Is.EqualTo(1));

@@ -41,6 +41,11 @@ namespace TestCoverage
             return _coverageEngine.CalculateForDocument(projectName, documentPath, documentContent);
         }
 
+        public CoverageResult CalculateForMethod(string projectName, string documentPath, string documentContent, string methodName)
+        {
+            return _coverageEngine.CalculateForMethod(projectName, documentPath, documentContent, methodName);
+        }
+
         public bool IsDisposed => _isDisposed;
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

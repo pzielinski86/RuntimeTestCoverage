@@ -60,7 +60,6 @@ namespace TestCoverage.Rewrite
                     node
                 };
 
-
                 var block = SyntaxFactory.Block(newStatements);
 
                 return parent.ReplaceNode(node, block);

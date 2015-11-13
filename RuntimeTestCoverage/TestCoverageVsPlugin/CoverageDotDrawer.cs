@@ -43,7 +43,11 @@ namespace TestCoverageVsPlugin
             return coverageDots;
         }
 
-        private bool ProcessMethod(List<CoverageDot> coverageDots, MethodDeclarationSyntax methodDeclarationSyntax, int[] lineStartPositions, bool areCalcsInProgress, ref int lineNumber)
+        private bool ProcessMethod(List<CoverageDot> coverageDots, 
+            MethodDeclarationSyntax methodDeclarationSyntax, 
+            int[] lineStartPositions, 
+            bool areCalcsInProgress, 
+            ref int lineNumber)
         {
             foreach (var statement in methodDeclarationSyntax.DescendantNodes().OfType<StatementSyntax>())
             {
@@ -58,7 +62,9 @@ namespace TestCoverageVsPlugin
                     if (!LoopUntilLeadingTriviaIsSkipped(lineStartPositions, statement, ref lineNumber))
                         return false;
 
-                    CoverageDot dot = CreateDotCoverage(statement, areCalcsInProgress, lineNumber);
+                    int span = statement.SpanStart - methodDeclarationSyntax.SpanStart;
+
+                    CoverageDot dot = CreateDotCoverage(span, areCalcsInProgress, lineNumber);
 
                     if (dot != null)
                         coverageDots.Add(dot);
@@ -88,7 +94,7 @@ namespace TestCoverageVsPlugin
             return lineNumber < lineStartPositions.Length;
         }
 
-        private CoverageDot CreateDotCoverage(StatementSyntax currentStatement, bool areCalcsInProgress, int lineNumber)
+        private CoverageDot CreateDotCoverage(int span, bool areCalcsInProgress, int lineNumber)
         {
             Brush color;
 
@@ -96,7 +102,7 @@ namespace TestCoverageVsPlugin
                 color = Brushes.DarkGray;
             else
             {
-                LineCoverage coverage = GetCoverageBySpan(currentStatement);
+                LineCoverage coverage = GetCoverageBySpan(span);
 
                 if (coverage != null)
                     color = coverage.IsSuccess ? Brushes.Green : Brushes.Red;
@@ -113,9 +119,10 @@ namespace TestCoverageVsPlugin
             return coverageDot;
         }
 
-        private LineCoverage GetCoverageBySpan(StatementSyntax currentStatement)
+        private LineCoverage GetCoverageBySpan(int span)
         {
-            var coverage = _lineCoverage.Where(x => x.Span == currentStatement.Span.Start)
+            var coverage = _lineCoverage.
+                Where(x => x.Span == span)
                 .OrderBy(x => x.IsSuccess).FirstOrDefault();
 
             return coverage;

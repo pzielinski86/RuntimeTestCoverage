@@ -69,10 +69,7 @@ namespace TestCoverageVsPlugin.UI
         /// </summary>
         public  IServiceProvider ServiceProvider
         {
-            get
-            {
-                return this.package;
-            }
+            get { return this.package; }
         }
 
         /// <summary>

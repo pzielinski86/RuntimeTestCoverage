@@ -1,12 +1,13 @@
 ﻿using System;
+using Microsoft.VisualStudio.Text;
 
 namespace TestCoverageVsPlugin
 {
     public interface ITaskCoverageManager
     {
-        void EnqueueDocumentTask(string projectName, string documentPath, string documentContent);
-        event EventHandler<DocumentCoverageTaskCompletedArgs> DocumentCoverageTaskCompleted;
-        event EventHandler<DocumentCoverageTaskCompletedArgs> DocumentCoverageTaskStarted;
+        void EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath);
+        event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskCompleted;
+        event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskStarted;
 
         bool AreJobsPending { get; }
         bool IsBusy { get; }

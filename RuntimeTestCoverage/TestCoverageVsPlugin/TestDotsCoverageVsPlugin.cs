@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using EnvDTE;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage.CoverageCalculation;
 using Solution = EnvDTE.Solution;
@@ -39,14 +40,11 @@ namespace TestCoverageVsPlugin
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
         private string _projectName;
-
-        /// <summary>
-        /// Creates a <see cref="TestDotsCoverageVsPlugin"/> for a given <see cref="IWpfTextView"/>.
-        /// </summary>
-        /// <param name="vsSolutionTestCoverage"></param>
-        /// <param name="textView">The <see cref="IWpfTextView"/> to attach the margin to.</param>
-        /// <param name="statusBar"></param>
-        public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, IWpfTextView textView, IVsStatusbar statusBar, Solution solution)
+        
+        public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, 
+            IWpfTextView textView, 
+            IVsStatusbar statusBar, 
+            Solution solution)
         {
             _canvas = new Canvas();
             _textView = textView;
@@ -62,36 +60,36 @@ namespace TestCoverageVsPlugin
 
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
             _vsSolutionTestCoverage.InitAsync(false);
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
-            _taskCoverageManager.DocumentCoverageTaskCompleted += DocumentCoverageTaskCompleted;
-            _taskCoverageManager.DocumentCoverageTaskStarted += DocumentCoverageTaskStarted;            
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage,new DocumentFromTextSnapshotExtractor());
+            _taskCoverageManager.DocumentCoverageTaskCompleted += MethodCoverageTaskCompleted;
+            _taskCoverageManager.DocumentCoverageTaskStarted += MethodCoverageTaskStarted;            
         }
 
-        private void DocumentCoverageTaskStarted(object sender, DocumentCoverageTaskCompletedArgs e)
+        private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskCompletedArgs e)
         {
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(e.DocPath)}");
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
-        private void DocumentCoverageTaskCompleted(object sender, DocumentCoverageTaskCompletedArgs e)
+        private void MethodCoverageTaskCompleted(object sender, MethodCoverageTaskCompletedArgs e)
         {
             _statusBar.SetText("");
             Redraw();
         }
 
         private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
-        {
-            string documentContent = e.After.GetText();
-            _taskCoverageManager.EnqueueDocumentTask(_projectName, _documentPath, documentContent);
-
+        {           
+            _taskCoverageManager.EnqueueMethodTask(_projectName, 
+                _textView.Caret.Position.BufferPosition,
+                e.After,
+                _documentPath);
         }
 
         private void InitProperties()
         {
             if (_documentPath != null)
                 return;
-
-
+            
             _documentPath = GetTextDocument().FilePath;
             var projectItem = _solution.FindProjectItem(_documentPath);
             _projectName = projectItem.ContainingProject.Name;
@@ -135,8 +133,7 @@ namespace TestCoverageVsPlugin
 
             foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending))
             {
-                Ellipse ellipse = new Ellipse();
-                ellipse.Fill = dotCoverage.Color;
+                Ellipse ellipse = new Ellipse {Fill = dotCoverage.Color};
                 ellipse.Width = ellipse.Height = 15;
 
                 SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);

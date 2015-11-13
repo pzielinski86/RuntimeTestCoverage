@@ -13,6 +13,7 @@ namespace TestCoverage.Rewrite
         private string _projectName;
         private string _documentPath;
         private readonly List<AuditVariablePlaceholder> _auditVariablePlaceholders = new List<AuditVariablePlaceholder>();
+        private MethodDeclarationSyntax _currentMethod;
 
         public void Init(string projectName, string documentPath)
         {
@@ -36,14 +37,20 @@ namespace TestCoverage.Rewrite
             base.VisitBlock(node);
         }
 
+        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            _currentMethod = node;
+            base.VisitMethodDeclaration(node);
+        }
+
         private void CreateAuditVariable(StatementSyntax statement)
         {
             string documentName = Path.GetFileNameWithoutExtension(_documentPath);
-
+            int span = statement.SpanStart - _currentMethod.SpanStart;
             string nodePath = NodePathBuilder.BuildPath(statement, documentName, _projectName);
             var auditVariablePlaceholder = new AuditVariablePlaceholder(_documentPath,
                 nodePath,
-                statement.Span.Start);
+                span);
 
             _auditVariablePlaceholders.Add(auditVariablePlaceholder);
         }

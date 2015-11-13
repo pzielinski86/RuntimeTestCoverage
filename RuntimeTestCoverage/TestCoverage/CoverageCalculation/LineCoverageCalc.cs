@@ -51,6 +51,20 @@ namespace TestCoverage.CoverageCalculation
             return finalCoverage.ToArray();
         }
 
+        public LineCoverage[] CalculateForMethod(Project project, RewrittenDocument rewrittenDocument, string methodName)
+        {
+            ICompiledItem[] newCompiledItems;
+
+            _Assembly[] allAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
+
+            ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
+            LineCoverage[] fullCoverage = _testRunner.RunTest(project, 
+                rewrittenDocument,
+                methodName,
+                semanticModel, allAssemblies);
+
+            return fullCoverage.ToArray();
+        }
 
         public LineCoverage[] CalculateForDocument(Project project, RewrittenDocument rewrittenDocument)
         {
@@ -67,13 +81,12 @@ namespace TestCoverage.CoverageCalculation
             return fullCoverage.ToArray();
         }
 
-        private LineCoverage[] CalculateCoverageForReferencedTests(Project project, 
+        private LineCoverage[] CalculateCoverageForReferencedTests(Project project,
             RewrittenDocument rewrittenDocument,
             _Assembly[] allAssemblies)
         {
             List<LineCoverage> finalCoverage = new List<LineCoverage>();
             var referencedTests = _testExplorer.GetReferencedTests(rewrittenDocument, project.Name);
-
 
             foreach (RewrittenDocument referencedTest in referencedTests)
             {

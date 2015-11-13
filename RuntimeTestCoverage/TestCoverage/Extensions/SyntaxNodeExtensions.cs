@@ -8,7 +8,7 @@ namespace TestCoverage.Extensions
     {
         public static string[] GetUsedNamespaces(this SyntaxNode node)
         {
-            return  node.Ancestors().OfType<CompilationUnitSyntax>().First().DescendantNodes().
+            return node.Ancestors().OfType<CompilationUnitSyntax>().First().DescendantNodes().
               OfType<UsingDirectiveSyntax>().Select(x => x.Name.ToString()).ToArray();
         }
         public static MethodDeclarationSyntax[] GetPublicMethods(this SyntaxNode node)
@@ -19,6 +19,17 @@ namespace TestCoverage.Extensions
                     .Where(m => m.Modifiers.Any(y => y.ValueText == "public"))
                     .ToArray();
         }
+
+        public static MethodDeclarationSyntax GetMethodAt(this SyntaxNode root, int position)
+        {
+            var method =
+                root.DescendantNodes()
+                    .OfType<MethodDeclarationSyntax>().
+                    FirstOrDefault(x => x.FullSpan.Start < position && x.FullSpan.End > position);
+
+            return method;
+        }
+
         public static ClassDeclarationSyntax GetClassDeclarationSyntax(this SyntaxNode node)
         {
             return node.DescendantNodes().OfType<ClassDeclarationSyntax>().Single();

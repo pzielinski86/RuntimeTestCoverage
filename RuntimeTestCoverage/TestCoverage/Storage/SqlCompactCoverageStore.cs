@@ -27,7 +27,7 @@ namespace TestCoverage.Storage
             _filePath = Path.Combine(solutionDir, $"{solutionName}.coverage");
         }
 
-        public void Append(string documentPath, IEnumerable<LineCoverage> coverage)
+        public void AppendByDocumentPath(string documentPath, IEnumerable<LineCoverage> coverage)
         {
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
@@ -39,7 +39,20 @@ namespace TestCoverage.Storage
                 connection.Execute(delete, new { documentPath });
                 InsertLineCoverage(connection, coverage.ToArray());
             }
+        }
 
+        public void AppendByMethodNodePath(string testPath, IEnumerable<LineCoverage> coverage)
+        {
+            using (var connection = new SqlCeConnection(GetConnectionString()))
+            {
+                connection.Open();
+
+                const string delete =
+                "DELETE FROM Coverage where TestPath=@testPath";
+
+                connection.Execute(delete, new { testPath });
+                InsertLineCoverage(connection, coverage.ToArray());
+            }
         }
 
         public void WriteAll(IEnumerable<LineCoverage> coverage)

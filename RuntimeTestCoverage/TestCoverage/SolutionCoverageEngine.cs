@@ -48,6 +48,30 @@ namespace TestCoverage
             return new CoverageResult(coverage);
         }
 
+        public CoverageResult CalculateForMethod(string projectName, 
+            string documentPath, 
+            string documentContent, 
+            string methodName)
+        {
+            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
+            var project = projects.FirstOrDefault(x => x.Name == projectName);
+
+            if (project == null)
+                return new CoverageResult(new LineCoverage[0]);
+
+            var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project.Name, documentPath, documentContent);
+
+            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
+                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
+
+            var coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument,methodName);
+
+            _coverageStore.AppendByMethodNodePath(coverage[0].TestPath, coverage);
+
+            return new CoverageResult(coverage);
+        }
+
         public CoverageResult CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
@@ -64,7 +88,7 @@ namespace TestCoverage
 
             var coverage = lineCoverageCalc.CalculateForDocument(project, rewrittenDocument);
 
-            _coverageStore.Append(documentPath, coverage);
+            _coverageStore.AppendByDocumentPath(documentPath, coverage);
 
             return new CoverageResult(coverage);
         }
