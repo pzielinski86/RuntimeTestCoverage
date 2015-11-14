@@ -41,16 +41,18 @@ namespace TestCoverage.Storage
             }
         }
 
-        public void AppendByMethodNodePath(string testPath, IEnumerable<LineCoverage> coverage)
+        public void Append( IEnumerable<LineCoverage> coverage)
         {
+            string[] testMethods = coverage.Select(x => x.TestPath).Distinct().ToArray();
+
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
                 connection.Open();
 
                 const string delete =
-                "DELETE FROM Coverage where TestPath=@testPath";
+                "DELETE FROM Coverage where TestPath in @testMethods";
 
-                connection.Execute(delete, new { testPath });
+                connection.Execute(delete, new { testMethods });
                 InsertLineCoverage(connection, coverage.ToArray());
             }
         }

@@ -130,7 +130,7 @@ namespace TestCoverageVsPlugin
                             return;
                         }
 
-                        SolutionCoverageByDocument.MergeByNodePath(coverage, coverage[0].TestPath);
+                        SolutionCoverageByDocument.MergeByNodePath(coverage);
                     }
                 }
             });

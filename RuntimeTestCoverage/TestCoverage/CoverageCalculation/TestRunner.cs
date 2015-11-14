@@ -34,7 +34,11 @@ namespace TestCoverage.CoverageCalculation
             ISemanticModel semanticModel,
               _Assembly[] allAssemblies)
         {
-            var testClass = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot()).Single();
+            var testClass = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot()).FirstOrDefault();
+
+            if (testClass == null)
+                return null;
+
             var fixtureDetails = _testsExtractor.GetTestFixtureDetails(testClass, semanticModel);
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 

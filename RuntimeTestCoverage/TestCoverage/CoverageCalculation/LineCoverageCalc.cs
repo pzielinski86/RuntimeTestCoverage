@@ -63,6 +63,9 @@ namespace TestCoverage.CoverageCalculation
                 methodName,
                 semanticModel, allAssemblies);
 
+            if (fullCoverage == null)
+                fullCoverage = CalculateCoverageForReferencedTests(project, rewrittenDocument, allAssemblies);
+
             return fullCoverage.ToArray();
         }
 

@@ -7,7 +7,7 @@ namespace TestCoverage.Storage
     {
         void AppendByDocumentPath(string documentPath,IEnumerable<LineCoverage> coverage);
 
-        void AppendByMethodNodePath(string testPath, IEnumerable<LineCoverage> coverage);
+        void Append( IEnumerable<LineCoverage> coverage);
         void WriteAll(IEnumerable<LineCoverage> coverage);
 
         LineCoverage[] ReadAll();

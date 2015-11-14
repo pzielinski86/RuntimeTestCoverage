@@ -67,7 +67,7 @@ namespace TestCoverage
 
             var coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument,methodName);
 
-            _coverageStore.AppendByMethodNodePath(coverage[0].TestPath, coverage);
+            _coverageStore.Append( coverage);
 
             return new CoverageResult(coverage);
         }
