@@ -20,6 +20,11 @@ namespace TestCoverage.Extensions
                     .ToArray();
         }
 
+        public static BaseMethodDeclarationSyntax GetParentMethod(this SyntaxNode node)
+        {
+            return node.Ancestors().OfType<BaseMethodDeclarationSyntax>().FirstOrDefault();
+        }
+
         public static MethodDeclarationSyntax GetMethodAt(this SyntaxNode root, int position)
         {
             var method =

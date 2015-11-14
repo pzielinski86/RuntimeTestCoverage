@@ -5,6 +5,7 @@ using System.Security.Policy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Extensions;
 
 namespace TestCoverage.Rewrite
 {
@@ -13,7 +14,6 @@ namespace TestCoverage.Rewrite
         private string _projectName;
         private string _documentPath;
         private readonly List<AuditVariablePlaceholder> _auditVariablePlaceholders = new List<AuditVariablePlaceholder>();
-        private MethodDeclarationSyntax _currentMethod;
 
         public void Init(string projectName, string documentPath)
         {
@@ -37,16 +37,10 @@ namespace TestCoverage.Rewrite
             base.VisitBlock(node);
         }
 
-        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
-        {
-            _currentMethod = node;
-            base.VisitMethodDeclaration(node);
-        }
-
         private void CreateAuditVariable(StatementSyntax statement)
         {
             string documentName = Path.GetFileNameWithoutExtension(_documentPath);
-            int span = statement.SpanStart - _currentMethod.SpanStart;
+            int span = statement.SpanStart - statement.GetParentMethod().SpanStart;
             string nodePath = NodePathBuilder.BuildPath(statement, documentName, _projectName);
             var auditVariablePlaceholder = new AuditVariablePlaceholder(_documentPath,
                 nodePath,

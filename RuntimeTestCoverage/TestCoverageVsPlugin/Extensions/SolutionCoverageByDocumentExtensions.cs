@@ -9,7 +9,7 @@ namespace TestCoverageVsPlugin.Extensions
         public static void MergeByNodePath(this Dictionary<string, List<LineCoverage>> source, 
             List<LineCoverage> newCoverage)
         {
-            string[] testMethods = source.Values.SelectMany(x => x).Select(x => x.TestPath).Distinct().ToArray();
+            string[] testMethods = newCoverage.Select(x => x.TestPath).Distinct().ToArray();
 
             RemoveByTestMethodNodePath(source, testMethods);
 
