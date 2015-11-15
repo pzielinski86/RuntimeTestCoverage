@@ -30,7 +30,7 @@ namespace TestCoverage.CoverageCalculation
                 AddReferences(typeof (int).Assembly).
                 AddNamespaces("System", "System.Reflection");
 
-            ScriptState state;
+            ScriptState state = null;
 
             try
             {

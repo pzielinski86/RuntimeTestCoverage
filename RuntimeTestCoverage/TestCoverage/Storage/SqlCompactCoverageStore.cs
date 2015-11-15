@@ -45,6 +45,9 @@ namespace TestCoverage.Storage
         {
             string[] testMethods = coverage.Select(x => x.TestPath).Distinct().ToArray();
 
+            if (testMethods.Length == 0)
+                return;
+
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
                 connection.Open();

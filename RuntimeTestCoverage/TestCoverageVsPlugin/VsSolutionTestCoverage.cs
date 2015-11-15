@@ -125,7 +125,7 @@ namespace TestCoverageVsPlugin
                         }
                         catch (TestCoverageCompilationException e)
                         {
-                            SolutionCoverageByDocument.Clear();
+                            SolutionCoverageByDocument.Remove(rootNode.SyntaxTree.FilePath);
                             _logger.Write(e.ToString());
                             return;
                         }
