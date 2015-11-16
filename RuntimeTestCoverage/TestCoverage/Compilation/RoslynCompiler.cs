@@ -111,7 +111,7 @@ namespace TestCoverage.Compilation
             CSharpCompilation compilation = CSharpCompilation.Create(
                 dllName,
                 allTrees,
-                references.Where(x => x.GetType() != typeof(UnresolvedMetadataReference)).ToArray(),
+                references,
                 settings);
 
             return compilation;
