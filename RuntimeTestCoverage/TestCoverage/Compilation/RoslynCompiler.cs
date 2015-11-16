@@ -44,7 +44,7 @@ namespace TestCoverage.Compilation
             string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
             CSharpCompilation compiledDll = Compile(newDllName, item.SyntaxTrees, requiredReferences.ToArray());
 
-            compiledItems.Add(new RoslynCompiledItem(item.Project,compiledDll));
+            compiledItems.Add(new RoslynCompiledItem(item.Project, compiledDll));
             compiledItems.Add(roslynCompiledAudit);
 
             foreach (var compiledItem in compiledItems)
@@ -58,16 +58,16 @@ namespace TestCoverage.Compilation
             var auditTree = CSharpSyntaxTree.ParseText(AuditVariablesMap.GenerateCode());
 
             // TODO - remove hardcoded .NET 3.5 dll
-            var references = new[] {MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };
+            var references = new[] { MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };
 
-            CSharpCompilation compilation = Compile("Audit", new[] {auditTree}, references);
+            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
 
             return new RoslynCompiledItem(null, compilation);
         }
 
-        private void Compile(CompilationItem item, 
-            RoslynCompiledItem roslynCompiledAudit, 
-            IEnumerable<CompilationItem> allItems, 
+        private void Compile(CompilationItem item,
+            RoslynCompiledItem roslynCompiledAudit,
+            IEnumerable<CompilationItem> allItems,
             List<RoslynCompiledItem> currentlyCompiledItems)
         {
             if (currentlyCompiledItems.Any(c => c.Project == item.Project))
@@ -111,7 +111,7 @@ namespace TestCoverage.Compilation
             CSharpCompilation compilation = CSharpCompilation.Create(
                 dllName,
                 allTrees,
-                references,
+                references.Where(x => x.GetType() != typeof(UnresolvedMetadataReference)).ToArray(),
                 settings);
 
             return compilation;

@@ -111,7 +111,7 @@
     <Compile Include="CoverageCalculation\LineCoverageTests.cs" />
     <Compile Include="CoverageCalculation\TestRunnerTests.cs" />
     <Compile Include="CoverageCalculation\TestRunResultTests.cs" />
-    <Compile Include="Extensions\SyntaxNodeExtensions.cs" />
+    <Compile Include="Extensions\SyntaxNodeExtensionsTests.cs" />
     <Compile Include="NodePathBuilderTests.cs" />
     <Compile Include="NUnitTestExtractorTests.cs" />
     <Compile Include="PathHelperTests.cs" />

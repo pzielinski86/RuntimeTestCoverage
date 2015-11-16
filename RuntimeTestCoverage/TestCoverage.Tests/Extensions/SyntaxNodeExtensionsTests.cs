@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
 using TestCoverage.Extensions;
@@ -6,8 +7,74 @@ using TestCoverage.Extensions;
 namespace TestCoverage.Tests.Extensions
 {
     [TestFixture]
-    public class SyntaxNodeExtensions
+    public class SyntaxNodeExtensionsTests
     {
+        [Test]
+        public void GetParentMethod_Should_ReturnInstanceMethod()
+        {
+            // arrange
+            const string code = "class Sample" +
+              "{ " +
+                  "public void Test() " +
+                  "{ " +
+                     "int a=0;" +
+                  "}" +
+              "}";
+
+            var tree = CSharpSyntaxTree.ParseText(code);
+            var statement = tree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Single();
+            
+            // act
+            var method = statement.GetParentMethod();
+
+            // assert
+            Assert.That(method.ToString(), Is.EqualTo("public void Test() { int a=0;}"));
+        }
+
+        [Test]
+        public void GetParentMethod_Should_ReturnConstructor()
+        {
+            // arrange
+            const string code = "class Sample" +
+              "{ " +
+                  "public Sample() " +
+                  "{ " +
+                     "int a=0;" +
+                  "}" +
+              "}";
+
+            var tree = CSharpSyntaxTree.ParseText(code);
+            var statement = tree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Single();
+
+            // act
+            var method = statement.GetParentMethod();
+
+            // assert
+            Assert.That(method.ToString(), Is.EqualTo("public Sample() { int a=0;}"));
+        }
+
+        [Test]
+        public void GetParentMethod_Should_ReturnProperty()
+        {
+            // arrange
+            const string code = "class Sample" +
+              "{ " +
+                  "public int Value" +
+                  "{ " +
+                     "get{return 5;}" +
+                  "}" +
+              "}";
+
+            var tree = CSharpSyntaxTree.ParseText(code);
+            var statement = tree.GetRoot().DescendantNodes().OfType<ReturnStatementSyntax>().Single();
+
+            // act
+            var method = statement.GetParentMethod();
+
+            // assert
+            Assert.That(method.ToString(), Is.EqualTo("public int Value{ get{return 5;}}"));
+        }
+
         [Test]
         public void GetMethodAt_Should_Return_Method_When_PositionIs_InsideMethod()
         {
