@@ -1,8 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -32,7 +31,7 @@ namespace TestCoverage.CoverageCalculation
             RewrittenDocument rewrittenDocument,
             string methodName,
             ISemanticModel semanticModel,
-              _Assembly[] allAssemblies)
+              string[] rewrittenAssemblies)
         {
             var testClass = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot()).FirstOrDefault();
 
@@ -46,9 +45,8 @@ namespace TestCoverage.CoverageCalculation
 
             var compiledTestInfo = new CompiledTestFixtureInfo
             {
-                TestProjectReferences = allReferences,
+                AllReferences = allReferences.Union(rewrittenAssemblies).ToArray(),
                 TestDocumentPath = rewrittenDocument.DocumentPath,
-                AllAssemblies = allAssemblies,
                 SemanticModel = semanticModel
             };
 
@@ -57,18 +55,17 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument,
+        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
             ISemanticModel semanticModel,
-            Project project,
-            _Assembly[] allAssemblies)
+            Project project, 
+            string[] rewrittenAssemblies)
         {
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 
             var compiledTestInfo = new CompiledTestFixtureInfo
             {
-                TestProjectReferences = allReferences,
+                AllReferences = allReferences.Union(rewrittenAssemblies).ToArray(),
                 TestDocumentPath = rewrittenDocument.DocumentPath,
-                AllAssemblies = allAssemblies,
                 SemanticModel = semanticModel
             };
 
@@ -99,16 +96,17 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        private LineCoverage[] RunTestCases(List<TestCase> testCases, CompiledTestFixtureInfo compiledTestFixtureInfo, string testProjectName)
+        private LineCoverage[] RunTestCases(List<TestCase> testCases, 
+            CompiledTestFixtureInfo compiledTestFixtureInfo, 
+            string testProjectName)
         {
             var coverage = new ConcurrentBag<LineCoverage>();
 
             Parallel.For(0, testCases.Count, new ParallelOptions { MaxDegreeOfParallelism = 1 }, i =>
             {
                 ITestRunResult testResult =
-                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.TestProjectReferences,
-                        compiledTestFixtureInfo.AllAssemblies,
-                        testCases[i]);
+                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.AllReferences,
+                        testCases[i].CreateRunTestScript());
 
                 var partialCoverage = testResult.GetCoverage(
                      testCases[i].SyntaxNode,

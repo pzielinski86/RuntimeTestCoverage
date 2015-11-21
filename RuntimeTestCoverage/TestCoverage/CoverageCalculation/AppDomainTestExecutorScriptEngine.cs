@@ -1,105 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.CSharp;
-using TestCoverage.Compilation;
-using TestCoverage.Rewrite;
+using System.IO;
 
 namespace TestCoverage.CoverageCalculation
 {
-    public class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
+    public sealed class AppDomainTestExecutorScriptEngine : ITestExecutorScriptEngine,IDisposable
     {
-        public ITestRunResult RunTest(MetadataReference[] references,
-            _Assembly[] assemblies,
-            TestCase testCase)
+        private AppDomain _appDomain;
+        private readonly TestExecutorScriptEngine _engine;
+
+        public AppDomainTestExecutorScriptEngine()
         {
-            string script = CreateRunTestScript(testCase);
+            var appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
 
-            // todo: clean-up code to remove hardcoded dlls like mscorlib.
-            var options = new ScriptOptions();
-            options = options.
-                AddReferences(references.Where(x => !x.Display.Contains("mscorlib.dll"))).
-                AddReferences(assemblies.OfType<Assembly>()).
-                AddReferences(typeof (int).Assembly).
-                AddNamespaces("System", "System.Reflection");
+            _appDomain = AppDomain.CreateDomain("testing_sandbox", null, appDomainSetup);
+            Type engineType = typeof(TestExecutorScriptEngine);
 
-            ScriptState state = null;
-
-            try
-            {
-                state = CSharpScript.Run(script, options);
-            }
-            catch (CompilationErrorException e)
-            {
-                throw new TestCoverageCompilationException(e.Diagnostics.Select(x => x.GetMessage()).ToArray());
-            }
-
-            var coverageAudit = (dynamic)state.Variables["auditLog"].Value;
-            string errorMessage = (string)state.Variables["errorMessage"].Value;
-            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
-
-            return new TestRunResult(GetVariables(coverageAudit), assertionFailed, errorMessage);
+            string currentDir = Path.GetDirectoryName(GetType().Assembly.Location);
+            string path = Path.Combine(currentDir, engineType.Assembly.ManifestModule.Name);
+            _engine = (TestExecutorScriptEngine)_appDomain.CreateInstanceFromAndUnwrap(path,
+                engineType.FullName);
+        }
+        public ITestRunResult RunTest(string[] references, string code)
+        {
+            return _engine.RunTest(references, code);
         }
 
-        private AuditVariablePlaceholder[] GetVariables(dynamic dynamicVariables)
+        public void Dispose()
         {
-            var variables = new AuditVariablePlaceholder[dynamicVariables.Count];
-
-            for (int i = 0; i < dynamicVariables.Count; i++)
-            {
-                var variable = new AuditVariablePlaceholder(dynamicVariables[i].DocumentPath,
-                    dynamicVariables[i].NodePath,
-                    dynamicVariables[i].Span);
-
-                variables[i] = variable;
-            }
-
-            return variables;
-        }
-
-        private static string CreateRunTestScript(TestCase testCase)
-        {
-            StringBuilder scriptBuilder = new StringBuilder();
-
-            ClearAudit(scriptBuilder);
-            scriptBuilder.AppendLine(testCase.TestFixture.CreateSetupFixtureCode("testFixture"));
-            scriptBuilder.AppendLine("string errorMessage=null;");
-            scriptBuilder.AppendLine("bool assertionFailed=false;");
-
-            scriptBuilder.Append("try\n{\n");
-            scriptBuilder.AppendLine(testCase.CreateCallTestCode("testFixture"));
-
-            scriptBuilder.AppendLine("}");
-            scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
-                                     "{" +
-                                     "assertionFailed=true; " +
-                                     "errorMessage=e.ToString();" +
-                                     "}");
-
-            StoreAudit(scriptBuilder);
-
-            return scriptBuilder.ToString();
-        }
-
-        private static void StoreAudit(StringBuilder scriptBuilder)
-        {
-            scriptBuilder.AppendLine(string.Format("\nvar auditLog= {0}.{1};",
-                AuditVariablesMap.AuditVariablesListClassName,
-                AuditVariablesMap.AuditVariablesListName));
-        }
-
-        private static void ClearAudit( StringBuilder scriptBuilder)
-        {
-            scriptBuilder.AppendLine(string.Format("{0}.{1}.Clear();",
-                AuditVariablesMap.AuditVariablesListClassName,
-                AuditVariablesMap.AuditVariablesListName));
+            AppDomain.Unload(_appDomain);
+            _appDomain = null;
         }
     }
 }

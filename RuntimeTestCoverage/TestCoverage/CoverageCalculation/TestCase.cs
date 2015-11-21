@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
@@ -9,12 +11,14 @@ namespace TestCoverage.CoverageCalculation
         public TestCase(TestFixtureDetails testFixture)
         {
             TestFixture = testFixture;
+            Arguments=new string[0];
         }
 
         public TestFixtureDetails TestFixture { get; }
 
         public string[] Arguments { get; set; }
-        public string MethodName { get; set; }        
+        public string MethodName { get; set; }
+
         public MethodDeclarationSyntax SyntaxNode { get; set; }
 
         public string CreateCallTestCode(string instanceName)
@@ -37,6 +41,45 @@ namespace TestCoverage.CoverageCalculation
             stringBuilder.Append("});");
 
             return stringBuilder.ToString();
+        }
+
+        public string CreateRunTestScript()
+        {
+            StringBuilder scriptBuilder = new StringBuilder();
+
+            ClearAudit(scriptBuilder);
+            scriptBuilder.AppendLine(TestFixture.CreateSetupFixtureCode("testFixture"));
+            scriptBuilder.AppendLine("string errorMessage=null;");
+            scriptBuilder.AppendLine("bool assertionFailed=false;");
+
+            scriptBuilder.Append("try\n{\n");
+            scriptBuilder.AppendLine(CreateCallTestCode("testFixture"));
+
+            scriptBuilder.AppendLine("}");
+            scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
+                                     "{" +
+                                     "assertionFailed=true; " +
+                                     "errorMessage=e.ToString();" +
+                                     "}");
+
+            StoreAudit(scriptBuilder);
+
+            return scriptBuilder.ToString();
+        }
+
+
+        private static void StoreAudit(StringBuilder scriptBuilder)
+        {
+            scriptBuilder.AppendLine(string.Format("\nvar auditLog= {0}.{1};",
+                AuditVariablesMap.AuditVariablesListClassName,
+                AuditVariablesMap.AuditVariablesListName));
+        }
+
+        private static void ClearAudit(StringBuilder scriptBuilder)
+        {
+            scriptBuilder.AppendLine(string.Format("{0}.{1}.Clear();",
+                AuditVariablesMap.AuditVariablesListClassName,
+                AuditVariablesMap.AuditVariablesListName));
         }
     }
 }

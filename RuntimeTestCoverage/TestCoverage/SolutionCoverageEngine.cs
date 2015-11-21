@@ -22,7 +22,7 @@ namespace TestCoverage
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
             _coverageStore = new SqlCompactCoverageStore(_solutionExplorer.SolutionPath);
             var settingsStore = new XmlCoverageSettingsStore(_solutionExplorer.SolutionPath);
-            _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), _coverageStore,settingsStore);
+            _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), _coverageStore, settingsStore);
 
         }
 
@@ -39,18 +39,23 @@ namespace TestCoverage
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
-            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(), 
-                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
-            var coverage = lineCoverageCalc.CalculateForAllTests(rewrittenResult);
+            LineCoverage[] coverage = null;
+
+            using (var appDomainTestExecutorScriptEngine = new AppDomainTestExecutorScriptEngine())
+            {
+                var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(), new TestRunner(new NUnitTestExtractor(), appDomainTestExecutorScriptEngine, _solutionExplorer));
+
+                coverage = lineCoverageCalc.CalculateForAllTests(rewrittenResult);
+            }
 
             _coverageStore.WriteAll(coverage);
 
             return new CoverageResult(coverage);
         }
 
-        public CoverageResult CalculateForMethod(string projectName, 
-            string documentPath, 
-            string documentContent, 
+        public CoverageResult CalculateForMethod(string projectName,
+            string documentPath,
+            string documentContent,
             string methodName)
         {
             var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
@@ -65,9 +70,9 @@ namespace TestCoverage
             var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
                 new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
 
-            var coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument,methodName);
+            var coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument, methodName);
 
-            _coverageStore.Append( coverage);
+            _coverageStore.Append(coverage);
 
             return new CoverageResult(coverage);
         }
@@ -83,11 +88,15 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project.Name, documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
-                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
+            LineCoverage[] coverage = null;
+            using (var appDomainTestExecutorScriptEngine = new AppDomainTestExecutorScriptEngine())
+            {
+                var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
+                    new TestRunner(new NUnitTestExtractor(), appDomainTestExecutorScriptEngine, _solutionExplorer));
 
-            var coverage = lineCoverageCalc.CalculateForDocument(project, rewrittenDocument);
+                coverage = lineCoverageCalc.CalculateForDocument(project, rewrittenDocument);
 
+            }
             _coverageStore.AppendByDocumentPath(documentPath, coverage);
 
             return new CoverageResult(coverage);

@@ -9,8 +9,7 @@ namespace TestCoverage
 {
     internal class CompiledTestFixtureInfo
     {
-        public MetadataReference[] TestProjectReferences { get; set; }
-        public _Assembly[] AllAssemblies { get; set; }
+        public string[] AllReferences { get; set; }
         public string TestDocumentPath { get; set; }
         public ClassDeclarationSyntax TestClass { get; set; }
         public ISemanticModel SemanticModel { get; set; }

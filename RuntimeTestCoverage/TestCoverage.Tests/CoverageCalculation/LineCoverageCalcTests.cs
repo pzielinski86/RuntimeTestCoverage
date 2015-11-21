@@ -40,7 +40,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 _compilerMock,
                 _testRunnerMock);
 
-            _compilerMock.Compile(Arg.Any<CompilationItem>(), Arg.Any<IEnumerable<_Assembly>>())
+            _compilerMock.Compile(Arg.Any<CompilationItem>(), Arg.Any<IEnumerable<string>>())
                 .Returns((x) => _compiledSingleProjectItems.ToArray());
 
             _compilerMock.Compile(Arg.Any<IEnumerable<CompilationItem>>())
@@ -91,10 +91,10 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var semanticModel = Substitute.For<ISemanticModel>();
             var compiledItem = Substitute.For<ICompiledItem>();
-            var assembly = Substitute.For<_Assembly>();
+            string assembly = "assembly path";
 
             compiledItem.Project.Returns(project1);
-            compiledItem.Assembly.Returns(assembly);
+            compiledItem.DllPath.Returns(assembly);
             compiledItem.GetSemanticModel(rewrittenDocument1.SyntaxTree).Returns(semanticModel);
             _compiledAllItems.Add(compiledItem);
 
@@ -102,7 +102,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testRunnerMock.RunAllTestsInDocument(rewrittenDocument1, 
                 semanticModel, 
                 project1, 
-                Arg.Is<_Assembly[]>(x=>assembly==x[0]))
+                Arg.Is<string[]>(x=>assembly==x[0]))
                 .Returns(expectedLineCoverage);
 
             // act
@@ -141,13 +141,13 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testRunnerMock.RunAllTestsInDocument(rewrittenDocument1,
                 Arg.Any<ISemanticModel>(),
                 project1,
-                Arg.Any<_Assembly[]>())
+                Arg.Any<string[]>())
                 .Returns(expectedLineCoverage);
 
             _testRunnerMock.RunAllTestsInDocument(rewrittenDocument1,
                 Arg.Any<ISemanticModel>(),
                 project2,
-                Arg.Any<_Assembly[]>())
+                Arg.Any<string[]>())
                 .Returns(expectedLineCoverage);
 
             // act
@@ -181,7 +181,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testRunnerMock.RunAllTestsInDocument(rewrittenDocument1,
                 Arg.Any<ISemanticModel>(),
                 testProject,
-                Arg.Any<_Assembly[]>())
+                Arg.Any<string[]>())
                 .Returns(expectedLineCoverage);
 
             // act
@@ -216,7 +216,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testRunnerMock.RunAllTestsInDocument(businessLogicDocument,
                 Arg.Any<ISemanticModel>(),
                 businessLogicProject,
-                Arg.Any<_Assembly[]>())
+                Arg.Any<string[]>())
                 .Returns((LineCoverage[])null);
 
             var expectedLineCoverage = new[] { new LineCoverage() };
@@ -224,7 +224,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testRunnerMock.RunAllTestsInDocument(testDocument,
                 Arg.Any<ISemanticModel>(),
                 testProject,
-                Arg.Any<_Assembly[]>())
+                Arg.Any<string[]>())
                 .Returns(expectedLineCoverage);
 
             _testExplorerMock.GetReferencedTests(businessLogicDocument, businessLogicProject.Name)

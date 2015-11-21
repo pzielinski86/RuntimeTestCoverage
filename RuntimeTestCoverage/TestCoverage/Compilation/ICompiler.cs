@@ -8,6 +8,6 @@ namespace TestCoverage.Compilation
     public interface ICompiler
     {
         ICompiledItem[] Compile(IEnumerable<CompilationItem> allItems);
-        ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references);
+        ICompiledItem[] Compile(CompilationItem item, IEnumerable<string> references);
     }
 }

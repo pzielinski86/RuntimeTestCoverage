@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
+    [Serializable]
     public class TestRunResult : ITestRunResult
     {
         public AuditVariablePlaceholder[] AuditVariables { get; }

@@ -26,14 +26,14 @@ namespace TestCoverage
             _solution = workspace.OpenSolutionAsync(solutionPath).Result;            
         }  
 
-        public MetadataReference[] GetAllProjectReferences(string projectName)
+        public string[] GetAllProjectReferences(string projectName)
         {
             var project = Solution.Projects.First(x => x.Name == projectName);
             var allReferences = new HashSet<MetadataReference>();
 
             PopulateWithReferences(allReferences,project);
 
-            return allReferences.ToArray();
+            return allReferences.Select(x=>x.Display).ToArray();
         }
 
         private void PopulateWithReferences(HashSet<MetadataReference> allReferences, Project project)
@@ -75,9 +75,9 @@ namespace TestCoverage
             }
         }
 
-        public _Assembly[] LoadCompiledAssemblies(params string[] excludedProjects)
+        public string[] GetCompiledAssemblies(params string[] excludedProjects)
         {
-            List<Assembly> allAssemblies = new List<Assembly>();
+            List<string> allAssemblies = new List<string>();
 
             foreach (Project project in Solution.Projects)
             {
@@ -87,8 +87,7 @@ namespace TestCoverage
                 string assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), PathHelper.GetCoverageDllName(project.Name));
                 if (File.Exists(assemblyPath))
                 {
-                    Assembly assembly = Assembly.LoadFile(assemblyPath);
-                    allAssemblies.Add(assembly);
+                    allAssemblies.Add(assemblyPath);
                 }
             }
 

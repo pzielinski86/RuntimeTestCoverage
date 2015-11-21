@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin", "Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.Tests", "TestCoverage.Tests\TestCoverage.Tests.csproj", "{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.IntegrationTests", "TestCoverage.IntegrationTests\TestCoverage.IntegrationTests.csproj", "{AB7B7244-215F-4896-BB82-030B6F1DC626}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin.Tests", "TestCoverageVsPlugin.Tests\TestCoverageVsPlugin.Tests.csproj", "{B770038F-42C0-47FB-BB7A-37C3E184A019}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}"
@@ -42,10 +40,6 @@ Global
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB7B7244-215F-4896-BB82-030B6F1DC626}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -56,7 +50,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
-		{AB7B7244-215F-4896-BB82-030B6F1DC626} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
 		{B770038F-42C0-47FB-BB7A-37C3E184A019} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
 	EndGlobalSection
 EndGlobal

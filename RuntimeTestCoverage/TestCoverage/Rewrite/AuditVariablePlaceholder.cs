@@ -1,5 +1,8 @@
+using System;
+
 namespace TestCoverage.Rewrite
 {
+    [Serializable]
     public class AuditVariablePlaceholder
     {
         public string DocumentPath { get; set; }

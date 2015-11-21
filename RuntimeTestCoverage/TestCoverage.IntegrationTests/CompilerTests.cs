@@ -27,8 +27,8 @@ namespace TestCoverage.IntegrationTests
             var result = compiler.Compile(compilationItem, references);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
-            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].AssemblyReference.GetName().Name, Is.StringStarting(project.Name + "_"));
+            Assert.That(result[0].AssemblyReference.GetTypes().First().Name, Is.EqualTo("TestClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -53,8 +53,8 @@ namespace TestCoverage.IntegrationTests
             var result = compiler.Compile(compilationItem, references);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[0].Assembly.GetName().Name, Is.StringStarting(project.Name + "_"));
-            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].Compilation..GetName().Name, Is.StringStarting(project.Name + "_"));
+            Assert.That(result[0].AssemblyReference.GetTypes().First().Name, Is.EqualTo("TestClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -85,8 +85,8 @@ namespace TestCoverage.IntegrationTests
             var result = compiler.Compile(new[] { compilationItem1, compilationItem2 });
 
             Assert.That(result.Length, Is.EqualTo(3));
-            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo("TestClass"));
-            Assert.That(result[0].Assembly.GetTypes().First().Name, Is.EqualTo("SampleClass"));
+            Assert.That(result[1].AssemblyReference.GetTypes().First().Name, Is.EqualTo("TestClass"));
+            Assert.That(result[0].AssemblyReference.GetTypes().First().Name, Is.EqualTo("SampleClass"));
         }
 
         [Test, RunInApplicationDomain]
@@ -140,8 +140,8 @@ namespace TestCoverage.IntegrationTests
             var result = compiler.Compile(compilationItem, new Assembly[0]);
 
             Assert.That(result.Length, Is.EqualTo(2));
-            Assert.That(result[1].Assembly.GetName().Name, Is.StringStarting("Audit"));
-            Assert.That(result[1].Assembly.GetTypes().First().Name, Is.EqualTo(AuditVariablesMap.AuditVariablesListClassName));
+            Assert.That(result[1].AssemblyReference.GetName().Name, Is.StringStarting("Audit"));
+            Assert.That(result[1].AssemblyReference.GetTypes().First().Name, Is.EqualTo(AuditVariablesMap.AuditVariablesListClassName));
         }
 
     }

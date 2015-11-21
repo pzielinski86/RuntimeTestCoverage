@@ -11,8 +11,7 @@ namespace TestCoverage.Compilation
         CSharpCompilation Compilation { get; }
         bool IsEmitted { get; set; }
         string DllPath { get; }
-        _Assembly Assembly { get; }
-        _Assembly EmitAndSave();
+        string EmitAndSave();
         ISemanticModel GetSemanticModel(SyntaxTree syntaxTree);
     }
 }

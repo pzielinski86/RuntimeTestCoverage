@@ -31,7 +31,8 @@ namespace TestCoverage.Tests.Rewrite
                                     }
                                 }";
 
-            int expectedSpanPosition = sourceCode.IndexOf("int a",StringComparison.Ordinal);
+            int methodStart = sourceCode.IndexOf("public void");
+            int expectedSpanPosition = sourceCode.IndexOf("int a", StringComparison.Ordinal) - methodStart;
 
             var tree = CSharpSyntaxTree.ParseText(sourceCode);
 

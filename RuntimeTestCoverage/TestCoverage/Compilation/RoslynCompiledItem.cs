@@ -15,7 +15,6 @@ namespace TestCoverage.Compilation
         public CSharpCompilation Compilation { get; private set; }
         public bool IsEmitted { get; set; }
         public string DllPath { get; private set; }
-        public _Assembly Assembly { get; private set; }
 
         public RoslynCompiledItem(Project project, CSharpCompilation
             compilation)
@@ -24,10 +23,10 @@ namespace TestCoverage.Compilation
             Compilation = compilation;
         }
 
-        public _Assembly EmitAndSave()
+        public string EmitAndSave()
         {
             if (IsEmitted)
-                return Assembly;
+                return DllPath;
 
             string dllName = Compilation.AssemblyName;
             var dllPath = Path.Combine(Directory.GetCurrentDirectory(), dllName);
@@ -41,13 +40,13 @@ namespace TestCoverage.Compilation
                     throw new TestCoverageCompilationException(
                         emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
                 }
+
             }
 
-            Assembly = System.Reflection.Assembly.LoadFrom(dllPath);
             DllPath = dllPath;
             IsEmitted = true;
 
-            return Assembly;
+            return DllPath;
         }
 
         public ISemanticModel GetSemanticModel(SyntaxTree syntaxTree)

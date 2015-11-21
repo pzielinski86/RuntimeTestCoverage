@@ -12,11 +12,8 @@ namespace TestCoverage.CoverageCalculation
             RewrittenDocument rewrittenDocument,
             string methodName,
             ISemanticModel semanticModel,
-            _Assembly[] allAssemblies);
+            string[] rewrittenAssemblies);
 
-        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument,
-            ISemanticModel semanticModel,
-            Project project,
-            _Assembly[] allAssemblies);
+        LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, ISemanticModel semanticModel, Project project, string[] rewrittenAssemblies);
     }
 }

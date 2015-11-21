@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
-using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
@@ -28,7 +26,7 @@ namespace TestCoverage.CoverageCalculation
         public LineCoverage[] CalculateForAllTests(RewriteResult rewritenResult)
         {
             var compiledItems = _compiler.Compile(rewritenResult.ToCompilationItems());
-            var allAssemblies = compiledItems.Select(x => x.Assembly).ToArray();
+            var allAssemblies = compiledItems.Select(x => x.DllPath).ToArray();
 
             var finalCoverage = new List<LineCoverage>();
 
@@ -55,16 +53,16 @@ namespace TestCoverage.CoverageCalculation
         {
             ICompiledItem[] newCompiledItems;
 
-            _Assembly[] allAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
+            string[] rewrittenAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
 
             ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
-            LineCoverage[] fullCoverage = _testRunner.RunTest(project, 
+            LineCoverage[] fullCoverage = _testRunner.RunTest(project,
                 rewrittenDocument,
                 methodName,
-                semanticModel, allAssemblies);
+                semanticModel, rewrittenAssemblies);
 
             if (fullCoverage == null)
-                fullCoverage = CalculateCoverageForReferencedTests(project, rewrittenDocument, allAssemblies);
+                fullCoverage = CalculateCoverageForReferencedTests(project, rewrittenDocument, rewrittenAssemblies);
 
             return fullCoverage.ToArray();
         }
@@ -73,7 +71,7 @@ namespace TestCoverage.CoverageCalculation
         {
             ICompiledItem[] newCompiledItems;
 
-            _Assembly[] allAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
+            string[] allAssemblies = CompileDocument(project, rewrittenDocument, out newCompiledItems);
 
             ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
             LineCoverage[] fullCoverage = _testRunner.RunAllTestsInDocument(rewrittenDocument, semanticModel, project, allAssemblies);
@@ -86,7 +84,7 @@ namespace TestCoverage.CoverageCalculation
 
         private LineCoverage[] CalculateCoverageForReferencedTests(Project project,
             RewrittenDocument rewrittenDocument,
-            _Assembly[] allAssemblies)
+            string[] allAssemblies)
         {
             List<LineCoverage> finalCoverage = new List<LineCoverage>();
             var referencedTests = _testExplorer.GetReferencedTests(rewrittenDocument, project.Name);
@@ -103,15 +101,15 @@ namespace TestCoverage.CoverageCalculation
             return finalCoverage.ToArray();
         }
 
-        private _Assembly[] CompileDocument(Project project, RewrittenDocument rewrittenDocument, out ICompiledItem[] newItems)
+        private string[] CompileDocument(Project project, RewrittenDocument rewrittenDocument, out ICompiledItem[] newItems)
         {
-            List<_Assembly> assemblies = _testExplorer.SolutionExplorer.LoadCompiledAssemblies(project.Name).ToList();
+            List<string> assemblies = _testExplorer.SolutionExplorer.GetCompiledAssemblies(project.Name).ToList();
 
             SyntaxTree[] projectTrees = _testExplorer.SolutionExplorer.LoadProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
 
             var allProjectTrees = projectTrees.Union(new[] { rewrittenDocument.SyntaxTree }).ToArray();
             var compiledItems = _compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies);
-            assemblies.AddRange(compiledItems.Select(x => x.Assembly));
+            assemblies.AddRange(compiledItems.Select(x => x.DllPath));
 
             newItems = compiledItems;
 

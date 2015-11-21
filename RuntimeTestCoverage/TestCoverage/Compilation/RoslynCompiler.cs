@@ -31,14 +31,14 @@ namespace TestCoverage.Compilation
             return compiledItems.ToArray();
         }
 
-        public ICompiledItem[] Compile(CompilationItem item, IEnumerable<_Assembly> references)
+        public ICompiledItem[] Compile(CompilationItem item, IEnumerable<string> references)
         {
             var compiledItems = new List<RoslynCompiledItem>();
             RoslynCompiledItem roslynCompiledAudit = CompileAudit();
 
             var requiredReferences =
                 item.Project.MetadataReferences.Union(
-                    references.Select(r => MetadataReference.CreateFromFile(r.Location))).ToList();
+                    references.Select(r => MetadataReference.CreateFromFile(r))).ToList();
             requiredReferences.Add(roslynCompiledAudit.Compilation.ToMetadataReference());
 
             string newDllName = PathHelper.GetCoverageDllName(item.Project.Name);
