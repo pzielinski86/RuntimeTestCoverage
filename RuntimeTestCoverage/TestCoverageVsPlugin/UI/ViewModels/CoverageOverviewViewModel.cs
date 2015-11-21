@@ -32,9 +32,9 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 
         public ICommand ResyncCmd { get; }
 
-        private void Resync(object obj)
+        private async void Resync(object obj)
         {
-            _vsSolutionTestCoverage.CalculateForAllDocuments();
+            await _vsSolutionTestCoverage.CalculateForAllDocumentsAsync();
         }
 
         private async void RefreshAsync(object obj)

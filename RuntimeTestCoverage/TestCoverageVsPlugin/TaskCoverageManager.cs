@@ -66,14 +66,8 @@ namespace TestCoverageVsPlugin
                 taskInfo.Position,
                 rootNode);
             
-            task.ContinueWith((x, y) => DocumentCalculationsCompleted(taskInfo.DocumentPath), null, TaskScheduler.FromCurrentSynchronizationContext())
-                .ContinueWith((x, y) => PreCreateAppDomain(), null).
+            task.ContinueWith((x, y) => DocumentCalculationsCompleted(taskInfo.DocumentPath), null, TaskScheduler.FromCurrentSynchronizationContext()).
                 ContinueWith((x, y) => ExecuteTask(), null, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private Task PreCreateAppDomain()
-        {
-            return _vsSolutionTestCoverage.InitAsync(false);
         }
 
         private void DocumentCalculationsCompleted(string documentPath)

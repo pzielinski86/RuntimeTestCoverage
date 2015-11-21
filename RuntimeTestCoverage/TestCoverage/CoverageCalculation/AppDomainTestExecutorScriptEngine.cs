@@ -1,15 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 
 namespace TestCoverage.CoverageCalculation
 {
-    public sealed class AppDomainTestExecutorScriptEngine : ITestExecutorScriptEngine,IDisposable
+    public sealed class AppDomainTestExecutorScriptEngine : ITestExecutorScriptEngine, IDisposable
     {
         private AppDomain _appDomain;
         private readonly TestExecutorScriptEngine _engine;
 
         public AppDomainTestExecutorScriptEngine()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
 
             _appDomain = AppDomain.CreateDomain("testing_sandbox", null, appDomainSetup);
@@ -20,6 +22,21 @@ namespace TestCoverage.CoverageCalculation
             _engine = (TestExecutorScriptEngine)_appDomain.CreateInstanceFromAndUnwrap(path,
                 engineType.FullName);
         }
+
+        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assembly = typeof(SolutionCoverageEngine).Assembly;
+
+            if (args.Name == assembly.FullName)
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+
+                return Assembly.LoadFrom(assembly.Location);
+            }
+
+            return null;
+        }
+
         public ITestRunResult RunTest(string[] references, string code)
         {
             return _engine.RunTest(references, code);

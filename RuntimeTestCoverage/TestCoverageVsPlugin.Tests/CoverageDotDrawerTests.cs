@@ -25,7 +25,7 @@ namespace TestCoverageVsPlugin.Tests
         {
             // arrange
             const string sourceCode = "using System;\nclass Test{\n}";
-            
+
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
 
             // act
@@ -41,7 +41,7 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string sourceCode = @"class Test
                                         {
-	                                        public vodi TestMethod()
+	                                        public void TestMethod()
 	                                        {
 		                                        int a=0;
 	                                        }
@@ -49,7 +49,8 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
+            _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal) -
+                                     sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
 
@@ -67,7 +68,7 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string sourceCode = @"class Test
                                         {
-	                                        public vodi TestMethod()
+	                                        public void TestMethod()
 	                                        {
                                                 Assert.IsTrue(false);
 	                                        }
@@ -75,7 +76,8 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = false;
-            _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal);
+            _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal) -
+                sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
 
@@ -150,10 +152,10 @@ namespace TestCoverageVsPlugin.Tests
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
             _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
-      
+
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
             var lineStartPositions = GetLineStartPositions(sourceCode);
-            
+
             // act
             CoverageDot[] dots = sut.Draw(lineStartPositions.Skip(5).ToArray(), false).ToArray();
 
@@ -204,7 +206,7 @@ namespace TestCoverageVsPlugin.Tests
                                                 int b=0;
 	                                        }
                                         }";
-           
+
 
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
 
@@ -221,7 +223,7 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string sourceCode = @"class Test
                                         {
-	                                        public vodi TestMethod()
+	                                        public void TestMethod()
 	                                        {
                                                 // leading trivia
                                                     int a=32;// line number 5
@@ -230,7 +232,8 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
-            _linesCoverage[0].Span = sourceCode.IndexOf("int a=32", StringComparison.Ordinal);
+            _linesCoverage[0].Span = sourceCode.IndexOf("int a=32", StringComparison.Ordinal)-
+                      sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
             var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
 
@@ -239,20 +242,20 @@ namespace TestCoverageVsPlugin.Tests
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().LineNumber,Is.EqualTo(5));
+            Assert.That(dots.First().LineNumber, Is.EqualTo(5));
             Assert.That(dots.First().Color, Is.EqualTo(Brushes.Green));
         }
 
         private int[] GetLineStartPositions(string text)
         {
             string[] lines = text.Split('\n');
-            int[]positions=new int[lines.Length];
+            int[] positions = new int[lines.Length];
             int previousPos = 0;
 
             for (int i = 0; i < lines.Length; i++)
             {
                 positions[i] = text.IndexOf(lines[i], previousPos, StringComparison.Ordinal);
-                previousPos=positions[i];
+                previousPos = positions[i];
             }
 
             return positions;

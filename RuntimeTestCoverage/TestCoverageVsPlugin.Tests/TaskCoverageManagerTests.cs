@@ -55,23 +55,6 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void Should_PreWarmEngine_After_TaskIsFinished()
-        {
-            // arrange
-            const string projectName = "MathHelper.Tests";
-            const string documentPath = @"c:\\MathHelperTests.cs";
-            const int position = 3543;
-
-            // act
-            _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
-            _timerMock.ExecuteNow();
-            while (_sut.IsBusy) { }
-
-            // assert
-            _vsSolutionTestCoverageMock.Received(1).InitAsync(false);
-        }
-
-        [Test]
         public void When_SecondDocumentCoverageTaskIsAdded_And_Document_IsNot_Already_InQueue_Then_They_ShouldBeExecutedOneByOne()
         {
             // arrange

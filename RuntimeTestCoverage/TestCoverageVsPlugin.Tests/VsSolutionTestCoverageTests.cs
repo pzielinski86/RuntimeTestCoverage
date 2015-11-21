@@ -29,71 +29,10 @@ namespace TestCoverageVsPlugin.Tests
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _logger = Substitute.For<ILogger>();
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => _solutionCoverageEngineMock, _coverageStoreMock, _logger);
+            _sut = new VsSolutionTestCoverage(_solutionPath, _solutionCoverageEngineMock, _coverageStoreMock, _logger);
         }
 
-        [Test]
-        public async void Init_ShouldCreateNewEngine_When_CurrentIsEqualToNull()
-        {
-            // arrange
-            var engine1 = Substitute.For<ISolutionCoverageEngine>();
-            var engines = new Stack<ISolutionCoverageEngine>();
-            engines.Push(engine1);
-
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
-
-            // act
-            var newEngine = await _sut.InitAsync(false);
-
-            // assert
-            Assert.That(engines.Count, Is.EqualTo(0));
-            Assert.That(newEngine, Is.SameAs(engine1));
-        }
-
-        [Test]
-        public async  void Init_ShouldCreateNewEngine_When_CurrentEngineWasDisposed()
-        {
-            // arrange
-            var engine1 = Substitute.For<ISolutionCoverageEngine>();
-            var engine2 = Substitute.For<ISolutionCoverageEngine>();
-            engine1.IsDisposed.Returns(false);
-            engine2.IsDisposed.Returns(true);
-
-            var engines = new Stack<ISolutionCoverageEngine>();
-            engines.Push(engine1);
-            engines.Push(engine2);
-
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
-            await _sut.InitAsync(false);
-            // act
-            var newEngine =await _sut.InitAsync(false);
-
-            // assert
-            Assert.That(engines.Count, Is.EqualTo(0));
-            Assert.That(newEngine, Is.SameAs(engine1));
-        }
-
-        [Test]
-        public async void Init_ShouldNotCreateNewEngine_When_CurrentIsNotNull()
-        {
-            // arrange
-            var engine1 = Substitute.For<ISolutionCoverageEngine>();
-            var engine2 = Substitute.For<ISolutionCoverageEngine>();
-            var engines = new Stack<ISolutionCoverageEngine>();
-            engines.Push(engine1);
-            engines.Push(engine2);
-
-            _sut = new VsSolutionTestCoverage(_solutionPath, () => engines.Pop(), _coverageStoreMock, _logger);
-            await _sut.InitAsync(false);
-
-            // act
-            var newEngine =await  _sut.InitAsync(false);
-
-            // assert
-            Assert.That(engines.Count, Is.EqualTo(1));
-            Assert.That(newEngine, Is.SameAs(engine2));
-        }
-
+       
         [Test]
         public void LoadCurrentCoverage_Should_LoadDataForAllDocuments()
         {
@@ -217,11 +156,11 @@ namespace TestCoverageVsPlugin.Tests
             codeLineCoverage.TestPath = "CurrentProject.MathHelperTests";
 
             _sut.SolutionCoverageByDocument.Add("doc1.xml", new List<LineCoverage>() { testLineCoverage, codeLineCoverage });
-            _solutionCoverageEngineMock.CalculateForAllDocuments().
+            _solutionCoverageEngineMock.CalculateForAllDocumentsAsync().
                 Throws(new TestCoverageCompilationException(new string[0]));
 
             // act
-            _sut.CalculateForAllDocuments();
+            _sut.CalculateForAllDocumentsAsync();
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));

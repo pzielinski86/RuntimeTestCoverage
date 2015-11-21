@@ -54,7 +54,7 @@ namespace TestCoverageVsPlugin.UI
                 var xmlCoverageStore = new SqlCompactCoverageStore(dte.Solution.FileName);
 
                 var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(dte.Solution.FileName,
-                    () => new AppDomainSolutionCoverageEngine(), 
+                    new SolutionCoverageEngine(), 
                     xmlCoverageStore,
                     new Logger(CoverageOverviewCommand.Instance.ServiceProvider));
 

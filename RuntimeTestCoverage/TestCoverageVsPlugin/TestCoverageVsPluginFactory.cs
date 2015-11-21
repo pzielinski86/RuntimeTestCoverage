@@ -45,11 +45,13 @@ namespace TestCoverageVsPlugin
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
             
             string solutionPath = _dte.Solution.FullName;
+
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
-                () => new AppDomainSolutionCoverageEngine(), 
+               new SolutionCoverageEngine(),
                 new SqlCompactCoverageStore(solutionPath),
                 new Logger(serviceProvider));
 
+            _vsSolutionTestCoverage.Reinit();
             _vsSolutionTestCoverage.LoadCurrentCoverage();
         }
 
@@ -61,7 +63,7 @@ namespace TestCoverageVsPlugin
                 project.Save();
             }
 
-            _vsSolutionTestCoverage.InitAsync(true);
+            _vsSolutionTestCoverage.Reinit();
         }
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)

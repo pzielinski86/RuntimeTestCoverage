@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
@@ -31,12 +32,12 @@ namespace TestCoverage
             return null;
         }
 
-        public CoverageResult CalculateForAllDocuments()
+        public async Task<CoverageResult> CalculateForAllDocumentsAsync()
         {
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
 
             //TODO: Change a method to async and don't use .Result
-            var projects = _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().Result;
+            var projects = await _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync();
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
             LineCoverage[] coverage = null;
@@ -67,10 +68,16 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_auditVariablesRewriter, new ContentWriter());
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocument(project.Name, documentPath, documentContent);
 
-            var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
-                new TestRunner(new NUnitTestExtractor(), new AppDomainTestExecutorScriptEngine(), _solutionExplorer));
 
-            var coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument, methodName);
+            LineCoverage[] coverage = null;
+
+            using (var appDomainTestExecutorScriptEngine = new AppDomainTestExecutorScriptEngine())
+            {
+                var lineCoverageCalc = new LineCoverageCalc(_testExplorer, new RoslynCompiler(),
+                    new TestRunner(new NUnitTestExtractor(), appDomainTestExecutorScriptEngine, _solutionExplorer));
+
+                coverage = lineCoverageCalc.CalculateForMethod(project, rewrittenDocument, methodName);
+            }
 
             _coverageStore.Append(coverage);
 
