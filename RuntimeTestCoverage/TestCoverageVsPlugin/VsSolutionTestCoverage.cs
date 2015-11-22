@@ -100,7 +100,10 @@ namespace TestCoverageVsPlugin
                     }
                     catch (TestCoverageCompilationException e)
                     {
-                        SolutionCoverageByDocument.Remove(rootNode.SyntaxTree.FilePath);
+                        string path = NodePathBuilder.BuildPath(method,
+                            Path.GetFileNameWithoutExtension(rootNode.SyntaxTree.FilePath), projectName);
+
+                        SolutionCoverageByDocument.RemvoeByPath(path);
                         _logger.Write(e.ToString());
                         return;
                     }

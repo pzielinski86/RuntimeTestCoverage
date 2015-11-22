@@ -10,6 +10,7 @@ namespace Math
     {
         public static string GetRewrittenFilePath(string documentPath)
         {
+            
             return documentPath + "_testcoverage";
         }
 
