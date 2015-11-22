@@ -19,12 +19,9 @@ namespace TestCoverage.Storage
         private readonly string _filePath;
 
 
-        public SqlCompactCoverageStore(string solutionPath)
+        public SqlCompactCoverageStore()
         {
-            string solutionDir = Path.GetDirectoryName(solutionPath);
-            string solutionName = Path.GetFileNameWithoutExtension(solutionPath);
-
-            _filePath = Path.Combine(solutionDir, $"{solutionName}.coverage");
+            _filePath = Path.Combine(Config.WorkingDirectory, "CoverageCache.coverage");
         }
 
         public void AppendByDocumentPath(string documentPath, IEnumerable<LineCoverage> coverage)

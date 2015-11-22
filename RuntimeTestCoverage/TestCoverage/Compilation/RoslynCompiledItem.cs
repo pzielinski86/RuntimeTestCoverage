@@ -29,7 +29,7 @@ namespace TestCoverage.Compilation
                 return DllPath;
 
             string dllName = Compilation.AssemblyName;
-            var dllPath = Path.Combine(Directory.GetCurrentDirectory(), dllName);
+            var dllPath = Path.Combine(Config.WorkingDirectory, dllName);
            
             using (var stream = File.Open(dllPath,FileMode.OpenOrCreate))
             {

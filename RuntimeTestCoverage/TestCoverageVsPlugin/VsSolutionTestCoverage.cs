@@ -94,7 +94,8 @@ namespace TestCoverageVsPlugin
 
                     try
                     {
-                        var result = _solutionCoverageEngine.CalculateForMethod(projectName, rootNode.SyntaxTree.FilePath, rootNode.ToFullString(), method.Identifier.ToString());
+                        var result = _solutionCoverageEngine.CalculateForMethod(projectName,method);
+
                         coverage = result.CoverageByDocument.SelectMany(x => x.Value).ToList();
                     }
                     catch (TestCoverageCompilationException e)

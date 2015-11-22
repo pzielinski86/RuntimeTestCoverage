@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
@@ -49,7 +50,7 @@ namespace TestCoverage.CoverageCalculation
             return finalCoverage.ToArray();
         }
 
-        public LineCoverage[] CalculateForMethod(Project project, RewrittenDocument rewrittenDocument, string methodName)
+        public LineCoverage[] CalculateForMethod(Project project, RewrittenDocument rewrittenDocument, MethodDeclarationSyntax method)
         {
             ICompiledItem[] newCompiledItems;
 
@@ -58,7 +59,7 @@ namespace TestCoverage.CoverageCalculation
             ISemanticModel semanticModel = newCompiledItems[0].GetSemanticModel(rewrittenDocument.SyntaxTree);
             LineCoverage[] fullCoverage = _testRunner.RunTest(project,
                 rewrittenDocument,
-                methodName,
+                method,
                 semanticModel, rewrittenAssemblies);
 
             if (fullCoverage == null)

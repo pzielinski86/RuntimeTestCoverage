@@ -29,19 +29,24 @@ namespace TestCoverage.CoverageCalculation
 
         public LineCoverage[] RunTest(Project project,
             RewrittenDocument rewrittenDocument,
-            string methodName,
+            MethodDeclarationSyntax method,
             ISemanticModel semanticModel,
               string[] rewrittenAssemblies)
         {
-            var testClass = _testsExtractor.GetTestClasses(rewrittenDocument.SyntaxTree.GetRoot()).FirstOrDefault();
+            var testClass = method.GetParentClass();
+            var rewrittenTestClass =
+                rewrittenDocument.SyntaxTree
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>().First(x => x.Identifier.ToString() == testClass.Identifier.ToString());
 
-            if (testClass == null)
-                return null;
-
-            var fixtureDetails = _testsExtractor.GetTestFixtureDetails(testClass, semanticModel);
+            var fixtureDetails = _testsExtractor.GetTestFixtureDetails(rewrittenTestClass, semanticModel);
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 
-            var testCases = fixtureDetails.Cases.Where(x => x.MethodName == methodName).ToList();
+            var testCases = fixtureDetails.Cases.Where(x => x.MethodName == method.Identifier.ToString()).ToList();
+
+            if (testCases.Count == 0)
+                return null;
 
             var compiledTestInfo = new CompiledTestFixtureInfo
             {

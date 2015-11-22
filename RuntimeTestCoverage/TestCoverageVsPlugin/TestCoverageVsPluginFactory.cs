@@ -46,9 +46,11 @@ namespace TestCoverageVsPlugin
             
             string solutionPath = _dte.Solution.FullName;
 
+            Config.SetSolution(solutionPath);
+
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
                new SolutionCoverageEngine(),
-                new SqlCompactCoverageStore(solutionPath),
+                new SqlCompactCoverageStore(),
                 new Logger(serviceProvider));
 
             _vsSolutionTestCoverage.Reinit();

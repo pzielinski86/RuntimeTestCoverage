@@ -8,12 +8,9 @@ namespace TestCoverage.Storage
     {
         private readonly string _filePath;
 
-        public XmlCoverageSettingsStore(string solutionPath)
+        public XmlCoverageSettingsStore()
         {
-            string solutionDir = Path.GetDirectoryName(solutionPath);
-            string solutionName = Path.GetFileNameWithoutExtension(solutionPath);
-
-            _filePath = Path.Combine(solutionDir, $"{solutionName}_CoverageSettings.coverage");
+            _filePath = Path.Combine(Config.WorkingDirectory, "CoverageSettings.coverage");
         }
         public CoverageSettings Read()
         {

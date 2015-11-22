@@ -10,12 +10,10 @@ namespace TestCoverage.Rewrite
     internal class SolutionRewriter
     {
         private readonly IAuditVariablesRewriter _auditVariablesRewriter;
-        private readonly IContentWriter _contentWriter;
 
-        public SolutionRewriter(IAuditVariablesRewriter auditVariablesRewriter, IContentWriter contentWriter)
+        public SolutionRewriter(IAuditVariablesRewriter auditVariablesRewriter)
         {
             _auditVariablesRewriter = auditVariablesRewriter;
-            _contentWriter = contentWriter;
         }
 
         public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
@@ -24,8 +22,6 @@ namespace TestCoverage.Rewrite
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
             SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
-
-            _contentWriter.Write(documentPath, rewrittenNode.SyntaxTree);
 
             return new RewrittenDocument(rewrittenNode.SyntaxTree, documentPath);
         }

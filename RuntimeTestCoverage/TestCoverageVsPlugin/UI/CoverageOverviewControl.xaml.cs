@@ -46,12 +46,12 @@ namespace TestCoverageVsPlugin.UI
             if (!string.IsNullOrEmpty(dte.Solution.FileName))
             {
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
-                ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore(dte.Solution.FileName);
-                ICoverageStore coverageStore = new SqlCompactCoverageStore(dte.Solution.FileName);
+                ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
+                ICoverageStore coverageStore = new SqlCompactCoverageStore();
 
                 ITestExplorer testExplorer = new TestExplorer(solutionExplorer,
                     new NUnitTestExtractor(), coverageStore, settingsStore);
-                var xmlCoverageStore = new SqlCompactCoverageStore(dte.Solution.FileName);
+                var xmlCoverageStore = new SqlCompactCoverageStore();
 
                 var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(dte.Solution.FileName,
                     new SolutionCoverageEngine(), 

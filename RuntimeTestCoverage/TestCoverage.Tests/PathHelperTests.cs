@@ -9,17 +9,7 @@ namespace TestCoverage.Tests
 {
     [TestFixture]
     public class PathHelperTests
-    {
-        [Test]
-        public void GetRewrittenFilePath()
-        {
-            const string path = "c:\test.dll";
-            const string expectedRewrittenPath = "c:\test.dll.coverage";
-
-            string rewrittenPath=PathHelper.GetRewrittenFilePath(path);
-            
-            Assert.That(rewrittenPath, Is.EqualTo(expectedRewrittenPath));
-        }
+    {  
 
         [Test]
         public void GetCoverageDllName_ShouldReturn_CoverageDll_When_ProvidedDllIsNotCoverageDll()

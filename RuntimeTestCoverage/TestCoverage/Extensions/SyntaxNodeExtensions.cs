@@ -25,6 +25,10 @@ namespace TestCoverage.Extensions
             return node.Ancestors().OfType<MemberDeclarationSyntax>().FirstOrDefault();
         }
 
+        public static ClassDeclarationSyntax GetParentClass(this SyntaxNode node)
+        {
+            return node.Ancestors().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+        }
         public static MethodDeclarationSyntax GetMethodAt(this SyntaxNode root, int position)
         {
             var method =

@@ -24,12 +24,16 @@ namespace Math.Tests
         [TestCase(20, 10, 2)]
         public void DivideTest(int a,int b,int c)
         {
-                               
+         
+                                 
             ///////ak55kkkllklkjklmhgjghjg
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(a, b);
             
             Assert.That(result, Is.EqualTo(c));
+
+
+
             //jj
         }
 
@@ -40,6 +44,8 @@ namespace Math.Tests
         {////////////////////ph//ghgjj
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(10, 5);
+
+              
 
              Assert.That(result, Is.EqualTo(5));
         }
@@ -58,7 +64,7 @@ namespace Math.Tests
             ////
             MathHelper helper = new MathHelper();
 
-
+            Assert.IsTrue(true);
 
 
      //      helper.DoSomething(5); 

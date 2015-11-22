@@ -13,35 +13,38 @@ namespace TestCoverageConsole
 
         private static void Main(string[] args)
         {
+            var engine = new SolutionCoverageEngine();
+            engine.Init(TestSubjectSlnPath);
+
             for (int i = 0; i < 2; i++)
             {
-                using (var engine = new AppDomainSolutionCoverageEngine())
-                {
-                    engine.Init(TestSubjectSlnPath);
-
-                    Stopwatch stopwatch = Stopwatch.StartNew();
-
-                    var positions = engine.CalculateForAllDocuments();
-
-                    Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-                    Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
-                }
-
-                using (var engine = new AppDomainSolutionCoverageEngine())
-                {
-                    engine.Init(TestSubjectSlnPath);
-
-                    Stopwatch stopwatch = Stopwatch.StartNew();
-
-                    string documentPath = @"C:\github\TestingSandbox\LeadGenDataService\src\LeadGenDataService.Utils\UkPhoneNumberNormalizer.cs";
-                    string documentContent = File.ReadAllText(documentPath);
-
-                    var positions = engine.CalculateForDocument("Math", documentPath, documentContent);
-
-                    Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-                    Console.WriteLine("Rewrite&run selected document.Time: {0}", stopwatch.ElapsedMilliseconds);
-                }
+                TestForAllDocuments(engine);
+                TestForOneDocument(engine);
             }
+        }
+
+        private static void TestForOneDocument(SolutionCoverageEngine engine)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            string documentPath =
+                @"C:\github\TestingSandbox\LeadGenDataService\src\LeadGenDataService.Utils\UkPhoneNumberNormalizer.cs";
+            string documentContent = File.ReadAllText(documentPath);
+
+            var positions = engine.CalculateForDocument("Math", documentPath, documentContent);
+
+            Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+            Console.WriteLine("Rewrite&run selected document.Time: {0}", stopwatch.ElapsedMilliseconds);
+        }
+
+        private static void TestForAllDocuments(SolutionCoverageEngine engine)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            var positions = engine.CalculateForAllDocumentsAsync().Result;
+
+            Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
+            Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
         }
     }
 }

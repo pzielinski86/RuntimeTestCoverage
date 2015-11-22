@@ -12,16 +12,14 @@ namespace TestCoverage.Tests.Rewrite
     public class SolutionRewriterTests
     {
         private SolutionRewriter _solutionRewriter;
-        private IContentWriter _contentWriterMock;
         private IAuditVariablesRewriter _auditVariablesRewriter;
 
         [SetUp]
         public void Setup()
         {
-            _contentWriterMock = Substitute.For<IContentWriter>();
             _auditVariablesRewriter = Substitute.For<IAuditVariablesRewriter>();
 
-            _solutionRewriter = new SolutionRewriter(_auditVariablesRewriter, _contentWriterMock);
+            _solutionRewriter = new SolutionRewriter(_auditVariablesRewriter);
         }
 
         [Test]
@@ -40,24 +38,6 @@ namespace TestCoverage.Tests.Rewrite
 
             Assert.That(rewrittenDocument.DocumentPath, Is.EqualTo(documentPath));
             Assert.That(rewrittenDocument.SyntaxTree, Is.EqualTo(rewrittenNode.SyntaxTree));
-        }
-
-
-        [Test]
-        public void Should_WriteRewrittenNodeContentToStream()
-        {
-            const string sourceCode = "class SampleClass{" +
-                                         "public void Test(int a){}" +
-                                      "}";
-
-            const string documentPath = "documentPath";
-
-            SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
-
-            _solutionRewriter.RewriteDocument("projectName", documentPath, sourceCode);
-
-            _contentWriterMock.Received(1).Write(documentPath, rewrittenNode.SyntaxTree);
         }
 
         [Test]

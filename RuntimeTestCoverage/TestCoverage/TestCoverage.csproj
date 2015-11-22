@@ -130,6 +130,7 @@
     <Compile Include="Compilation\ISemanticModel.cs" />
     <Compile Include="Compilation\RoslynSemanticModel.cs" />
     <Compile Include="CompiledTestFixtureInfo.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="CoverageCalculation\ITestExecutorScriptEngine.cs" />
     <Compile Include="CoverageCalculation\ITestRunner.cs" />
     <Compile Include="CoverageCalculation\ITestRunResult.cs" />
@@ -155,10 +156,8 @@
     <Compile Include="Compilation\RoslynCompiler.cs" />
     <Compile Include="CoverageCalculation\LineCoverage.cs" />
     <Compile Include="CoverageCalculation\LineCoverageCalc.cs" />
-    <Compile Include="Rewrite\ContentWriter.cs" />
     <Compile Include="Rewrite\IAuditVariablesRewriter.cs" />
     <Compile Include="Rewrite\IAuditVariablesWalker.cs" />
-    <Compile Include="Rewrite\IContentWriter.cs" />
     <Compile Include="SolutionCoverageEngine.cs" />
     <Compile Include="Rewrite\AuditVariablesRewriter.cs" />
     <Compile Include="Rewrite\AuditVariablesWalker.cs" />
