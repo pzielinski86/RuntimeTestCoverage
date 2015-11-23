@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Rewrite;
-using TestCoverage.Storage;
 
 namespace TestCoverage.Tests.CoverageCalculation
 {

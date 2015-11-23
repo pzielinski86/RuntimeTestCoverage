@@ -1,12 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NUnit.Framework;
+using System.Linq;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;

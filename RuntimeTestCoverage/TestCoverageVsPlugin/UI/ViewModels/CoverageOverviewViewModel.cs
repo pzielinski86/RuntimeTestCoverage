@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.PlatformUI;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.VisualStudio.PlatformUI;
 using TestCoverage;
-using TestCoverage.CoverageCalculation;
 using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin.UI.ViewModels

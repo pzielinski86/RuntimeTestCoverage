@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using TestCoverage.Extensions;
+using System.Collections.Generic;
 
 namespace TestCoverage.Rewrite
 {

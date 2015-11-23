@@ -1,7 +1,6 @@
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin

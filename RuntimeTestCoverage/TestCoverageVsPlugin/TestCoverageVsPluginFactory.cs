@@ -1,12 +1,10 @@
 ﻿using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
-using System;
 using System.ComponentModel.Composition;
-using System.Reflection;
-using EnvDTE80;
-using Microsoft.VisualStudio.Shell.Interop;
 using TestCoverage;
 using TestCoverage.Storage;
 

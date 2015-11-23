@@ -170,7 +170,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
     <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
-    <Compile Include="Storage\AllowAllAssemblyVersionsDeserializationBinder.cs" />
     <Compile Include="Storage\CoverageSettings.cs" />
     <Compile Include="Storage\SqlCompactCoverageStore.cs" />
     <Compile Include="Storage\ICoverageSettingsStore.cs" />

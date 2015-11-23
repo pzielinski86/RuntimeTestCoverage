@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Windows.Media;
-using System.Windows.Threading;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.Text;
 using NSubstitute;
 using NUnit.Framework;
+using System.Threading;
 
 namespace TestCoverageVsPlugin.Tests
 {

@@ -18,7 +18,7 @@ namespace Math.Tests
             const string expectedRewrittenPath = "c:\test.dll_testcove1rage";
 
 
-
+             
 
 
             string rewrittenPath = PathHelper.GetRewrittenFilePath(path);
@@ -29,7 +29,7 @@ namespace Math.Tests
 
         [Test]
         public void GetCoverageDllName()
-        {
+        { 
             const string expectedDllName = "Logic_COVERAGE.dll";
             string coverageDllName = PathHelper.GetCoverageDllName("Logic");
 

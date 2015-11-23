@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Threading;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TestCoverageVsPlugin
 {

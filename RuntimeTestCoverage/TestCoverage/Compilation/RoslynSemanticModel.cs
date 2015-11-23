@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Extensions;
 
+
 namespace TestCoverage.Compilation
 {
     class RoslynSemanticModel : ISemanticModel

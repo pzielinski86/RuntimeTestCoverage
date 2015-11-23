@@ -1,11 +1,10 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using NSubstitute;
 using NUnit.Framework;
+using System.Linq;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
 using TestCoverage.Rewrite;

@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.VisualStudio.PlatformUI;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.VisualStudio.PlatformUI;
 using TestCoverage.Storage;
 using TestCoverageVsPlugin.Annotations;
 

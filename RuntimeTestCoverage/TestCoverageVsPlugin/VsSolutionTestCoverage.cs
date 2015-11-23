@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
@@ -83,9 +82,8 @@ namespace TestCoverageVsPlugin
 
         public Task CalculateForSelectedMethodAsync(string projectName, int span, SyntaxNode rootNode)
         {
-            var task = Task.Run(() =>
+            var task = Task.Factory.StartNew(() =>
             {
-                // TODO: get rid of Result and use await
                 MethodDeclarationSyntax method = rootNode.GetMethodAt(span);
 
                 if (method != null)
@@ -110,7 +108,7 @@ namespace TestCoverageVsPlugin
 
                     SolutionCoverageByDocument.MergeByNodePath(coverage);
                 }
-            });
+            },CancellationToken.None,TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             return task;
         }

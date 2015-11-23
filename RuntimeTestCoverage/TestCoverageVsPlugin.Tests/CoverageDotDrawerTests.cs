@@ -1,10 +1,8 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
-using System.Windows.Media;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
+using System.Windows.Media;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin.Tests

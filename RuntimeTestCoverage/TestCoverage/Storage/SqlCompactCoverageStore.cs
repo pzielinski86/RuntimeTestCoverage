@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Data.SqlServerCe;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using Dapper;
 using ErikEJ.SqlCe;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlServerCe;
+using System.IO;
+using System.Linq;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverage.Storage

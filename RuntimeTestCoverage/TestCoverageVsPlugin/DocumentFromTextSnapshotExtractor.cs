@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace TestCoverageVsPlugin
 {
-    class DocumentFromTextSnapshotExtractor : IDocumentFromTextSnapshotExtractor
+    sealed class DocumentFromTextSnapshotExtractor : IDocumentFromTextSnapshotExtractor
     {
         public SyntaxNode ExtactDocument(ITextSnapshot snapshot)
         {

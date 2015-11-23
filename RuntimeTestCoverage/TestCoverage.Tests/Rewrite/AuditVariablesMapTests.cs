@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Tests.Rewrite

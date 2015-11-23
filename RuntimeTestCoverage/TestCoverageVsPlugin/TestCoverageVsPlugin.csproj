@@ -180,6 +180,7 @@
     <Compile Include="MethodCoverageTaskCompletedArgs.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="PriorityScheduler .cs" />
     <Compile Include="VsDispatchTimer.cs" />
     <Compile Include="ITaskCoverageManager.cs" />
     <Compile Include="ITimer.cs" />

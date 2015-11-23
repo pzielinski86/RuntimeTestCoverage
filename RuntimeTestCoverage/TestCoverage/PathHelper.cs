@@ -1,7 +1,4 @@
-﻿
-using System;
-
-namespace TestCoverage
+﻿namespace TestCoverage
 {
     public static class PathHelper
     {

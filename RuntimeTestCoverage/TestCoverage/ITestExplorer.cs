@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.CodeAnalysis;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage

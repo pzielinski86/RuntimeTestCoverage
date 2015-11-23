@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+﻿using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TestCoverageVsPlugin
 {

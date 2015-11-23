@@ -1,7 +1,7 @@
-using System;
-using System.Linq;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.CSharp;
+using System;
+using System.Linq;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
