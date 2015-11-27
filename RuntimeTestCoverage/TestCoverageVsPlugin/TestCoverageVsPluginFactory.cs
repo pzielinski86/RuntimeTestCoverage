@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using System;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -27,6 +28,7 @@ namespace TestCoverageVsPlugin
         private IVsStatusbar _statusBar;
         private DTE _dte;
         private readonly ProjectItemsEvents _projectItemsEvents;
+        private Logger _logger;
 
         static MarginFactory()
         {
@@ -46,13 +48,20 @@ namespace TestCoverageVsPlugin
 
             Config.SetSolution(solutionPath);
 
+            _logger = new Logger(serviceProvider);
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
                new SolutionCoverageEngine(),
                 new SqlCompactCoverageStore(),
-                new Logger(serviceProvider));
+                _logger);
 
             _vsSolutionTestCoverage.Reinit();
             _vsSolutionTestCoverage.LoadCurrentCoverage();
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            _logger.Write(e.ExceptionObject.ToString());
         }
 
         private void ProjectItemAdded(ProjectItem projectItem)
