@@ -28,7 +28,7 @@ namespace TestCoverage.CoverageCalculation
             var assembly = typeof(SolutionCoverageEngine).Assembly;
 
             if (args.Name == assembly.FullName)
-            {
+            {                
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
 
                 return Assembly.LoadFrom(assembly.Location);

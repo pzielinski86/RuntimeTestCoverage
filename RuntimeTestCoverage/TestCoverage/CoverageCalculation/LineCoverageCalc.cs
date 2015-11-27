@@ -7,7 +7,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    internal class LineCoverageCalc
+    public class LineCoverageCalc
     {
         private readonly ITestExplorer _testExplorer;
         private readonly ICompiler _compiler;

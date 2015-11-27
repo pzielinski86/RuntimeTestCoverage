@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TestCoverage.Rewrite
 {
-    internal class SolutionRewriter
+    public class SolutionRewriter
     {
         private readonly IAuditVariablesRewriter _auditVariablesRewriter;
 

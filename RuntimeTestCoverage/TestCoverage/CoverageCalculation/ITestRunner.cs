@@ -5,7 +5,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    internal interface ITestRunner
+    public interface ITestRunner
     {
         LineCoverage[] RunTest(Project project,
             RewrittenDocument rewrittenDocument,

@@ -10,7 +10,7 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    internal class TestRunner : ITestRunner
+    public class TestRunner : ITestRunner
     {
         private readonly ITestsExtractor _testsExtractor;
         private readonly ITestExecutorScriptEngine _testExecutorScriptEngine;
