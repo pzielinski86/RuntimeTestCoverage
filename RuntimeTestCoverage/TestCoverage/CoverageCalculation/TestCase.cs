@@ -49,14 +49,14 @@ namespace TestCoverage.CoverageCalculation
 
         public string CreateRunTestScript()
         {
-            StringBuilder scriptBuilder = new StringBuilder();
+            StringBuilder scriptBuilder = new StringBuilder(); 
 
-            ClearAudit(scriptBuilder);
-            scriptBuilder.AppendLine(TestFixture.CreateSetupFixtureCode("testFixture"));
+            ClearAudit(scriptBuilder);            
             scriptBuilder.AppendLine("string errorMessage=null;");
             scriptBuilder.AppendLine("bool assertionFailed=false;");
 
             scriptBuilder.Append("try\n{\n");
+            scriptBuilder.AppendLine(TestFixture.CreateSetupFixtureCode("testFixture"));
             scriptBuilder.AppendLine(CreateCallTestCode("testFixture"));
 
             scriptBuilder.AppendLine("}");

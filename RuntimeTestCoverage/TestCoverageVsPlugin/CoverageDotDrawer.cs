@@ -16,7 +16,7 @@ namespace TestCoverageVsPlugin
         private readonly string _documentName;
         public string SourceCode { get; }
 
-        public CoverageDotDrawer(IReadOnlyCollection<LineCoverage> lineCoverage, string sourceCode,string documentName)
+        public CoverageDotDrawer(IReadOnlyCollection<LineCoverage> lineCoverage, string sourceCode, string documentName)
         {
             _lineCoverage = lineCoverage;
             _documentName = documentName;
@@ -37,10 +37,10 @@ namespace TestCoverageVsPlugin
                 var methodDots = ProcessMethod(projectName, methodDeclarationSyntax, lineStartPositions,
                     areCalcsInProgress, ref lineNumber);
 
-                if (methodDots == null)
+                coverageDots.AddRange(methodDots);
+
+                if (lineNumber >= lineStartPositions.Length)
                     break;
-                else
-                    coverageDots.AddRange(methodDots);
             }
 
             return coverageDots;
@@ -61,12 +61,12 @@ namespace TestCoverageVsPlugin
                     continue;
 
                 if (!LoopUntilStartPositionIsFound(lineStartPositions, statement, ref lineNumber))
-                    return null;
+                    return coverageDots;
 
                 if (lineStartPositions[lineNumber] == statement.FullSpan.Start)
                 {
                     if (!LoopUntilLeadingTriviaIsSkipped(lineStartPositions, statement, ref lineNumber))
-                        return null;
+                        return coverageDots;
 
                     int span = statement.SpanStart - methodDeclarationSyntax.SpanStart;
 

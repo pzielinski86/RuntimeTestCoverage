@@ -35,7 +35,7 @@ namespace TestCoverage.Rewrite
         }
 
         public override SyntaxNode VisitWhileStatement(WhileStatementSyntax node)
-        {
+        { 
             SyntaxNode rewrittenNode = null;
 
             if (node.Statement != null)

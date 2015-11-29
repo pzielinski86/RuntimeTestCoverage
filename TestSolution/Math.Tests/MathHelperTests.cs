@@ -43,11 +43,21 @@ namespace Math.Tests
         public void DivideTestZero()
         {////////////////////ph//ghgjj
             MathHelper helper = new MathHelper();
+
+
+
+
+
+
+
+
+
+
             decimal result = helper.Divide(10, 5);
 
               
 
-             Assert.That(result, Is.EqualTo(5));
+             Assert.That(result, Is.EqualTo(2));
         }
 
         [Test]
@@ -56,6 +66,7 @@ namespace Math.Tests
             ////
             MathHelper helper = new MathHelper();
             helper.DoSomething(4);
+            Assert.IsTrue(true);
         }
           
         [Test]
