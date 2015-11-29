@@ -101,6 +101,47 @@ namespace TestCoverage.Tests.Rewrite
         }
 
         [Test]
+        public void Should_RewriteInlineWhile_To_BlockStatementWithAuditVariable()
+        {
+            const string sourceCode = @"namespace SampleNamespace
+                                {
+                                    class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {
+                                            while(true)
+                                                a++;
+                                        }
+                                    }
+                                }";
+
+            var tree = CSharpSyntaxTree.ParseText(sourceCode);
+
+            AuditVariablePlaceholder[] auditVariablePlaceholders = new AuditVariablePlaceholder[2];
+            auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
+            auditVariablePlaceholders[1] = new AuditVariablePlaceholder(null, "WhileNode", 0);
+
+            _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>())
+                .Returns(auditVariablePlaceholders);
+
+            // act
+            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
+
+            // assert
+            var whileStatement = rewrittenNode.DescendantNodes().OfType<WhileStatementSyntax>().Single();
+            var statements =
+                whileStatement.ChildNodes()
+                    .OfType<BlockSyntax>()
+                    .Single()
+                    .DescendantNodes()
+                    .OfType<StatementSyntax>()
+                    .ToArray();
+
+            Assert.That(statements.Length, Is.EqualTo(2));
+            Assert.That(statements[0].ToFullString(), Is.StringContaining("WhileNode"));
+        }
+
+        [Test]
         public void Should_RewriteInlineElseStatement_To_BlockStatementWithAuditVariable()
         {
             const string sourceCode = @"namespace SampleNamespace

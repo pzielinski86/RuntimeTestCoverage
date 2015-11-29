@@ -58,6 +58,36 @@ namespace TestCoverage.Rewrite
             base.VisitIfStatement(node);
         }
 
+        public override void VisitWhileStatement(WhileStatementSyntax node)
+        {
+            if (!(node.Statement is BlockSyntax))
+            {
+                CreateAuditVariable(node.Statement);
+            }
+
+            base.VisitWhileStatement(node);
+        }
+
+        public override void VisitForStatement(ForStatementSyntax node)
+        {
+            if (!(node.Statement is BlockSyntax))
+            {
+                CreateAuditVariable(node.Statement);
+            }
+             
+            base.VisitForStatement(node);
+        }
+
+        public override void VisitForEachStatement(ForEachStatementSyntax node)
+        {
+            if (!(node.Statement is BlockSyntax))
+            {
+                CreateAuditVariable(node.Statement);
+            }
+             
+            base.VisitForEachStatement(node);
+        }
+
         public override void VisitElseClause(ElseClauseSyntax node)
         {
             if (node.Statement is IfStatementSyntax)

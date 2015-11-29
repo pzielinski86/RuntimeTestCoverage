@@ -34,14 +34,42 @@ namespace TestCoverage.Rewrite
             return base.VisitBlock(SyntaxFactory.Block(newStatements));
         }
 
+        public override SyntaxNode VisitWhileStatement(WhileStatementSyntax node)
+        {
+            SyntaxNode rewrittenNode = null;
+
+            if (node.Statement != null)
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
+
+            return base.VisitWhileStatement((WhileStatementSyntax)rewrittenNode ?? node);
+        }
+
+        public override SyntaxNode VisitForStatement(ForStatementSyntax node)
+        {
+            SyntaxNode rewrittenNode = null;
+
+            if (node.Statement != null)
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
+
+            return base.VisitForStatement((ForStatementSyntax)rewrittenNode ?? node);
+        }
+
+        public override SyntaxNode VisitForEachStatement(ForEachStatementSyntax node)
+        {
+            SyntaxNode rewrittenNode = null;
+
+            if (node.Statement != null)
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
+
+            return base.VisitForEachStatement((ForEachStatementSyntax)rewrittenNode ?? node);
+        }
+
         public override SyntaxNode VisitIfStatement(IfStatementSyntax node)
         {
             SyntaxNode rewrittenNode = null;
 
             if (node.Statement != null)
-            {
                 rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
-            }
 
             return base.VisitIfStatement((IfStatementSyntax)rewrittenNode ?? node);
         }
@@ -54,14 +82,12 @@ namespace TestCoverage.Rewrite
             SyntaxNode rewrittenNode = null;
 
             if (node.Statement != null)
-            {
                 rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
-            }
 
             return base.VisitElseClause((ElseClauseSyntax)rewrittenNode ?? node);
         }
 
-        private SyntaxNode RewriteWithBlockIfRequired(SyntaxNode parent,StatementSyntax node)
+        private SyntaxNode RewriteWithBlockIfRequired(SyntaxNode parent, StatementSyntax node)
         {
             if (!(node is BlockSyntax))
             {

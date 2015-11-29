@@ -11,6 +11,7 @@ namespace TestCoverageConsole
 
         private static void Main(string[] args)
         {
+            Config.SetSolution(TestSubjectSlnPath);
             var engine = new SolutionCoverageEngine();
             engine.Init(TestSubjectSlnPath);
 

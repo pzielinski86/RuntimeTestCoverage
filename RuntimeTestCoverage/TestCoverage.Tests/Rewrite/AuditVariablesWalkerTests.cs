@@ -134,6 +134,48 @@ namespace TestCoverage.Tests.Rewrite
             AssertAuditVariablesCount(sourceCode, 1);
         }
 
+        [Test]
+        public void Should_AddAuditVariables_In_Inline_WhileStatement()
+        {
+            const string sourceCode = @"class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {           
+                                            while(true) a++;
+                                        }
+                                    }";
+
+            AssertAuditVariablesCount(sourceCode, 2);
+        }
+
+        [Test]
+        public void Should_AddAuditVariables_In_Inline_ForStatement()
+        {
+            const string sourceCode = @"class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {           
+                                            for(int i=0;i<10;i++) a++;
+                                        }
+                                    }";
+
+            AssertAuditVariablesCount(sourceCode, 2);
+        }
+
+        [Test]
+        public void Should_AddAuditVariables_In_Inline_ForeachStatement()
+        {
+            const string sourceCode = @"class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {           
+                                            foreach(int a in data) a++;
+                                        }
+                                    }";
+             
+            AssertAuditVariablesCount(sourceCode, 2);
+        }
+
         private static void AssertAuditVariablesCount(string sourceCode, int expectedVariablesCount)
         {
             var tree = CSharpSyntaxTree.ParseText(sourceCode);

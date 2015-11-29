@@ -10,6 +10,9 @@ namespace Math
     {
         public static string GetRewrittenFilePath(string documentPath)
         {
+            int i = 0;
+            while (i < 10)
+                i++;
             
             return documentPath + "_testcoverage";
         }
