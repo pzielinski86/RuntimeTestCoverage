@@ -40,7 +40,7 @@ namespace TestCoverage.Tests.Rewrite
             Assert.That(insertedAuditVariables[0].NodePath, Is.EqualTo(expectedNodePath));
             Assert.That(insertedAuditVariables[0].SpanStart, Is.EqualTo(expectedSpanPosition));
         }
-
+        
         [Test]
         public void Should_AddAuditVariableBeforeIf()
         {
@@ -51,6 +51,22 @@ namespace TestCoverage.Tests.Rewrite
                                             if(a==5){}
                                         }
                                     }";
+
+            AssertAuditVariablesCount(sourceCode, 1);
+        }
+
+        [Test]
+        public void ShouldNot_AddVariable_BeforeNestedElse()
+        {
+            const string sourceCode = @"class SampleClass
+                                    {
+                                        public void SampleMethod()
+                                        {           
+                                            if(a==5){}
+                                            else if(true){}
+                                            else if(false){}
+                                        }
+                                     }";
 
             AssertAuditVariablesCount(sourceCode, 1);
         }

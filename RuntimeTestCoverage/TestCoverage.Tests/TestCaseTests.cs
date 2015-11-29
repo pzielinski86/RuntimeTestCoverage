@@ -18,7 +18,9 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithoutParameters()
         {
             // arrange
-            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{});";
+            const string expectedCode = "testFixtureType." +
+                                        "GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)." +
+                                        "Invoke(testExecutor, new object[]{});";
 
             _sut.MethodName = "Test";
             _sut.Arguments=new string[0];
@@ -31,10 +33,31 @@ namespace TestCoverage.Tests
         }
 
         [Test]
+        public void Should_Wait_For_Async_Test()
+        {
+            // arrange
+            const string expectedCode = "((dynamic)testFixtureType." +
+                                        "GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)." +
+                                        "Invoke(testExecutor, new object[]{})).Wait();";
+
+            _sut.MethodName = "Test";
+            _sut.IsAsync = true;
+            _sut.Arguments = new string[0];
+
+            // act
+            string code = _sut.CreateCallTestCode("testExecutor");
+
+            // assert
+            Assert.That(code, Is.EqualTo(expectedCode));
+        }
+
+        [Test]
         public void Should_Call_TestWithString()
         {
             // arrange
-            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{\"Hello World!\"});";
+            const string expectedCode = "testFixtureType.GetMethod(" +
+                                        "\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)." +
+                                        "Invoke(testExecutor, new object[]{\"Hello World!\"});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new[] {"\"Hello World!\""};
@@ -50,7 +73,9 @@ namespace TestCoverage.Tests
         public void Should_Call_TestWithInteger()
         {
             // arrange
-            const string expectedCode = "testFixtureType.GetMethod(\"Test\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testExecutor, new object[]{1954});";
+            const string expectedCode = "testFixtureType.GetMethod(\"Test\"," +
+                                        "BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)." +
+                                        "Invoke(testExecutor, new object[]{1954});";
 
             _sut.MethodName = "Test";
             _sut.Arguments = new string[] {"1954" };

@@ -11,6 +11,8 @@ namespace TestCoverageVsPlugin.Tests
     public class CoverageDotDrawerTests
     {
         private List<LineCoverage> _linesCoverage;
+        private const string DocumentName = "Tests";
+        const string ProjectName = "TestProject";
 
         [SetUp]
         public void Setup()
@@ -24,10 +26,10 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string sourceCode = "using System;\nclass Test{\n}";
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            IEnumerable<CoverageDot> dots = sut.Draw(GetLineStartPositions(sourceCode), true);
+            IEnumerable<CoverageDot> dots = sut.Draw(GetLineStartPositions(sourceCode), true,ProjectName);
 
             // assert
             Assert.That(dots.Count(), Is.EqualTo(0));
@@ -47,13 +49,14 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal) -
                                      sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
@@ -74,13 +77,14 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = false;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal) -
                 sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
@@ -101,12 +105,13 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = false;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("Assert.IsTrue(false)", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), true).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), true, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
@@ -125,10 +130,10 @@ namespace TestCoverageVsPlugin.Tests
 	                                        }
                                         }";
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
@@ -149,13 +154,14 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
             var lineStartPositions = GetLineStartPositions(sourceCode);
 
             // act
-            CoverageDot[] dots = sut.Draw(lineStartPositions.Skip(5).ToArray(), false).ToArray();
+            CoverageDot[] dots = sut.Draw(lineStartPositions.Skip(5).ToArray(), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(0));
@@ -175,13 +181,14 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("int a=0;", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
             var lineStartPositions = GetLineStartPositions(sourceCode);
 
             // act
-            CoverageDot[] dots = sut.Draw(lineStartPositions.Take(4).ToArray(), false).ToArray();
+            CoverageDot[] dots = sut.Draw(lineStartPositions.Take(4).ToArray(), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(0));
@@ -206,10 +213,10 @@ namespace TestCoverageVsPlugin.Tests
                                         }";
 
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode, DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(3));
@@ -230,13 +237,14 @@ namespace TestCoverageVsPlugin.Tests
 
             _linesCoverage.Add(new LineCoverage());
             _linesCoverage[0].IsSuccess = true;
+            _linesCoverage[0].NodePath = $"{ProjectName}.{DocumentName}.Test.TestMethod";
             _linesCoverage[0].Span = sourceCode.IndexOf("int a=32", StringComparison.Ordinal)-
                       sourceCode.IndexOf("public void", StringComparison.Ordinal);
 
-            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode);
+            var sut = new CoverageDotDrawer(_linesCoverage, sourceCode,DocumentName);
 
             // act
-            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false).ToArray();
+            CoverageDot[] dots = sut.Draw(GetLineStartPositions(sourceCode), false, ProjectName).ToArray();
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));

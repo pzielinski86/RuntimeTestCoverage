@@ -95,6 +95,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncLogic.cs" />
     <Compile Include="Contracts\PersonType.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="PathHelper.cs" />

@@ -18,12 +18,15 @@ namespace TestCoverage.CoverageCalculation
         public string MethodName { get; set; }
 
         public MethodDeclarationSyntax SyntaxNode { get; set; }
+        public bool IsAsync { get; set; }
 
         public string CreateCallTestCode(string instanceName)
         {
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append($"{TestFixture.ClassScriptTypeName}.GetMethod(\"{MethodName}\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke({instanceName}, new object[]{{");
+            stringBuilder.Append($"{TestFixture.ClassScriptTypeName}.GetMethod(\"{MethodName}\"," +
+                                 $"BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)." +
+                                 $"Invoke({instanceName}, new object[]{{");
 
             for (int i = 0; i < Arguments.Length; i++)
             {         
@@ -36,9 +39,12 @@ namespace TestCoverage.CoverageCalculation
                     stringBuilder.Append(", ");
             }
 
-            stringBuilder.Append("});");
+            stringBuilder.Append("})");
 
-            return stringBuilder.ToString();
+            if (IsAsync)
+                return $"((dynamic){stringBuilder.ToString()}).Wait();";
+
+            return $"{stringBuilder.ToString()};";
         }
 
         public string CreateRunTestScript()

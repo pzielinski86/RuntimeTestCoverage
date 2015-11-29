@@ -39,14 +39,26 @@ namespace TestCoverage.Rewrite
             SyntaxNode rewrittenNode = null;
 
             if (node.Statement != null)
-                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
-            if (node.Else != null)
             {
-                var currentParent =(IfStatementSyntax) rewrittenNode ?? node;
-                rewrittenNode = RewriteWithBlockIfRequired(currentParent, currentParent.Else.Statement);
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
             }
 
-            return rewrittenNode ?? base.VisitIfStatement(node);
+            return base.VisitIfStatement((IfStatementSyntax)rewrittenNode ?? node);
+        }
+
+        public override SyntaxNode VisitElseClause(ElseClauseSyntax node)
+        {
+            if (node.Statement is IfStatementSyntax)
+                return base.VisitElseClause(node);
+
+            SyntaxNode rewrittenNode = null;
+
+            if (node.Statement != null)
+            {
+                rewrittenNode = RewriteWithBlockIfRequired(node, node.Statement);
+            }
+
+            return base.VisitElseClause((ElseClauseSyntax)rewrittenNode ?? node);
         }
 
         private SyntaxNode RewriteWithBlockIfRequired(SyntaxNode parent,StatementSyntax node)
@@ -55,7 +67,6 @@ namespace TestCoverage.Rewrite
             {
                 List<StatementSyntax> newStatements = new List<StatementSyntax>
                 {
-                    CreateLineAuditNode(),
                     node
                 };
 

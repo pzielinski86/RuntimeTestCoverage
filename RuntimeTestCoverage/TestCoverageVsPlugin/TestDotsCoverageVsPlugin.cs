@@ -74,14 +74,23 @@ namespace TestCoverageVsPlugin
                 _documentPath);
         }
 
-        private void InitProperties()
+        private bool InitProperties()
         {
             if (_documentPath != null)
-                return;
+                return true;
             
-            _documentPath = GetTextDocument().FilePath;
-            var projectItem = _solution.FindProjectItem(_documentPath);
-            _projectName = projectItem.ContainingProject.Name;
+            var docPath = GetTextDocument().FilePath;
+            var projectItem = _solution.FindProjectItem(docPath);
+
+            if (projectItem != null)
+            {
+                _projectName = projectItem.ContainingProject.Name;
+                _documentPath = docPath;
+
+                return true;
+            }
+
+            return false;
         }
 
         private ITextDocument GetTextDocument()
@@ -105,7 +114,9 @@ namespace TestCoverageVsPlugin
 
         private void Redraw()
         {
-            InitProperties();
+            if (!InitProperties())
+                return;
+
             _canvas.Children.Clear();
 
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
@@ -116,11 +127,11 @@ namespace TestCoverageVsPlugin
             else
                 lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
 
-            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text);
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text,System.IO.Path.GetFileNameWithoutExtension(_documentPath));
 
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
 
-            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending))
+            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending, _projectName))
             {
                 Ellipse ellipse = new Ellipse {Fill = dotCoverage.Color};
                 ellipse.Width = ellipse.Height = 15;

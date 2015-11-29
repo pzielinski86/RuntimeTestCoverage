@@ -103,7 +103,7 @@ namespace TestCoverage.CoverageCalculation
             CompiledTestFixtureInfo compiledTestFixtureInfo, 
             string testProjectName)
         {
-            var coverage = new ConcurrentBag<LineCoverage>();
+            var coverage = new ConcurrentQueue<LineCoverage>();
 
             Parallel.For(0, testCases.Count, new ParallelOptions { MaxDegreeOfParallelism = 1 }, i =>
             {
@@ -116,10 +116,10 @@ namespace TestCoverage.CoverageCalculation
                     testProjectName,
                     compiledTestFixtureInfo.TestDocumentPath);
 
-                coverage.AddRange(partialCoverage);
+                coverage.EnqueueRange(partialCoverage);
             });
 
-            return coverage.ToArray();
+            return coverage.OrderBy(x => x.TestPath).ToArray();
         }
     }
 }

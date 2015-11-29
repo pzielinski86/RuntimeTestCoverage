@@ -142,7 +142,7 @@
     <Compile Include="CoverageCalculation\TestRunner.cs" />
     <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="CoverageResult.cs" />
-    <Compile Include="Extensions\ConcurrentBagExtensions.cs" />
+    <Compile Include="Extensions\ConcurrentExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\SymbolExtensions.cs" />
     <Compile Include="Extensions\SyntaxNodeExtensions.cs" />

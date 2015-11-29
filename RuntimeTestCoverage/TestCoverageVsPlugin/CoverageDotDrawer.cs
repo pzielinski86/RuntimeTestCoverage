@@ -2,8 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Media;
+using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin
@@ -11,15 +13,17 @@ namespace TestCoverageVsPlugin
     public class CoverageDotDrawer
     {
         private readonly IReadOnlyCollection<LineCoverage> _lineCoverage;
+        private readonly string _documentName;
         public string SourceCode { get; }
 
-        public CoverageDotDrawer(IReadOnlyCollection<LineCoverage> lineCoverage, string sourceCode)
+        public CoverageDotDrawer(IReadOnlyCollection<LineCoverage> lineCoverage, string sourceCode,string documentName)
         {
             _lineCoverage = lineCoverage;
+            _documentName = documentName;
             SourceCode = sourceCode;
         }
 
-        public List<CoverageDot> Draw(int[] lineStartPositions, bool areCalcsInProgress)
+        public List<CoverageDot> Draw(int[] lineStartPositions, bool areCalcsInProgress, string projectName)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceCode);
             var coverageDots = new List<CoverageDot>();
@@ -30,42 +34,50 @@ namespace TestCoverageVsPlugin
                 if (methodDeclarationSyntax.Span.End < lineStartPositions[0])
                     continue;
 
-                if (!ProcessMethod(coverageDots, methodDeclarationSyntax, lineStartPositions, areCalcsInProgress, ref lineNumber))
+                var methodDots = ProcessMethod(projectName, methodDeclarationSyntax, lineStartPositions,
+                    areCalcsInProgress, ref lineNumber);
+
+                if (methodDots == null)
                     break;
+                else
+                    coverageDots.AddRange(methodDots);
             }
 
             return coverageDots;
         }
 
-        private bool ProcessMethod(List<CoverageDot> coverageDots, 
-            MethodDeclarationSyntax methodDeclarationSyntax, 
-            int[] lineStartPositions, 
-            bool areCalcsInProgress, 
+        private List<CoverageDot> ProcessMethod(string projectName,
+            MethodDeclarationSyntax methodDeclarationSyntax,
+            int[] lineStartPositions,
+            bool areCalcsInProgress,
             ref int lineNumber)
         {
+            List<CoverageDot> coverageDots = new List<CoverageDot>();
+            string methodPath = NodePathBuilder.BuildPath(methodDeclarationSyntax, _documentName, projectName);
+
             foreach (var statement in methodDeclarationSyntax.DescendantNodes().OfType<StatementSyntax>())
             {
                 if (statement is BlockSyntax)
                     continue;
 
                 if (!LoopUntilStartPositionIsFound(lineStartPositions, statement, ref lineNumber))
-                    return false;
+                    return null;
 
                 if (lineStartPositions[lineNumber] == statement.FullSpan.Start)
                 {
                     if (!LoopUntilLeadingTriviaIsSkipped(lineStartPositions, statement, ref lineNumber))
-                        return false;
+                        return null;
 
                     int span = statement.SpanStart - methodDeclarationSyntax.SpanStart;
 
-                    CoverageDot dot = CreateDotCoverage(span, areCalcsInProgress, lineNumber);
+                    CoverageDot dot = CreateDotCoverage(span, areCalcsInProgress, lineNumber, methodPath);
 
                     if (dot != null)
                         coverageDots.Add(dot);
                 }
             }
 
-            return true;
+            return coverageDots;
         }
 
         private bool LoopUntilLeadingTriviaIsSkipped(int[] lineStartPositions, StatementSyntax statement, ref int lineNumber)
@@ -88,7 +100,7 @@ namespace TestCoverageVsPlugin
             return lineNumber < lineStartPositions.Length;
         }
 
-        private CoverageDot CreateDotCoverage(int span, bool areCalcsInProgress, int lineNumber)
+        private CoverageDot CreateDotCoverage(int span, bool areCalcsInProgress, int lineNumber, string methodPath)
         {
             Brush color;
 
@@ -96,7 +108,7 @@ namespace TestCoverageVsPlugin
                 color = Brushes.DarkGray;
             else
             {
-                LineCoverage coverage = GetCoverageBySpan(span);
+                LineCoverage coverage = GetCoverageBySpan(methodPath, span);
 
                 if (coverage != null)
                     color = coverage.IsSuccess ? Brushes.Green : Brushes.Red;
@@ -113,10 +125,10 @@ namespace TestCoverageVsPlugin
             return coverageDot;
         }
 
-        private LineCoverage GetCoverageBySpan(int span)
+        private LineCoverage GetCoverageBySpan(string methodPath, int span)
         {
             var coverage = _lineCoverage.
-                Where(x => x.Span == span)
+                Where(x => x.Span == span && x.NodePath == methodPath)
                 .OrderBy(x => x.IsSuccess).FirstOrDefault();
 
             return coverage;

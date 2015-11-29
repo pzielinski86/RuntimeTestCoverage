@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TestCoverage.Extensions;
 
 namespace TestCoverage.Rewrite
@@ -59,6 +60,12 @@ namespace TestCoverage.Rewrite
 
         public override void VisitElseClause(ElseClauseSyntax node)
         {
+            if (node.Statement is IfStatementSyntax)
+            {
+                base.VisitElseClause(node);
+                return;
+            }
+
             if (!(node.Statement is BlockSyntax))
             {
                 CreateAuditVariable(node.Statement);

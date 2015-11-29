@@ -144,7 +144,7 @@ namespace TestCoverage.Tests.Rewrite
             Assert.That(statements[0].ToFullString(), Is.StringContaining("ElseNode"));
         }
 
-
+      
         [Test]
         public void ShouldNot_RemoveOriginalNodeContainingLocalVariable()
         {

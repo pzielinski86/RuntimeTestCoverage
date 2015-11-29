@@ -70,8 +70,103 @@ namespace TestCoverage.Tests
 
             // assert
             Assert.That(testCases.Cases.Count, Is.EqualTo(1));
+            Assert.IsFalse(testCases.Cases[0].IsAsync);
             Assert.That(testCases.Cases[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testCases.Cases[0].Arguments.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ShouldIgnore_AsyncVoid_Tests()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [Test]
+	                            public async void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act  
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testCases.Cases.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ShouldNotIgnore_AsyncReturningTask_Tests()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [Test]
+	                            public async Task TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act  
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testCases.Cases.Count, Is.EqualTo(1));
+            Assert.IsTrue(testCases.Cases[0].IsAsync);
+        }
+
+        [Test]
+        public void ShouldIgnore_AsyncVoid_TestCases()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(true)]
+	                            public async void TestSomething1(bool g)
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act  
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testCases.Cases.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ShouldNotIgnore_AsyncReturningTask_TestCases()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            public class Tests
+                            {
+	                            [TestCase(true)]
+	                            public async Task TestSomething1(bool a)
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act  
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testCases.Cases.Count, Is.EqualTo(1));
+            Assert.IsTrue(testCases.Cases[0].IsAsync);
         }
 
         [Test]
@@ -117,13 +212,14 @@ namespace TestCoverage.Tests
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
-            var testMethods = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
+            var testCases = _sut.GetTestFixtureDetails(tree, _semanticModelMock).Cases;
 
             // assert
-            Assert.That(testMethods.Count, Is.EqualTo(1));
-            Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
-            Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("\"Test\""));
+            Assert.That(testCases.Count, Is.EqualTo(1));
+            Assert.IsFalse(testCases[0].IsAsync);
+            Assert.That(testCases[0].MethodName, Is.EqualTo("TestSomething1"));
+            Assert.That(testCases[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(testCases[0].Arguments[0], Is.EqualTo("\"Test\""));
         }
 
         [TestCase("test", "\"test\"")]
