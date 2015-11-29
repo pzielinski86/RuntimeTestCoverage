@@ -9,6 +9,8 @@ namespace TestCoverageVsPlugin
         public SyntaxNode ExtactDocument(ITextSnapshot snapshot)
         {
             Document document = snapshot.GetOpenDocumentInCurrentContextWithChanges();
+            if (document == null)
+                return null;
 
             SyntaxNode root;
             if (document.TryGetSyntaxRoot(out root))

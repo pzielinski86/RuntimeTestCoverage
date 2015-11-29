@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace TestCoverageVsPlugin
         private readonly IDocumentFromTextSnapshotExtractor _documentFromTextSnapshotExtractor;
         private readonly Queue<MethodCoverageTaskInfo> _tasks;
 
-        public event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskCompleted;
-        public event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskStarted;
+        public event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskCompleted;
+        public event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskStarted;
         public bool AreJobsPending => _tasks.Count > 0;
         public bool IsBusy { get; private set; }
 
@@ -31,6 +32,9 @@ namespace TestCoverageVsPlugin
 
         public void EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath)
         {
+            if (Path.GetExtension(documentPath) != ".cs")
+                return;
+            
             var existingTask = _tasks.FirstOrDefault(x => x.DocumentPath == documentPath);
 
             if (existingTask == null)
@@ -59,7 +63,13 @@ namespace TestCoverageVsPlugin
 
             var rootNode = _documentFromTextSnapshotExtractor.ExtactDocument(taskInfo.TextSnapshot);
 
-            DocumentCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskCompletedArgs(taskInfo.DocumentPath));
+            if (rootNode == null)
+            {
+                ExecuteTask();
+                return;
+            }
+
+            DocumentCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(taskInfo.DocumentPath));
 
             Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(taskInfo.ProjectName,
                 taskInfo.Position,
@@ -71,7 +81,7 @@ namespace TestCoverageVsPlugin
 
         private void DocumentCalculationsCompleted(string documentPath)
         {
-            DocumentCoverageTaskCompleted?.Invoke(this, new MethodCoverageTaskCompletedArgs(documentPath));
+            DocumentCoverageTaskCompleted?.Invoke(this, new MethodCoverageTaskArgs(documentPath));
         }
 
         class MethodCoverageTaskInfo

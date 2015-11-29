@@ -54,13 +54,13 @@ namespace TestCoverageVsPlugin
             _taskCoverageManager.DocumentCoverageTaskStarted += MethodCoverageTaskStarted;            
         }
 
-        private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskCompletedArgs e)
+        private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskArgs e)
         {
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(e.DocPath)}");
             CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
-        private void MethodCoverageTaskCompleted(object sender, MethodCoverageTaskCompletedArgs e)
+        private void MethodCoverageTaskCompleted(object sender, MethodCoverageTaskArgs e)
         {
             _statusBar.SetText("");
             Redraw();

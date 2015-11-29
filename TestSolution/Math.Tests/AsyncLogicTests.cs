@@ -21,6 +21,7 @@ namespace Math.Tests
             var r = await logic.DoSomethingAsync(5, 5);
 
             Assert.That(r, Is.EqualTo(10));
+
         }
 
 

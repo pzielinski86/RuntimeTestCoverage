@@ -177,7 +177,7 @@
     <Compile Include="DocumentFromTextSnapshotExtractor.cs" />
     <Compile Include="Extensions\SolutionCoverageByDocumentExtensions.cs" />
     <Compile Include="IDocumentFromTextSnapshotExtractor.cs" />
-    <Compile Include="MethodCoverageTaskCompletedArgs.cs" />
+    <Compile Include="MethodCoverageTaskArgs.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PriorityScheduler .cs" />

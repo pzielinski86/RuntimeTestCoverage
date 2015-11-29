@@ -65,6 +65,7 @@ namespace TestCoverageVsPlugin
         public async Task CalculateForAllDocumentsAsync()
         {
             CoverageResult coverage;
+            Reinit();
 
             try
             {

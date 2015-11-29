@@ -2,11 +2,11 @@ using System;
 
 namespace TestCoverageVsPlugin
 {
-    public class MethodCoverageTaskCompletedArgs : EventArgs
+    public class MethodCoverageTaskArgs : EventArgs
     {
         public string DocPath { get; }
 
-        public MethodCoverageTaskCompletedArgs(string docPath)
+        public MethodCoverageTaskArgs(string docPath)
         {
             DocPath = docPath;
         }

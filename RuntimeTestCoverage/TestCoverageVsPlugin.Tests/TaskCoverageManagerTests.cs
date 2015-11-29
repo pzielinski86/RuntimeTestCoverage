@@ -30,6 +30,18 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
+        public void Should_AcceptOnlyCsharpDocuments()
+        {
+            // arrange
+
+            // act
+            _sut.EnqueueMethodTask("TestProject",0,null,"File.txt");
+
+            // assert
+             Assert.IsFalse(_sut.IsBusy);
+        }
+
+        [Test]
         public void Should_CalculateCoverage_After_SpecifiedTime_When_ThereAreNoOtherPendingTasks()
         {
             // arrange

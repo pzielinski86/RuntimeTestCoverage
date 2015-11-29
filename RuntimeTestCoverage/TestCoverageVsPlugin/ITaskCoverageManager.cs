@@ -6,8 +6,8 @@ namespace TestCoverageVsPlugin
     public interface ITaskCoverageManager
     {
         void EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath);
-        event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskCompleted;
-        event EventHandler<MethodCoverageTaskCompletedArgs> DocumentCoverageTaskStarted;
+        event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskCompleted;
+        event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskStarted;
 
         bool AreJobsPending { get; }
         bool IsBusy { get; }
