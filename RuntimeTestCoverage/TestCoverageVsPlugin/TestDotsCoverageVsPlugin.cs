@@ -78,8 +78,12 @@ namespace TestCoverageVsPlugin
         {
             if (_documentPath != null)
                 return true;
-            
-            var docPath = GetTextDocument().FilePath;
+            var textDocument = GetTextDocument();
+
+            if (textDocument == null)
+                return false;
+
+            var docPath = textDocument.FilePath;
             var projectItem = _solution.FindProjectItem(docPath);
 
             if (projectItem != null)
