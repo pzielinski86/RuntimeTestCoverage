@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.IO;
@@ -15,9 +16,9 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TestCoverageVsPlugin
 {
-    public class VsSolutionTestCoverage : IVsSolutionTestCoverage
+    public sealed class VsSolutionTestCoverage : IVsSolutionTestCoverage,IDisposable
     {
-        private readonly string _solutionPath;
+        public string SolutionPath { get; }
         private readonly ISolutionCoverageEngine _solutionCoverageEngine;
         private readonly ICoverageStore _coverageStore;
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
@@ -30,7 +31,7 @@ namespace TestCoverageVsPlugin
             ICoverageStore coverageStore,
             ILogger logger)
         {
-            _solutionPath = solutionPath;
+            SolutionPath = solutionPath;
             _solutionCoverageEngine = solutionCoverageEngine;
             _coverageStore = coverageStore;
             _logger = logger;
@@ -116,7 +117,7 @@ namespace TestCoverageVsPlugin
 
         public void Reinit()
         {
-            _solutionCoverageEngine.Init(_solutionPath);
+            _solutionCoverageEngine.Init(SolutionPath);
         }
 
         public Task CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
@@ -148,6 +149,11 @@ namespace TestCoverageVsPlugin
             {
                 SolutionCoverageByDocument[docPath] = coverage.CoverageByDocument[docPath].ToList();
             }
+        }
+
+        public void Dispose()
+        {
+            _vsSolutionTestCoverage = null;
         }
     }
 }

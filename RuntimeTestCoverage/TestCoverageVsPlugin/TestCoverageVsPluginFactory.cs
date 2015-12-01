@@ -24,31 +24,51 @@ namespace TestCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class MarginFactory : IWpfTextViewMarginProvider
     {
-        private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private VsSolutionTestCoverage _vsSolutionTestCoverage;
         private IVsStatusbar _statusBar;
         private DTE _dte;
         private readonly ProjectItemsEvents _projectItemsEvents;
         private Logger _logger;
+        private readonly SolutionEvents _solutionEvents;
 
-        static MarginFactory()
-        {
-
-        }
 
         [ImportingConstructor]
         public MarginFactory([Import]SVsServiceProvider serviceProvider)
         {
             _dte = (DTE)serviceProvider.GetService(typeof(DTE));
 
+            _solutionEvents = _dte.Events.SolutionEvents;
+            _solutionEvents.Opened += SolutionEvents_Opened;
+            _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
             _projectItemsEvents = ((Events2)_dte.Events).ProjectItemsEvents;
             _projectItemsEvents.ItemAdded += ProjectItemAdded;
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
-            
+            _logger = new Logger(serviceProvider);
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            InitSolutionCoverageEngine();
+        }
+
+        private void SolutionEvents_AfterClosing()
+        {
+            _vsSolutionTestCoverage.Dispose();
+            _vsSolutionTestCoverage = null;
+        }
+
+        private void SolutionEvents_Opened()
+        {
+           InitSolutionCoverageEngine();
+        }
+
+        private void InitSolutionCoverageEngine()
+        {
             string solutionPath = _dte.Solution.FullName;
+
+            if (_vsSolutionTestCoverage != null && _vsSolutionTestCoverage.SolutionPath == solutionPath)
+                return;
 
             Config.SetSolution(solutionPath);
 
-            _logger = new Logger(serviceProvider);
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(solutionPath,
                new SolutionCoverageEngine(),
                 new SqlCompactCoverageStore(),
@@ -56,7 +76,6 @@ namespace TestCoverageVsPlugin
 
             _vsSolutionTestCoverage.Reinit();
             _vsSolutionTestCoverage.LoadCurrentCoverage();
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

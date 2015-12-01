@@ -7,6 +7,7 @@ namespace TestCoverageVsPlugin
 {
     public interface IVsSolutionTestCoverage
     {
+        string SolutionPath { get; }
         Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; }
         void LoadCurrentCoverage();
         Task CalculateForAllDocumentsAsync();
