@@ -42,9 +42,9 @@ namespace TestCoverage.CoverageCalculation
             stringBuilder.Append("})");
 
             if (IsAsync)
-                return $"((dynamic){stringBuilder.ToString()}).Wait();";
+                return $"((dynamic){stringBuilder}).Wait();";
 
-            return $"{stringBuilder.ToString()};";
+            return $"{stringBuilder};";
         }
 
         public string CreateRunTestScript()
@@ -60,10 +60,15 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine(CreateCallTestCode("testFixture"));
 
             scriptBuilder.AppendLine("}");
+            scriptBuilder.AppendLine("catch(AggregateException e)" +
+                                     "{" +
+                                     "assertionFailed=true; " +
+                                     "errorMessage=e.InnerException.ToString();" +
+                                     "}");
             scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
                                      "{" +
                                      "assertionFailed=true; " +
-                                     "errorMessage=e.ToString();" +
+                                     "errorMessage=e.InnerException.ToString();" +
                                      "}");
 
             StoreAudit(scriptBuilder);
