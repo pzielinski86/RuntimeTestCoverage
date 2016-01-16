@@ -1,7 +1,8 @@
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.CSharp;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
@@ -9,31 +10,30 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestExecutorScriptEngine : MarshalByRefObject,ITestExecutorScriptEngine
     {
-        public ITestRunResult RunTest(string[] references,
+        public async Task<ITestRunResult> RunTestAsync(string[] references,
             string code)
         {
 
             // todo: clean-up code to remove hardcoded dlls like mscorlib.
-            var options = new ScriptOptions();
-            options = options.
+            var options = ScriptOptions.Default.
                 AddReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
                 AddReferences(typeof(int).Assembly).
-                AddNamespaces("System", "System.Reflection");
+                AddImports("System", "System.Reflection");
 
             ScriptState state = null;
 
             try
             {
-                state = CSharpScript.Run(code, options);
+                state = await CSharpScript.RunAsync(code, options);
             }
             catch (CompilationErrorException e)
             {
                 throw new TestCoverageCompilationException(e.Diagnostics.Select(x => x.GetMessage()).ToArray());
             }
 
-            var coverageAudit = (dynamic)state.Variables["auditLog"].Value;
-            string errorMessage = (string)state.Variables["errorMessage"].Value;
-            bool assertionFailed = (bool)state.Variables["assertionFailed"].Value;
+            var coverageAudit = (dynamic)state.GetVariable("auditLog").Value;
+            string errorMessage = (string)state.GetVariable("errorMessage").Value;
+            bool assertionFailed = (bool)state.GetVariable("assertionFailed").Value;
 
             return new TestRunResult(GetVariables(coverageAudit), assertionFailed, errorMessage);
         }

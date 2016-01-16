@@ -27,7 +27,7 @@ namespace TestCoverageConsole
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             string documentPath =
-                @"C:\github\TestingSandbox\LeadGenDataService\src\LeadGenDataService.Utils\UkPhoneNumberNormalizer.cs";
+                @"../../../../TestSolution/Math/MathHelper";
             string documentContent = File.ReadAllText(documentPath);
 
             var positions = engine.CalculateForDocument("Math", documentPath, documentContent);

@@ -1,9 +1,11 @@
 using Microsoft.VisualStudio.Text;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TestCoverage.Extensions;
 
 namespace TestCoverageVsPlugin
 {
@@ -61,7 +63,10 @@ namespace TestCoverageVsPlugin
 
             MethodCoverageTaskInfo taskInfo = _tasks.Dequeue();
 
+            Stopwatch s=Stopwatch.StartNew();
             var rootNode = _documentFromTextSnapshotExtractor.ExtactDocument(taskInfo.TextSnapshot);
+            var m = rootNode.GetMethodAt(taskInfo.Position);
+            Debug.WriteLine(s.ElapsedMilliseconds);
 
             if (rootNode == null)
             {

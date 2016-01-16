@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace TestCoverage.CoverageCalculation
 {
@@ -23,7 +24,7 @@ namespace TestCoverage.CoverageCalculation
                 engineType.FullName);
         }
 
-        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var assembly = typeof(SolutionCoverageEngine).Assembly;
 
@@ -37,9 +38,9 @@ namespace TestCoverage.CoverageCalculation
             return null;
         }
 
-        public ITestRunResult RunTest(string[] references, string code)
+        public Task<ITestRunResult> RunTestAsync(string[] references, string code)
         {
-            return _engine.RunTest(references, code);
+            return _engine.RunTestAsync(references, code);
         }
 
         public void Dispose()

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NUnit.Framework;
 using System.Linq;
+using System.Threading.Tasks;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
@@ -58,7 +59,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest(Arg.Is<string[]>(x=>x[0]==allProjectReferences[0]), Arg.Any<string>());
+                RunTestAsync(Arg.Is<string[]>(x=>x[0]==allProjectReferences[0]), Arg.Any<string>());
         }
 
         [Test]
@@ -89,7 +90,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest( Arg.Is<string[]>(x=>x[0]== rewrittenAssemblies[0]), Arg.Any<string>());
+                RunTestAsync( Arg.Is<string[]>(x=>x[0]== rewrittenAssemblies[0]), Arg.Any<string>());
         }
 
  
@@ -169,7 +170,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<string>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTestAsync(Arg.Any<string[]>(), Arg.Any<string>()).Returns(Task.FromResult(testRunResultMock));
 
             var project = CreateProject("SampleTestsProject");
             var rewrittenDocument = new RewrittenDocument( testNode, null);
@@ -192,9 +193,10 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             var testClass = testNode.GetRoot().GetClassDeclarationSyntax();
             var fixtureDetails = new TestFixtureDetails();
-            var testCase = new TestCase(fixtureDetails) { SyntaxNode = testClass.GetPublicMethods().Single() };
-            fixtureDetails.Cases.Add(testCase);
-            fixtureDetails.Cases.Add(testCase);
+            var testCase1 = new TestCase(fixtureDetails) { SyntaxNode = testClass.GetPublicMethods().Single() };
+            var testCase2 = new TestCase(fixtureDetails) { SyntaxNode = testClass.GetPublicMethods().Single() };
+            fixtureDetails.Cases.Add(testCase1);
+            fixtureDetails.Cases.Add(testCase2);
 
             _testExtractorMock.GetTestClasses(Arg.Any<CSharpSyntaxNode>())
                 .Returns(new[] { testClass, testClass });
@@ -207,7 +209,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<string>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTestAsync(Arg.Any<string[]>(), Arg.Any<string>()).Returns(Task.FromResult(testRunResultMock));
 
             var project = CreateProject("SampleTestsProject");
             var rewrittenDocument = new RewrittenDocument( testNode, null);

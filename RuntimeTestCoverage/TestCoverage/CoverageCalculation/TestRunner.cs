@@ -58,9 +58,9 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument, 
+        public LineCoverage[] RunAllTestsInDocument(RewrittenDocument rewrittenDocument,
             ISemanticModel semanticModel,
-            Project project, 
+            Project project,
             string[] rewrittenAssemblies)
         {
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
@@ -99,27 +99,45 @@ namespace TestCoverage.CoverageCalculation
             return coverage;
         }
 
-        private LineCoverage[] RunTestCases(List<TestCase> testCases, 
-            CompiledTestFixtureInfo compiledTestFixtureInfo, 
+        private LineCoverage[] RunTestCases(List<TestCase> testCases,
+            CompiledTestFixtureInfo compiledTestFixtureInfo,
             string testProjectName)
         {
-            var coverage = new ConcurrentQueue<LineCoverage>();
 
-            Parallel.For(0, testCases.Count, new ParallelOptions { MaxDegreeOfParallelism = 1 }, i =>
+            Dictionary<TestCase, Task<ITestRunResult>> tasksExecutionByTestCase = ExecuteTestCases(testCases, compiledTestFixtureInfo);
+
+            var coverage = new List<LineCoverage>();
+
+            foreach (var executedTestCase in tasksExecutionByTestCase)
             {
-                ITestRunResult testResult =
-                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.AllReferences,
-                        testCases[i].CreateRunTestScript());
+                ITestRunResult testResult = executedTestCase.Value.Result;
 
                 var partialCoverage = testResult.GetCoverage(
-                     testCases[i].SyntaxNode,
+                    executedTestCase.Key.SyntaxNode,
                     testProjectName,
                     compiledTestFixtureInfo.TestDocumentPath);
 
-                coverage.EnqueueRange(partialCoverage);
-            });
+                coverage.AddRange(partialCoverage);
+            }
+
 
             return coverage.OrderBy(x => x.TestPath).ToArray();
+        }
+
+        private Dictionary<TestCase, Task<ITestRunResult>> ExecuteTestCases(List<TestCase> testCases, 
+            CompiledTestFixtureInfo compiledTestFixtureInfo)
+        {
+            var tasksExecutionByTestCase = new Dictionary<TestCase, Task<ITestRunResult>>();
+
+            foreach (var testCase in testCases)
+            {
+                var taskResult =
+                    _testExecutorScriptEngine.RunTestAsync(compiledTestFixtureInfo.AllReferences,
+                        testCase.CreateRunTestScript());
+
+                tasksExecutionByTestCase.Add(testCase, taskResult);
+            }
+            return tasksExecutionByTestCase;
         }
     }
 }
