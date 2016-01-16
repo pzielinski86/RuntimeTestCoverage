@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using TestCoverage;
+using TestCoverage.Extensions;
 
 namespace TestCoverageConsole
 {
@@ -27,13 +31,13 @@ namespace TestCoverageConsole
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             string documentPath =
-                @"../../../../TestSolution/Math/MathHelper";
+                @"../../../../TestSolution/Math.Tests/MathHelperTests.cs";
             string documentContent = File.ReadAllText(documentPath);
 
-            var positions = engine.CalculateForDocument("Math", documentPath, documentContent);
+            var positions = engine.CalculateForDocument("Math.Tests", documentPath, documentContent);
 
             Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
-            Console.WriteLine("Rewrite&run selected document.Time: {0}", stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Rewrite&run selected method.Time: {0}", stopwatch.ElapsedMilliseconds);
         }
 
         private static void TestForAllDocuments(SolutionCoverageEngine engine)

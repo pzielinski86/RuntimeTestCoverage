@@ -20,7 +20,7 @@ namespace TestCoverage
 
         public static void SetSolution(string solutionPath)
         {
-            _workingDirectory = Path.Combine(Path.GetDirectoryName(solutionPath), ".Coverage");
+            _workingDirectory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(solutionPath), ".Coverage"));
             Directory.CreateDirectory(_workingDirectory);
         }
     }

@@ -10,13 +10,13 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestExecutorScriptEngine : MarshalByRefObject,ITestExecutorScriptEngine
     {
-        public async Task<ITestRunResult> RunTestAsync(string[] references,
+        public ITestRunResult RunTest(string[] references,
             string code)
         {
 
             // todo: clean-up code to remove hardcoded dlls like mscorlib.
             var options = ScriptOptions.Default.
-                AddReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
+                WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
                 AddReferences(typeof(int).Assembly).
                 AddImports("System", "System.Reflection");
 
@@ -24,7 +24,7 @@ namespace TestCoverage.CoverageCalculation
 
             try
             {
-                state = await CSharpScript.RunAsync(code, options);
+                state = CSharpScript.RunAsync(code, options).Result;
             }
             catch (CompilationErrorException e)
             {

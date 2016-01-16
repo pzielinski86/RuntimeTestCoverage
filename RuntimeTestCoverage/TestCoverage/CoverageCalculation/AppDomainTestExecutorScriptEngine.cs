@@ -38,9 +38,9 @@ namespace TestCoverage.CoverageCalculation
             return null;
         }
 
-        public Task<ITestRunResult> RunTestAsync(string[] references, string code)
+        public ITestRunResult RunTest(string[] references, string code)
         {
-            return _engine.RunTestAsync(references, code);
+            return _engine.RunTest(references, code);
         }
 
         public void Dispose()

@@ -104,40 +104,23 @@ namespace TestCoverage.CoverageCalculation
             string testProjectName)
         {
 
-            Dictionary<TestCase, Task<ITestRunResult>> tasksExecutionByTestCase = ExecuteTestCases(testCases, compiledTestFixtureInfo);
-
             var coverage = new List<LineCoverage>();
 
-            foreach (var executedTestCase in tasksExecutionByTestCase)
+            foreach (var testCase in testCases)
             {
-                ITestRunResult testResult = executedTestCase.Value.Result;
+                var testResult =
+                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.AllReferences,
+                        testCase.CreateRunTestScript());
 
                 var partialCoverage = testResult.GetCoverage(
-                    executedTestCase.Key.SyntaxNode,
-                    testProjectName,
-                    compiledTestFixtureInfo.TestDocumentPath);
+                                 testCase.SyntaxNode,
+                                 testProjectName,
+                                 compiledTestFixtureInfo.TestDocumentPath);
 
                 coverage.AddRange(partialCoverage);
             }
 
-
             return coverage.OrderBy(x => x.TestPath).ToArray();
-        }
-
-        private Dictionary<TestCase, Task<ITestRunResult>> ExecuteTestCases(List<TestCase> testCases, 
-            CompiledTestFixtureInfo compiledTestFixtureInfo)
-        {
-            var tasksExecutionByTestCase = new Dictionary<TestCase, Task<ITestRunResult>>();
-
-            foreach (var testCase in testCases)
-            {
-                var taskResult =
-                    _testExecutorScriptEngine.RunTestAsync(compiledTestFixtureInfo.AllReferences,
-                        testCase.CreateRunTestScript());
-
-                tasksExecutionByTestCase.Add(testCase, taskResult);
-            }
-            return tasksExecutionByTestCase;
         }
     }
 }

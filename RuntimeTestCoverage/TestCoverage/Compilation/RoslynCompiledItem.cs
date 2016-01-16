@@ -18,6 +18,7 @@ namespace TestCoverage.Compilation
             compilation)
         {
             Project = project;
+
             Compilation = compilation;
         }
 

@@ -57,7 +57,7 @@ namespace TestCoverage.Compilation
             // TODO - remove hardcoded .NET 3.5 dll
             var references = new[] { MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };
 
-            CSharpCompilation compilation = Compile("Audit", new[] { auditTree }, references);
+            CSharpCompilation compilation = Compile("Audit.dll", new[] { auditTree }, references);
 
             return new RoslynCompiledItem(null, compilation);
         }

@@ -64,7 +64,7 @@ namespace TestCoverage
         {
             foreach (var document in project.Documents)
             {
-                if (excludedDocuments.Contains(document.FilePath))
+                if (excludedDocuments.Any(x=>PathHelper.AreEqual(x,document.FilePath)))
                     continue;
 
                 yield return document.GetSyntaxTreeAsync().Result;

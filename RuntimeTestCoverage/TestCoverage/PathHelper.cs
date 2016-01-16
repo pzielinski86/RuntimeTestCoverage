@@ -1,4 +1,7 @@
-﻿namespace TestCoverage
+﻿using System;
+using System.IO;
+
+namespace TestCoverage
 {
     public static class PathHelper
     {
@@ -8,6 +11,18 @@
                 return assemblyName;
 
             return $"{assemblyName}_{"COVERAGE"}.dll";
+        }
+
+        public static bool AreEqual(string path1, string path2)
+        {
+            return NormalizePath(path1) == NormalizePath(path2);
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return Path.GetFullPath(path)
+                       .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                       .ToUpperInvariant();
         }
     }
 }

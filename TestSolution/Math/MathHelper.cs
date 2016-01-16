@@ -25,7 +25,7 @@ namespace Math
         {
           
 
-            if (a < 10)
+            if (a < 1)
             {
                 int test = 4;
 
