@@ -82,12 +82,10 @@ namespace TestCoverageVsPlugin
             SolutionCoverageByDocument = coverage.CoverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToList());
         }
 
-        public Task CalculateForSelectedMethodAsync(string projectName, int span, SyntaxNode rootNode)
+        public Task CalculateForSelectedMethodAsync(string projectName, MethodDeclarationSyntax method)
         {
             var task = Task.Factory.StartNew(() =>
             {
-                MethodDeclarationSyntax method = rootNode.GetMethodAt(span);
-
                 if (method != null)
                 {
                     List<LineCoverage> coverage;
@@ -101,7 +99,7 @@ namespace TestCoverageVsPlugin
                     catch (TestCoverageCompilationException e)
                     {
                         string path = NodePathBuilder.BuildPath(method,
-                            Path.GetFileNameWithoutExtension(rootNode.SyntaxTree.FilePath), projectName);
+                            Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
                         SolutionCoverageByDocument.RemvoeByPath(path);
                         _logger.Write(e.ToString());

@@ -174,13 +174,14 @@
   <ItemGroup>
     <Compile Include="CoverageDot.cs" />
     <Compile Include="CoverageDotDrawer.cs" />
-    <Compile Include="DocumentFromTextSnapshotExtractor.cs" />
     <Compile Include="Extensions\SolutionCoverageByDocumentExtensions.cs" />
-    <Compile Include="IDocumentFromTextSnapshotExtractor.cs" />
     <Compile Include="MethodCoverageTaskArgs.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PriorityScheduler .cs" />
+    <Compile Include="Tasks\ITaskSchedulerManager.cs" />
+    <Compile Include="Tasks\TaskSchedulerManager.cs" />
+    <Compile Include="Tasks\TplTaskSchedulerManager.cs" />
     <Compile Include="VsDispatchTimer.cs" />
     <Compile Include="ITaskCoverageManager.cs" />
     <Compile Include="ITimer.cs" />

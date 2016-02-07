@@ -51,7 +51,7 @@ namespace TestCoverageVsPlugin.Tests.UI
         }
 
         [Test]
-        public void Should_PopulateTestFixtures_With_FixturesFromTestExplorer()
+        public async Task Should_PopulateTestFixtures_With_FixturesFromTestExplorer()
         {
             // arrange
             var workspace = new AdhocWorkspace();
@@ -66,7 +66,7 @@ namespace TestCoverageVsPlugin.Tests.UI
             _testExplorerMock.GetAllTestProjectsAsync().Returns(new[] { testProject });
 
             // act
-            _sut.PopulateWithTestProjectsAsync();
+            await _sut.PopulateWithTestProjectsAsync();
 
             // assert
             Assert.That(_sut.TestProjects[0].TestFixtures.Length, Is.EqualTo(1));

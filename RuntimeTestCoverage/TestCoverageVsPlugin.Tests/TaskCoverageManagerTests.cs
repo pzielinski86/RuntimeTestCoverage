@@ -1,20 +1,24 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.Text;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverageVsPlugin.Tasks;
 
 namespace TestCoverageVsPlugin.Tests
 {
     [TestFixture]
-    [Timeout(5000)]
     public class TaskCoverageManagerTests
     {
         private TaskCoverageManager _sut;
         private IVsSolutionTestCoverage _vsSolutionTestCoverageMock;
         private ITextSnapshot _textSnapshotMock;
-        private IDocumentFromTextSnapshotExtractor _documentFromTextSnapshotExtractorMock;
         private TimerMock _timerMock;
 
         [SetUp]
@@ -23,10 +27,14 @@ namespace TestCoverageVsPlugin.Tests
             _vsSolutionTestCoverageMock = Substitute.For<IVsSolutionTestCoverage>();
             _timerMock = new TimerMock();
             _textSnapshotMock = Substitute.For<ITextSnapshot>();
-            _documentFromTextSnapshotExtractorMock = Substitute.For<IDocumentFromTextSnapshotExtractor>();
-            _sut = new TaskCoverageManager(_timerMock, _vsSolutionTestCoverageMock, _documentFromTextSnapshotExtractorMock);
+            _sut = new TaskCoverageManager(_timerMock, _vsSolutionTestCoverageMock);
 
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+            var taskSchedulerMock = Substitute.For<ITaskSchedulerManager>();
+            SynchronizationContext.SetSynchronizationContext(new TestSyncContext());
+            var synchronizationTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            taskSchedulerMock.FromSynchronizationContext().Returns(synchronizationTaskScheduler);
+
+            TaskSchedulerManager.Current = taskSchedulerMock;
         }
 
         [Test]
@@ -35,10 +43,10 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
 
             // act
-            _sut.EnqueueMethodTask("TestProject",0,null,"File.txt");
+            _sut.EnqueueMethodTask("TestProject", 0, null, "File.txt");
 
             // assert
-             Assert.IsFalse(_sut.IsBusy);
+            Assert.IsFalse(_sut.IsBusy);
         }
 
         [Test]
@@ -47,9 +55,10 @@ namespace TestCoverageVsPlugin.Tests
             // arrange
             const string projectName = "MathHelper.Tests";
             const string documentPath = @"c:\\MathHelperTests.cs";
-            const int position = 3543;
-            SyntaxNode node = CSharpSyntaxTree.ParseText("class Test{}").GetRoot();
-            _documentFromTextSnapshotExtractorMock.ExtactDocument(_textSnapshotMock).Returns(node);
+
+            var code = "class Tests{ [Test]public void Test1(){}}";
+            int position = code.IndexOf("Test1");
+            _textSnapshotMock.GetText().Returns(code);
 
             // act
             _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
@@ -57,65 +66,67 @@ namespace TestCoverageVsPlugin.Tests
 
             // assert
             _vsSolutionTestCoverageMock.Received(1)
-                .CalculateForSelectedMethodAsync(projectName, position, node);
+                .CalculateForSelectedMethodAsync(projectName, Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ToString() == "Test1"));
         }
 
         [Test]
-        public void When_SecondDocumentCoverageTaskIsAdded_And_Document_IsNot_Already_InQueue_Then_They_ShouldBeExecutedOneByOne()
+        public void When_SecondMethodCoverageTaskIsAdded_And_Method_IsNot_Already_InQueue_Then_They_ShouldBeExecutedOneByOne()
         {
             // arrange
             const string projectName = "MathHelper.Tests";
-            const string documentPath1 = @"c:\\MathHelperTests1.cs";
-            const string documentPath2 = @"c:\\PathHelperTests2.cs";
-            const int position = 3543;
+            const string documentPath = @"c:\\MathHelperTests1.cs";
 
-            ITextSnapshot snapshot1 = Substitute.For<ITextSnapshot>();
-            SyntaxNode node1 = CSharpSyntaxTree.ParseText("class Doc1{}").GetRoot();
-            _documentFromTextSnapshotExtractorMock.ExtactDocument(snapshot1).Returns(node1);
+            var code = "class Tests{ " +
+                       "[Test]public void Test1()" +
+                       "{}" +
+                       "[Test]public void Test2()" +
+                       "{}" +
+                       "}";
 
-            ITextSnapshot snapshot2 = Substitute.For<ITextSnapshot>();
-            SyntaxNode node2 = CSharpSyntaxTree.ParseText("class Doc2{}").GetRoot();
-            _documentFromTextSnapshotExtractorMock.ExtactDocument(snapshot2).Returns(node2);
+            int method1Position = code.IndexOf("Test1");
+            int method2Position = code.IndexOf("Test2");
 
-            _sut.EnqueueMethodTask(projectName, position, snapshot1, documentPath1);
+            _textSnapshotMock.GetText().Returns(code);
+
+            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
 
             // act
-            _sut.EnqueueMethodTask(projectName, position, snapshot2, documentPath2);
+            _sut.EnqueueMethodTask(projectName, method2Position, _textSnapshotMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
-            Received.InOrder((() =>
-            {
-                _vsSolutionTestCoverageMock.CalculateForSelectedMethodAsync(projectName, position, node1);
-                _vsSolutionTestCoverageMock.CalculateForSelectedMethodAsync(projectName, position, node2);
-            }));
+            _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName,
+                  Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test1"));
+            _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName,
+                Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test2"));
         }
 
-        [Test]
-        public void When_SecondMethodCoverageTaskIsAdded_And_Document_I_Already_InQueue_Then_FirstTaskShouldBeUpdated_With_New_Content()
+        [Test] public void When_SecondMethodCoverageTaskIsAdded_And_Method_Is_Already_InQueue_Then_Method_Should_Be_ExecutedOnlyOneTime()
         {
             // arrange
             const string projectName = "MathHelper.Tests";
-            const string documentPath = @"c:\\MathHelperTests.cs";
-            const int position = 3543;
+            const string documentPath = @"c:\\MathHelperTests1.cs";
 
-            ITextSnapshot snapshot1 = Substitute.For<ITextSnapshot>();
-            SyntaxNode node1 = CSharpSyntaxTree.ParseText("class Doc1{}").GetRoot();
-            _documentFromTextSnapshotExtractorMock.ExtactDocument(snapshot1).Returns(node1);
+            var code = "class Tests{ " +
+                       "[Test]public void Test1()" +
+                       "{}" +
+                       "[Test]public void Test2()" +
+                       "{}" +
+                       "}";
 
-            ITextSnapshot snapshot2 = Substitute.For<ITextSnapshot>();
-            SyntaxNode node2 = CSharpSyntaxTree.ParseText("class Doc2{}").GetRoot();
-            _documentFromTextSnapshotExtractorMock.ExtactDocument(snapshot2).Returns(node2);
+            int method1Position = code.IndexOf("Test1");
 
-            _sut.EnqueueMethodTask(projectName, position, snapshot1, documentPath);
+            _textSnapshotMock.GetText().Returns(code);
+
+            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
 
             // act
-            _sut.EnqueueMethodTask(projectName, position, snapshot2, documentPath);
+            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
-            _vsSolutionTestCoverageMock.Received(0).CalculateForSelectedMethodAsync(projectName, position, node1);
-            _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName, position, node2);
+            _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName,
+                Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test1"));
         }
     }
 }

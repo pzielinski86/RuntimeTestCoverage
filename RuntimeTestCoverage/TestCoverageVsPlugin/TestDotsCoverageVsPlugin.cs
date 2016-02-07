@@ -49,7 +49,7 @@ namespace TestCoverageVsPlugin
             textView.TextBuffer.Changed += TextBuffer_Changed;
 
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage,new DocumentFromTextSnapshotExtractor());
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
             _taskCoverageManager.DocumentCoverageTaskCompleted += MethodCoverageTaskCompleted;
             _taskCoverageManager.DocumentCoverageTaskStarted += MethodCoverageTaskStarted;            
         }

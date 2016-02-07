@@ -6,9 +6,11 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Extensions;
 using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin.Tests
@@ -80,7 +82,8 @@ namespace TestCoverageVsPlugin.Tests
                                 "{}" +
                                 "}";
             var tree = CSharpSyntaxTree.ParseText(code);
-            int methodIndex = code.IndexOf("Test()", StringComparison.Ordinal);
+            var method = tree.GetRoot().GetPublicMethods().First();
+            
             const string testDocumentPath = "MathHelperTests.cs";
 
             var oldTestLineCoverage = new LineCoverage();
@@ -99,7 +102,7 @@ namespace TestCoverageVsPlugin.Tests
                 Returns(new CoverageResult(new[] { newTestLineCoverage }));
 
             // act
-            await _sut.CalculateForSelectedMethodAsync("CurrentProject", methodIndex, tree.GetRoot());
+            await _sut.CalculateForSelectedMethodAsync("CurrentProject", method);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(1));
@@ -117,7 +120,7 @@ namespace TestCoverageVsPlugin.Tests
                                 "{}" +
                                 "}";
             var tree = CSharpSyntaxTree.ParseText(code);
-            int methodIndex = code.IndexOf("Test2()", StringComparison.Ordinal);
+            var method = tree.GetRoot().GetPublicMethods()[1];
             const string testDocumentPath = "MathHelperTests.cs";
 
             var oldTestLineCoverage1 = new LineCoverage();
@@ -136,7 +139,7 @@ namespace TestCoverageVsPlugin.Tests
                 Throws(new TestCoverageCompilationException(new string[0]));
 
             // act
-            await _sut.CalculateForSelectedMethodAsync("CurrentProject", methodIndex, tree.GetRoot());
+            await _sut.CalculateForSelectedMethodAsync("CurrentProject", method);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(1));
@@ -152,7 +155,7 @@ namespace TestCoverageVsPlugin.Tests
                                 "{}" +
                                 "}";
             var tree = CSharpSyntaxTree.ParseText(code);
-            int methodIndex = code.IndexOf("Test()", StringComparison.Ordinal);
+            var method = tree.GetRoot().GetPublicMethods().First();
             const string testDocumentPath = "MathHelperTests.cs";
 
             var oldTestLineCoverage = new LineCoverage();
@@ -171,7 +174,7 @@ namespace TestCoverageVsPlugin.Tests
                 Returns(new CoverageResult(new[] { newTestLineCoverage }));
 
             // act
-            await _sut.CalculateForSelectedMethodAsync("CurrentProject", methodIndex, tree.GetRoot());
+            await _sut.CalculateForSelectedMethodAsync("CurrentProject", method);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(2));
@@ -250,7 +253,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateForAllDocuments_ShouldNot_ClearCoverageOfUnrelatedDocuments()
+        public async Task CalculateForAllDocuments_ShouldNot_ClearCoverageOfUnrelatedDocuments()
         {
             // arrange
             var testLineCoverage = new LineCoverage();
@@ -266,7 +269,7 @@ namespace TestCoverageVsPlugin.Tests
                 Throws(new TestCoverageCompilationException(new string[0]));
 
             // act
-            _sut.CalculateForAllDocumentsAsync();
+            await _sut.CalculateForAllDocumentsAsync();
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));

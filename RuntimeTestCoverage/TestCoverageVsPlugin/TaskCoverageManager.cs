@@ -5,7 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Extensions;
+using TestCoverageVsPlugin.Tasks;
 
 namespace TestCoverageVsPlugin
 {
@@ -14,7 +17,6 @@ namespace TestCoverageVsPlugin
         private const int ExecutionDelayInMilliseconds = 2000;
         private readonly ITimer _timer;
         private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
-        private readonly IDocumentFromTextSnapshotExtractor _documentFromTextSnapshotExtractor;
         private readonly Queue<MethodCoverageTaskInfo> _tasks;
 
         public event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskCompleted;
@@ -22,31 +24,26 @@ namespace TestCoverageVsPlugin
         public bool AreJobsPending => _tasks.Count > 0;
         public bool IsBusy { get; private set; }
 
-        public TaskCoverageManager(ITimer timer, 
-            IVsSolutionTestCoverage vsSolutionTestCoverage,
-            IDocumentFromTextSnapshotExtractor documentFromTextSnapshotExtractor)
+        public TaskCoverageManager(ITimer timer,
+            IVsSolutionTestCoverage vsSolutionTestCoverage)
         {
             _timer = timer;
             _tasks = new Queue<MethodCoverageTaskInfo>();
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _documentFromTextSnapshotExtractor = documentFromTextSnapshotExtractor;
         }
 
         public void EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath)
         {
             if (Path.GetExtension(documentPath) != ".cs")
                 return;
-            
-            var existingTask = _tasks.FirstOrDefault(x => x.DocumentPath == documentPath);
 
-            if (existingTask == null)
+            var document = CSharpSyntaxTree.ParseText(textSnapshot.GetText(), path: documentPath).GetRoot();
+            var method = document.GetMethodAt(position);
+
+            if (_tasks.All(x => x.Method.Identifier.ToString() != method.Identifier.ToString()))
             {
-                var task = new MethodCoverageTaskInfo(projectName, textSnapshot, position,documentPath);
+                var task = new MethodCoverageTaskInfo(projectName, method);
                 _tasks.Enqueue(task);
-            }
-            else
-            {
-                existingTask.TextSnapshot = textSnapshot;
             }
 
             IsBusy = true;
@@ -63,25 +60,16 @@ namespace TestCoverageVsPlugin
 
             MethodCoverageTaskInfo taskInfo = _tasks.Dequeue();
 
-            Stopwatch s=Stopwatch.StartNew();
-            var rootNode = _documentFromTextSnapshotExtractor.ExtactDocument(taskInfo.TextSnapshot);
-            var m = rootNode.GetMethodAt(taskInfo.Position);
-            Debug.WriteLine(s.ElapsedMilliseconds);
+            var filePath = taskInfo.Method.SyntaxTree.FilePath;
+            DocumentCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(filePath));
 
-            if (rootNode == null)
+            Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(taskInfo.ProjectName, taskInfo.Method);
+
+            task.ContinueWith((x, y) =>
             {
+                DocumentCalculationsCompleted(filePath);
                 ExecuteTask();
-                return;
-            }
-
-            DocumentCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(taskInfo.DocumentPath));
-
-            Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(taskInfo.ProjectName,
-                taskInfo.Position,
-                rootNode);
-            
-            task.ContinueWith((x, y) => DocumentCalculationsCompleted(taskInfo.DocumentPath), null, TaskScheduler.FromCurrentSynchronizationContext()).
-                ContinueWith((x, y) => ExecuteTask(), null, TaskScheduler.FromCurrentSynchronizationContext());
+            }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
         }
 
         private void DocumentCalculationsCompleted(string documentPath)
@@ -92,16 +80,12 @@ namespace TestCoverageVsPlugin
         class MethodCoverageTaskInfo
         {
             public string ProjectName { get; }
-            public ITextSnapshot TextSnapshot { get; set; }
-            public int Position { get; }
-            public string DocumentPath { get;  }
+            public MethodDeclarationSyntax Method { get; set; }
 
-            public MethodCoverageTaskInfo(string projectName, ITextSnapshot textSnapshot, int position, string documentPath)
+            public MethodCoverageTaskInfo(string projectName, MethodDeclarationSyntax method)
             {
                 ProjectName = projectName;
-                TextSnapshot = textSnapshot;
-                Position = position;
-                DocumentPath = documentPath;
+                Method = method;
             }
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace TestCoverageVsPlugin.Tests
 {
@@ -13,6 +14,7 @@ namespace TestCoverageVsPlugin.Tests
 
         public void ExecuteNow()
         {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
             _action();
         }
     }
