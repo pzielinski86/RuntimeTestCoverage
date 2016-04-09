@@ -12,8 +12,7 @@ namespace TestCoverage.CoverageCalculation
     {
         public ITestRunResult RunTest(string[] references,
             string code)
-        {
-            return new TestRunResult(new AuditVariablePlaceholder[0],false,null );
+        {            
 
             // todo: clean-up code to remove hardcoded dlls like mscorlib.
             var options = ScriptOptions.Default.
