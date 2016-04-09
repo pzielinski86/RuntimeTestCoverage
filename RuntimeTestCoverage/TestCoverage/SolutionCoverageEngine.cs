@@ -37,7 +37,7 @@ namespace TestCoverage
             var rewritter = new SolutionRewriter(_auditVariablesRewriter);
 
             //TODO: Change a method to async and don't use .Result
-            var projects = await _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync();
+            var projects = await _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().ConfigureAwait(false);
             RewriteResult rewrittenResult = rewritter.RewriteAllClasses(projects);
 
             LineCoverage[] coverage = null;

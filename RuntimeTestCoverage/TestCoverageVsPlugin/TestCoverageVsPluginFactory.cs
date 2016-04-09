@@ -80,7 +80,7 @@ namespace TestCoverageVsPlugin
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            _logger.Write(e.ExceptionObject.ToString());
+            _logger.Error(e.ExceptionObject.ToString());
         }
 
         private void ProjectItemAdded(ProjectItem projectItem)

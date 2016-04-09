@@ -28,7 +28,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         }
 
         [Test]
-        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_BothLinesFailed_And_TheyAreInTestDocument()
+        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_TheyAreInTestDocument()
         {
             // arrange
             string testNodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorldTests.TestMethod";
@@ -57,7 +57,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         }
 
         [Test]
-        public void GetCoverage_Should_BothLines_As_Failed_Ones_When_BothLinesFailed_And_TheyAreInNotTestDocument()
+        public void GetCoverage_Should_BothLines_As_Failed_Ones_When_ExceptionWasThrown_And_TheyAreInNotTestDocument()
         {
             // arrange
             string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";

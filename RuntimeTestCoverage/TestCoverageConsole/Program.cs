@@ -11,7 +11,7 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"../../../../TestSolution/TestSolution.sln";
+        private const string TestSubjectSlnPath = @"C:\projects\TestingSandox\3\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
 
         private static void Main(string[] args)
         {
@@ -19,10 +19,10 @@ namespace TestCoverageConsole
             var engine = new SolutionCoverageEngine();
             engine.Init(TestSubjectSlnPath);
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
                 TestForAllDocuments(engine);
-                TestForOneDocument(engine);
+               // TestForOneDocument(engine);
             }
         }
 
@@ -42,12 +42,14 @@ namespace TestCoverageConsole
 
         private static void TestForAllDocuments(SolutionCoverageEngine engine)
         {
+            var memoryBefore = GC.GetTotalMemory(false);
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             var positions = engine.CalculateForAllDocumentsAsync().Result;
 
             Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Memory: {0}", (GC.GetTotalMemory(false) - memoryBefore)/1024/1024);
         }
     }
 }

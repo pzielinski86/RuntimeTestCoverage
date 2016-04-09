@@ -5,8 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using TestCoverage.Extensions;
 using TestCoverageVsPlugin.Tasks;
 
@@ -19,8 +21,8 @@ namespace TestCoverageVsPlugin
         private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
         private readonly Queue<MethodCoverageTaskInfo> _tasks;
 
-        public event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskCompleted;
-        public event EventHandler<MethodCoverageTaskArgs> DocumentCoverageTaskStarted;
+        public event EventHandler<MethodCoverageTaskArgs> MethodCoverageTaskCompleted;
+        public event EventHandler<MethodCoverageTaskArgs> MethodCoverageTaskStarted;
         public bool AreJobsPending => _tasks.Count > 0;
         public bool IsBusy { get; private set; }
 
@@ -40,11 +42,15 @@ namespace TestCoverageVsPlugin
             var document = CSharpSyntaxTree.ParseText(textSnapshot.GetText(), path: documentPath).GetRoot();
             var method = document.GetMethodAt(position);
 
-            if (_tasks.All(x => x.Method.Identifier.ToString() != method.Identifier.ToString()))
+            var existingTask = _tasks.FirstOrDefault(x => x.Method.Identifier.ToString() == method.Identifier.ToString());
+
+            if (existingTask == null)
             {
-                var task = new MethodCoverageTaskInfo(projectName, method);
+                var task = new MethodCoverageTaskInfo(method, textSnapshot);
                 _tasks.Enqueue(task);
             }
+            else
+                existingTask.TextSnapshot = textSnapshot;
 
             IsBusy = true;
             _timer.Schedule(ExecutionDelayInMilliseconds, ExecuteTask);
@@ -61,31 +67,39 @@ namespace TestCoverageVsPlugin
             MethodCoverageTaskInfo taskInfo = _tasks.Dequeue();
 
             var filePath = taskInfo.Method.SyntaxTree.FilePath;
-            DocumentCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(filePath));
+            string methodName = taskInfo.Method.Identifier.ValueText;
+            MethodCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(filePath, methodName));
 
-            Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(taskInfo.ProjectName, taskInfo.Method);
+            Document document = taskInfo.TextSnapshot.GetOpenDocumentInCurrentContextWithChanges();
+            var documentSyntaxTree = document.GetSyntaxRootAsync().Result;
+
+            var methodNode=documentSyntaxTree.DescendantNodes()
+                .OfType<MethodDeclarationSyntax>()
+                .FirstOrDefault(x => x.Identifier.ValueText == methodName);
+            
+            Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(document.Project.Name, methodNode);
 
             task.ContinueWith((x, y) =>
             {
-                DocumentCalculationsCompleted(filePath);
+                MethodCalculationsCompleted(filePath, methodName);
                 ExecuteTask();
             }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
         }
 
-        private void DocumentCalculationsCompleted(string documentPath)
+        private void MethodCalculationsCompleted(string documentPath, string methodName)
         {
-            DocumentCoverageTaskCompleted?.Invoke(this, new MethodCoverageTaskArgs(documentPath));
+            MethodCoverageTaskCompleted?.Invoke(this, new MethodCoverageTaskArgs(documentPath, methodName));
         }
 
         class MethodCoverageTaskInfo
         {
-            public string ProjectName { get; }
-            public MethodDeclarationSyntax Method { get; set; }
+            public MethodDeclarationSyntax Method { get; }
+            public ITextSnapshot TextSnapshot { get; set; }
 
-            public MethodCoverageTaskInfo(string projectName, MethodDeclarationSyntax method)
+            public MethodCoverageTaskInfo( MethodDeclarationSyntax method, ITextSnapshot textSnapshot)
             {
-                ProjectName = projectName;
                 Method = method;
+                TextSnapshot = textSnapshot;
             }
         }
     }

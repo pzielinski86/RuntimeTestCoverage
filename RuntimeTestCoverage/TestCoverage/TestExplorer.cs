@@ -36,7 +36,7 @@ namespace TestCoverage
 
             foreach (var project in _solutionExplorer.Solution.Projects)
             {
-                var fixtures = await GetProjectTestFixtures(project);
+                var fixtures = await GetProjectTestFixtures(project).ConfigureAwait(false);
 
                 if (fixtures.Length > 0)
                 {
@@ -58,7 +58,7 @@ namespace TestCoverage
 
         public async Task<Project[]> GetAllTestProjectsWithCoveredProjectsAsync()
         {
-            TestProject[] testProjects = await GetAllTestProjectsAsync();
+            TestProject[] testProjects = await GetAllTestProjectsAsync().ConfigureAwait(false);
 
             var allProjects = GetAllReferencedProjects(testProjects);
 
@@ -67,7 +67,7 @@ namespace TestCoverage
 
         public async Task<Project[]> GetUnignoredTestProjectsWithCoveredProjectsAsync()
         {
-            TestProject[] unignoredTestProjects = await GetUnignoredTestProjectsAsync();
+            TestProject[] unignoredTestProjects = await GetUnignoredTestProjectsAsync().ConfigureAwait(false);
 
             return GetAllReferencedProjects(unignoredTestProjects);
         }
@@ -114,7 +114,7 @@ namespace TestCoverage
 
         private async Task<TestProject[]> GetUnignoredTestProjectsAsync()
         {
-            var allTestProjects = await GetAllTestProjectsAsync();
+            var allTestProjects = await GetAllTestProjectsAsync().ConfigureAwait(false);
 
             return allTestProjects.Where(x => x.IsCoverageEnabled).ToArray();
         }
@@ -140,7 +140,7 @@ namespace TestCoverage
 
             foreach (var document in project.Documents)
             {
-                SyntaxNode root = await document.GetSyntaxRootAsync();
+                SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
                 ClassDeclarationSyntax[] testClasses = _testsExtractor.GetTestClasses(root);
 
                 testFixturesInProject.AddRange(testClasses);

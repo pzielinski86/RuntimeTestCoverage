@@ -13,6 +13,7 @@ namespace TestCoverage.CoverageCalculation
         public ITestRunResult RunTest(string[] references,
             string code)
         {
+            return new TestRunResult(new AuditVariablePlaceholder[0],false,null );
 
             // todo: clean-up code to remove hardcoded dlls like mscorlib.
             var options = ScriptOptions.Default.
@@ -33,9 +34,9 @@ namespace TestCoverage.CoverageCalculation
 
             var coverageAudit = (dynamic)state.GetVariable("auditLog").Value;
             string errorMessage = (string)state.GetVariable("errorMessage").Value;
-            bool assertionFailed = (bool)state.GetVariable("assertionFailed").Value;
+            bool thrownException = (bool)state.GetVariable("ThrownException").Value;
 
-            return new TestRunResult(GetVariables(coverageAudit), assertionFailed, errorMessage);
+            return new TestRunResult(GetVariables(coverageAudit), thrownException, errorMessage);
         }
 
         private AuditVariablePlaceholder[] GetVariables(dynamic dynamicVariables)

@@ -10,6 +10,7 @@
              Name="MyToolWindow">
     <Grid>
         <StackPanel Orientation="Vertical">
+            <TextBlock Text="{Binding Title}"></TextBlock>
             <StackPanel Orientation="Horizontal">
                 <Button Command="{Binding RefreshCmd}" Margin="10" Width="60" Height="25" HorizontalAlignment="Left">Refresh</Button>
                 <Button Command="{Binding ResyncCmd}" Margin="10" Width="60" Height="25" HorizontalAlignment="Left">Resync</Button>

@@ -74,7 +74,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public async void CalculateForMethod_Should_RemoveOldCoverageValues()
+        public async Task CalculateForMethod_Should_RemoveOldCoverageValues()
         {
             // arrange
             const string code = "class MathHelperTests{" +
@@ -110,7 +110,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public async void When_CalculateForMethod_Fails_Should_RemoveCoverageOnlyFromExecutedPath()
+        public async Task When_CalculateForMethod_Fails_Should_RemoveCoverageOnlyFromExecutedPath()
         {
             // arrange
             const string code = "class MathHelperTests{" +
@@ -147,7 +147,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public async void CalculateForMethod_ShouldNot_RemoveUnrelatedMethods()
+        public async Task CalculateForMethod_ShouldNot_RemoveUnrelatedMethods()
         {
             // arrange
             const string code = "class MathHelperTests{" +

@@ -11,11 +11,21 @@ namespace TestCoverageVsPlugin
             _serviceProvider = serviceProvider;            
         }
 
-        public void Write(string message)
+        public void Error(string message)
+        {
+            Log(message, __ACTIVITYLOG_ENTRYTYPE.ALE_ERROR);
+        }
+
+        public void Info(string message)
+        {            
+            Log(message, __ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION);
+        }
+
+        private void Log(string message, __ACTIVITYLOG_ENTRYTYPE msgType)
         {
             var logger = _serviceProvider.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
 
-            logger.LogEntry((uint) __ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION, "RuntimeTestCoverage", message);
+            logger.LogEntry((uint)msgType, "RuntimeTestCoverage", message);
         }
     }
 }

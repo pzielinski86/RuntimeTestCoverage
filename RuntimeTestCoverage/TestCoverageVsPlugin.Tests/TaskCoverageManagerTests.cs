@@ -59,7 +59,7 @@ namespace TestCoverageVsPlugin.Tests
             var code = "class Tests{ [Test]public void Test1(){}}";
             int position = code.IndexOf("Test1");
             _textSnapshotMock.GetText().Returns(code);
-
+            
             // act
             _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
             _timerMock.ExecuteNow();
@@ -101,7 +101,8 @@ namespace TestCoverageVsPlugin.Tests
                 Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test2"));
         }
 
-        [Test] public void When_SecondMethodCoverageTaskIsAdded_And_Method_Is_Already_InQueue_Then_Method_Should_Be_ExecutedOnlyOneTime()
+        [Test]
+        public void When_SecondMethodCoverageTaskIsAdded_And_Method_Is_Already_InQueue_Then_Method_Should_Be_ExecutedOnlyOneTime()
         {
             // arrange
             const string projectName = "MathHelper.Tests";

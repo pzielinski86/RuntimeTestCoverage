@@ -2,6 +2,7 @@ namespace TestCoverageVsPlugin
 {
     public interface ILogger
     {
-        void Write(string message);
+        void Error(string message);
+        void Info(string message);
     }
 }

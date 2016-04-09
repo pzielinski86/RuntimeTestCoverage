@@ -6,7 +6,7 @@ namespace TestCoverage.CoverageCalculation
     public interface ITestRunResult
     {
         AuditVariablePlaceholder[] AuditVariables { get; }
-        bool AssertionFailed { get; }
+        bool ThrownException { get; }
         string ErrorMessage { get; }
 
         LineCoverage[] GetCoverage(

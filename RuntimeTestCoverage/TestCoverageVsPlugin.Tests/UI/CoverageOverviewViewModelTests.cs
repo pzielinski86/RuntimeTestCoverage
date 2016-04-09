@@ -28,7 +28,7 @@ namespace TestCoverageVsPlugin.Tests.UI
         }
 
         [Test]
-        public async void Should_PopulateProjects_With_ProjectsFromTestExplorer()
+        public async Task Should_PopulateProjects_With_ProjectsFromTestExplorer()
         {
             // arrange
             var workspace = new AdhocWorkspace();

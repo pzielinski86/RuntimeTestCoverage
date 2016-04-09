@@ -53,7 +53,7 @@ namespace TestCoverage.CoverageCalculation
 
             ClearAudit(scriptBuilder);            
             scriptBuilder.AppendLine("string errorMessage=null;");
-            scriptBuilder.AppendLine("bool assertionFailed=false;");
+            scriptBuilder.AppendLine("bool ThrownException=false;");
 
             scriptBuilder.Append("try\n{\n");
             scriptBuilder.AppendLine(TestFixture.CreateSetupFixtureCode("testFixture"));
@@ -62,12 +62,12 @@ namespace TestCoverage.CoverageCalculation
             scriptBuilder.AppendLine("}");
             scriptBuilder.AppendLine("catch(AggregateException e)" +
                                      "{" +
-                                     "assertionFailed=true; " +
+                                     "ThrownException=true; " +
                                      "errorMessage=e.InnerException.ToString();" +
                                      "}");
             scriptBuilder.AppendLine("catch(TargetInvocationException e)" +
                                      "{" +
-                                     "assertionFailed=true; " +
+                                     "ThrownException=true; " +
                                      "errorMessage=e.InnerException.ToString();" +
                                      "}");
 

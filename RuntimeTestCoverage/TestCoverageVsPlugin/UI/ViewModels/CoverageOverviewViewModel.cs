@@ -1,14 +1,17 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using TestCoverage;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Annotations;
 
 namespace TestCoverageVsPlugin.UI.ViewModels
 {
-    public sealed class CoverageOverviewViewModel
+    public sealed class CoverageOverviewViewModel: INotifyPropertyChanged
     {
         private readonly ITestExplorer _testExplorer;
         private readonly ICoverageSettingsStore _settingsStore;
@@ -24,17 +27,32 @@ namespace TestCoverageVsPlugin.UI.ViewModels
             ResyncCmd=new DelegateCommand(Resync);
         }
 
+        private string _title;
+
+        public string Title
+        {
+            get { return _title; }
+            set
+            {
+                _title = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         public ICommand RefreshCmd { get; }
 
         public ICommand ResyncCmd { get; }
 
         private async void Resync(object obj)
         {
+            Title = "Processing...";
             await _vsSolutionTestCoverage.CalculateForAllDocumentsAsync();
+            UpdateTitleWithResults();
         }
 
         private async void RefreshAsync(object obj)
-        {
+        {            
             await PopulateWithTestProjectsAsync();
         }
 
@@ -48,6 +66,8 @@ namespace TestCoverageVsPlugin.UI.ViewModels
             {
                 CreateTestProject(testProject);
             }
+
+            UpdateTitleWithResults();
         }
 
         private void CreateTestProject(TestProject testProject)
@@ -70,6 +90,24 @@ namespace TestCoverageVsPlugin.UI.ViewModels
             TestProjects.Add(testProjectViewModel);
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void UpdateTitleWithResults()
+        {
+            if (_vsSolutionTestCoverage == null)
+                return;
+
+            int documentsCount = _vsSolutionTestCoverage.SolutionCoverageByDocument.Count;
+            int coverage = _vsSolutionTestCoverage.SolutionCoverageByDocument.Sum(x => x.Value.Count);
+
+            Title = $"Documents: {documentsCount} , Coverage: {coverage}";
+        }
         public ObservableCollection<TestProjectViewModel> TestProjects { get; }
     }
 }

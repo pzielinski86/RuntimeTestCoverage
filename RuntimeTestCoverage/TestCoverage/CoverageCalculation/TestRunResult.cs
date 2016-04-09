@@ -11,13 +11,13 @@ namespace TestCoverage.CoverageCalculation
     public class TestRunResult : ITestRunResult
     {
         public AuditVariablePlaceholder[] AuditVariables { get; }
-        public bool AssertionFailed { get; }
+        public bool ThrownException { get; }
         public string ErrorMessage { get; }
 
-        public TestRunResult(AuditVariablePlaceholder[] auditVariables, bool assertionFailed, string errorMessage)
+        public TestRunResult(AuditVariablePlaceholder[] auditVariables, bool thrownException, string errorMessage)
         {
             AuditVariables = auditVariables;
-            AssertionFailed = assertionFailed;
+            ThrownException = thrownException;
             ErrorMessage = errorMessage;
         }
 
@@ -33,7 +33,7 @@ namespace TestCoverage.CoverageCalculation
             {
                 LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
 
-                if (AssertionFailed)
+                if (ThrownException)
                 {
                     if (lineCoverage.NodePath == lineCoverage.TestPath && variable != AuditVariables.Last())
                         lineCoverage.IsSuccess = true;

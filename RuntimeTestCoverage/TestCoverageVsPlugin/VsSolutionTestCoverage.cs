@@ -2,21 +2,25 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Annotations;
 using TestCoverageVsPlugin.Extensions;
 using Task = System.Threading.Tasks.Task;
 
 namespace TestCoverageVsPlugin
 {
-    public sealed class VsSolutionTestCoverage : IVsSolutionTestCoverage,IDisposable
+    public sealed class VsSolutionTestCoverage : IVsSolutionTestCoverage, IDisposable
     {
         public string SolutionPath { get; }
         private readonly ISolutionCoverageEngine _solutionCoverageEngine;
@@ -65,17 +69,20 @@ namespace TestCoverageVsPlugin
 
         public async Task CalculateForAllDocumentsAsync()
         {
+            _logger.Info("Calculating coverage for all documents");
+
             CoverageResult coverage;
             Reinit();
 
             try
             {
-                coverage = await _solutionCoverageEngine.CalculateForAllDocumentsAsync();
+                coverage = await _solutionCoverageEngine.CalculateForAllDocumentsAsync().ConfigureAwait(false);
             }
+
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.Clear();
-                _logger.Write(e.ToString());
+                _logger.Error(e.ToString());
                 return;
             }
 
@@ -92,7 +99,7 @@ namespace TestCoverageVsPlugin
 
                     try
                     {
-                        var result = _solutionCoverageEngine.CalculateForMethod(projectName,method);
+                        var result = _solutionCoverageEngine.CalculateForMethod(projectName, method);
 
                         coverage = result.CoverageByDocument.SelectMany(x => x.Value).ToList();
                     }
@@ -102,13 +109,13 @@ namespace TestCoverageVsPlugin
                             Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
                         SolutionCoverageByDocument.RemvoeByPath(path);
-                        _logger.Write(e.ToString());
+                        _logger.Error(e.ToString());
                         return;
                     }
 
                     SolutionCoverageByDocument.MergeByNodePath(coverage);
                 }
-            },CancellationToken.None,TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+            }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             return task;
         }
@@ -134,7 +141,7 @@ namespace TestCoverageVsPlugin
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.Clear();
-                _logger.Write(e.ToString());
+                _logger.Error(e.ToString());
                 return;
             }
 
