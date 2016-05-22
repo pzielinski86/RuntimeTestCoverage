@@ -24,6 +24,17 @@ namespace TestCoverage.CoverageCalculation
                 engineType.FullName);
         }
 
+        public ITestRunResult RunTest(string[] references, string code)
+        {
+            return _engine.RunTest(references, code);
+        }
+
+        public void Dispose()
+        {
+            AppDomain.Unload(_appDomain);
+            _appDomain = null;
+        }
+
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var assembly = typeof(SolutionCoverageEngine).Assembly;
@@ -36,17 +47,6 @@ namespace TestCoverage.CoverageCalculation
             }
 
             return null;
-        }
-
-        public ITestRunResult RunTest(string[] references, string code)
-        {
-            return _engine.RunTest(references, code);
-        }
-
-        public void Dispose()
-        {
-            AppDomain.Unload(_appDomain);
-            _appDomain = null;
         }
     }
 }
