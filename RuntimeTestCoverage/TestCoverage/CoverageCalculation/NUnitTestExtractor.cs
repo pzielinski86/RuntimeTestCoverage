@@ -76,7 +76,7 @@ namespace TestCoverage.CoverageCalculation
             var testCase = new TestCase(testFixture);
             testCase.IsAsync = isAsync;
 
-            testCase.Arguments = new string[attribute.ArgumentList.Arguments.Count];
+            testCase.Arguments = new object[attribute.ArgumentList.Arguments.Count];
 
             for (int i = 0; i < testCase.Arguments.Length; i++)
             {
@@ -85,25 +85,15 @@ namespace TestCoverage.CoverageCalculation
                 object constantValue = semanticModel.GetConstantValue(testCaseArg.Expression);
 
                 if (constantValue != null)
-                    testCase.Arguments[i] = ConvertValueToCsharpCall(constantValue);
+                    testCase.Arguments[i] = constantValue;
                 else
-                    testCase.Arguments[i] = testCaseArg.Expression.GetText().ToString();
+                    testCase.Arguments[i] = testCaseArg.Expression.GetFirstToken().Value;
             }
 
             testCase.SyntaxNode = methodDeclarationSyntax;
             testCase.MethodName = methodDeclarationSyntax.Identifier.ValueText;
 
             return testCase;
-        }
-
-        private static string ConvertValueToCsharpCall(object value)
-        {
-            if (value is string)
-                return string.Format($"\"{value}\"");
-            if (value is bool)
-                return value.ToString().ToLowerInvariant();
-
-            return value.ToString();
         }
 
         private static MethodDeclarationSyntax GetAttributeMethod(AttributeSyntax attribute)

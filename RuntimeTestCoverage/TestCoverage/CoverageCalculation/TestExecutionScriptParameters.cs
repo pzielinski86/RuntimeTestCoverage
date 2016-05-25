@@ -8,7 +8,7 @@ namespace TestCoverage.CoverageCalculation
         public string TestFixtureTypeFullName;
         public string SetupMethodName;
         public string TestName;
-        public string[] TestParameters;
+        public object[] TestParameters;
         public bool IsAsync { get; set; }
     }
 }

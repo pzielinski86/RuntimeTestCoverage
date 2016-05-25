@@ -100,6 +100,7 @@ namespace TestCoverage.Storage
                 table.Columns.Add("TestDocumentPath");
                 table.Columns.Add("Span");
                 table.Columns.Add("IsSuccess");
+                table.Columns.Add("ErrorMessage");
 
                 foreach (var lineCoverage in coverage)
                 {
@@ -110,7 +111,7 @@ namespace TestCoverage.Storage
                     row["TestDocumentPath"] = lineCoverage.TestDocumentPath;
                     row["Span"] = lineCoverage.Span;
                     row["IsSuccess"] = lineCoverage.IsSuccess;
-
+                    row["ErrorMessage"] = lineCoverage.ErrorMessage;
 
                     table.Rows.Add(row);
                 }
@@ -138,6 +139,7 @@ namespace TestCoverage.Storage
                 var sql = "create table Coverage("
                           + "NodePath nvarchar(500) not null, "
                           + "TestPath nvarchar(500) not null, "
+                          + "ErrorMessage nvarchar(1000) null, "
                           + "DocumentPath nvarchar(500)  not null, "
                           + "TestDocumentPath nvarchar(500) not null, "
                           + "Span int not null, "

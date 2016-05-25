@@ -7,6 +7,7 @@ namespace TestCoverage.CoverageCalculation
     [Serializable]
     public class LineCoverage
     {
+        public string ErrorMessage { get; set; }
         public int Span { get; set; }
         public string NodePath { get; set; }
         public string TestPath { get; set; }

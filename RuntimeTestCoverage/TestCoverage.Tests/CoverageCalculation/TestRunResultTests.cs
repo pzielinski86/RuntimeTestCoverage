@@ -36,7 +36,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 1),
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 2) };
 
-            var testResult = new TestRunResult(variables, true, null);
+            var testResult = new TestRunResult(variables, true, "Assertion failed");
 
 
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
@@ -53,11 +53,14 @@ namespace TestCoverage.Tests.CoverageCalculation
             // assert
             Assert.That(totalCoverage.Length, Is.EqualTo(2));
             Assert.That(totalCoverage[0].IsSuccess, Is.EqualTo(true));
+            Assert.IsNull(totalCoverage[0].ErrorMessage);
+
             Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(false));
+            Assert.That(totalCoverage[1].ErrorMessage, Is.EqualTo(testResult.ErrorMessage)); 
         }
 
         [Test]
-        public void GetCoverage_Should_BothLines_As_Failed_Ones_When_ExceptionWasThrown_And_TheyAreInNotTestDocument()
+        public void GetCoverage_Should_MarkBothLines_As_Failed_Ones_When_ExceptionWasThrown_And_TheyAreInNotTestDocument()
         {
             // arrange
             string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
@@ -83,6 +86,9 @@ namespace TestCoverage.Tests.CoverageCalculation
             Assert.That(totalCoverage.Length, Is.EqualTo(2));
             Assert.That(totalCoverage[0].IsSuccess, Is.EqualTo(false));
             Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(false));
+
+            Assert.That(totalCoverage[0].ErrorMessage, Is.EqualTo(testResult.ErrorMessage));
+            Assert.That(totalCoverage[1].ErrorMessage, Is.EqualTo(testResult.ErrorMessage));
         }
     }
 }

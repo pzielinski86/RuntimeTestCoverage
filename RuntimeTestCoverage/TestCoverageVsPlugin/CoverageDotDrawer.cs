@@ -103,23 +103,42 @@ namespace TestCoverageVsPlugin
         private CoverageDot CreateDotCoverage(int span, bool areCalcsInProgress, int lineNumber, string methodPath)
         {
             Brush color;
+            string tooltip = null;
 
             if (areCalcsInProgress)
+            {
                 color = Brushes.DarkGray;
+                tooltip = "Calculating...";
+            }
             else
             {
                 LineCoverage coverage = GetCoverageBySpan(methodPath, span);
 
                 if (coverage != null)
-                    color = coverage.IsSuccess ? Brushes.Green : Brushes.Red;
+                {
+                    if (coverage.IsSuccess)
+                    {
+                        color = Brushes.Green;
+                        tooltip = "Passed";
+                    }
+                    else
+                    {
+                        color = Brushes.Red;
+                        tooltip = coverage.ErrorMessage;
+                    }
+                }
                 else
+                {
                     color = Brushes.Silver;
+                    tooltip = "No coverage";
+                }
             }
 
             var coverageDot = new CoverageDot
             {
                 Color = color,
-                LineNumber = lineNumber
+                LineNumber = lineNumber,
+                Tooltip = tooltip
             };
 
             return coverageDot;

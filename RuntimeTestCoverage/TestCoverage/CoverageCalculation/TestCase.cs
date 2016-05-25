@@ -9,12 +9,12 @@ namespace TestCoverage.CoverageCalculation
         public TestCase(TestFixtureDetails testFixture)
         {
             TestFixture = testFixture;
-            Arguments=new string[0];
+            Arguments=new object[0];
         }
 
         public TestFixtureDetails TestFixture { get; }
 
-        public string[] Arguments { get; set; }
+        public object[] Arguments { get; set; }
         public string MethodName { get; set; }
 
         public MethodDeclarationSyntax SyntaxNode { get; set; }

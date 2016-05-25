@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -30,12 +31,14 @@ namespace TestCoverageVsPlugin
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
         private string _projectName;
-        
-        public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage, 
-            IWpfTextView textView, 
-            IVsStatusbar statusBar, 
+
+        public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage,
+            IWpfTextView textView,
+            IVsStatusbar statusBar,
             Solution solution)
         {
+            ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(Int32.MaxValue));
+
             _canvas = new Canvas();
             _textView = textView;
             _statusBar = statusBar;
@@ -51,7 +54,7 @@ namespace TestCoverageVsPlugin
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
             _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
             _taskCoverageManager.MethodCoverageTaskCompleted += MethodCoverageTaskCompleted;
-            _taskCoverageManager.MethodCoverageTaskStarted += MethodCoverageTaskStarted;            
+            _taskCoverageManager.MethodCoverageTaskStarted += MethodCoverageTaskStarted;
         }
 
         private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskArgs e)
@@ -67,8 +70,8 @@ namespace TestCoverageVsPlugin
         }
 
         private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
-        {           
-            _taskCoverageManager.EnqueueMethodTask(_projectName, 
+        {
+            _taskCoverageManager.EnqueueMethodTask(_projectName,
                 _textView.Caret.Position.BufferPosition,
                 e.After,
                 _documentPath);
@@ -131,13 +134,17 @@ namespace TestCoverageVsPlugin
             else
                 lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
 
-            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text,System.IO.Path.GetFileNameWithoutExtension(_documentPath));
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, System.IO.Path.GetFileNameWithoutExtension(_documentPath));
 
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
 
             foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending, _projectName))
             {
-                Ellipse ellipse = new Ellipse {Fill = dotCoverage.Color};
+                Ellipse ellipse = new Ellipse
+                {
+                    Fill = dotCoverage.Color,
+                    ToolTip = dotCoverage.Tooltip
+                };
                 ellipse.Width = ellipse.Height = 15;
 
                 SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);

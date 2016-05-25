@@ -21,7 +21,6 @@ namespace TestCoverage.CoverageCalculation
         public ITestRunResult RunTest(string[] references,
             TestExecutionScriptParameters testExecutionScriptParameters)
         {
-
             if (_references == null || _references.Length != references.Length)
             {
                 // todo: clean-up code to remove hardcoded dlls like mscorlib.
@@ -40,7 +39,6 @@ namespace TestCoverage.CoverageCalculation
 
             try
             {
-
                 state = _runnerScript.RunAsync(testExecutionScriptParameters).Result;
             }
             catch (CompilationErrorException e)

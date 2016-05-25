@@ -9,7 +9,7 @@ namespace TestCoverage
         {
             if (assemblyName.EndsWith("_COVERAGE.dll"))
                 return assemblyName;
-
+            
             return $"{assemblyName}_{"COVERAGE"}.dll";
         }
 

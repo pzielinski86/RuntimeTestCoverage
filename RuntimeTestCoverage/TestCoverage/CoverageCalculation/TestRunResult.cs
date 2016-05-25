@@ -38,7 +38,10 @@ namespace TestCoverage.CoverageCalculation
                     if (lineCoverage.NodePath == lineCoverage.TestPath && variable != AuditVariables.Last())
                         lineCoverage.IsSuccess = true;
                     else
+                    {
                         lineCoverage.IsSuccess = false;
+                        lineCoverage.ErrorMessage = ErrorMessage;
+                    }
                 }
                 else
                     lineCoverage.IsSuccess = true;

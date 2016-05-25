@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using NSubstitute;
 using NUnit.Framework;
 using System.Linq;
+using System.Threading.Tasks;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
@@ -64,9 +65,9 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void Should_ReturnIgnoredSolutionTestProject_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
+        public async Task Should_ReturnIgnoredSolutionTestProject_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
         {
-            // arrange
+            // arrange 
             var workspace = new AdhocWorkspace();
             var project = workspace.AddProject("foo", LanguageNames.CSharp);
             var testClass = CSharpSyntaxTree.ParseText(@"[TestFixtureViewModel]class MathHelperTests{ [Test]void Test(){}}");
@@ -86,7 +87,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void Should_ReturnTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
+        public async Task Should_ReturnTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreUnavailable()
         {
             // arrange
             var workspace = new AdhocWorkspace();
@@ -107,7 +108,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void Should_ReturnTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreAvailable()
+        public async Task Should_ReturnTestProjectWithFixtures_When_SolutionContainsTestProject_And_StoredSettingsAreAvailable()
         {
             // arrange
             var coverageSettings = new CoverageSettings();
@@ -136,7 +137,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void Should_ReturnUnignoredTestProject_When_StoredSettingsAreAvailable_And_SolutionContainsThatProject()
+        public async Task Should_ReturnUnignoredTestProject_When_StoredSettingsAreAvailable_And_SolutionContainsThatProject()
         {
             // arrange
             var coverageSettings = new CoverageSettings();
@@ -166,7 +167,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void ShouldNot_TestProjectTestProjectsStoredInFile_When_StoredSettingsAreAvailable_And_SolutionDoesContainsThatProject()
+        public async Task ShouldNot_TestProjectTestProjectsStoredInFile_When_StoredSettingsAreAvailable_And_SolutionDoesContainsThatProject()
         {
             // arrange
             var coverageSettings = new CoverageSettings();
@@ -189,7 +190,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void Should_ReturnTestProjects_With_ReferencedCoveredProjects()
+        public async Task Should_ReturnTestProjects_With_ReferencedCoveredProjects()
         {
             // arrange            
             _settingsStoreMock.Read().Returns(new CoverageSettings());
@@ -220,7 +221,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public async void ShouldNot_DuplicateProjects_Which_Were_ReferencesTwoTimes()
+        public async Task ShouldNot_DuplicateProjects_Which_Were_ReferencesTwoTimes()
         {
             // arrange            
             _settingsStoreMock.Read().Returns(new CoverageSettings());

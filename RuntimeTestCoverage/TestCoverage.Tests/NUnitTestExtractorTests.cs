@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NSubstitute;
 using NUnit.Framework;
@@ -192,7 +193,7 @@ namespace TestCoverage.Tests
             Assert.That(testMethods.Count, Is.EqualTo(1));
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("true"));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo(true));
         }
 
         [Test]
@@ -219,36 +220,8 @@ namespace TestCoverage.Tests
             Assert.IsFalse(testCases[0].IsAsync);
             Assert.That(testCases[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testCases[0].Arguments.Length, Is.EqualTo(1));
-            Assert.That(testCases[0].Arguments[0], Is.EqualTo("\"Test\""));
-        }
-
-        [TestCase("test", "\"test\"")]
-        [TestCase(5, "5")]
-        [TestCase(5.5, "5.5")]
-        [TestCase(true, "true")]
-        public void Shoul_Convert_SemanticConstantValue_To_CallableValue(object value, string expectedCallValue)
-        {
-            // arrange
-            const string code = @"using Math.Data;
-                                namespace Code{
-                            public class Tests
-                            {
-	                            [TestCase(""Test"")]
-	                            public void TestSomething1()
-	                            {
-
-	                            }	
-                            }}";
-
-            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
-            _semanticModelMock.GetConstantValue(Arg.Any<SyntaxNode>()).Returns(value);
-
-            // act
-            var fixture = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
-
-            // assert
-            Assert.That(fixture.Cases[0].Arguments[0], Is.EqualTo(expectedCallValue));
-        }
+            Assert.That(testCases[0].Arguments[0], Is.EqualTo("Test"));
+        }   
 
         [Test]
         public void ShouldExtract_TestCase_With_Integer_Expression_Parameter()
@@ -264,6 +237,7 @@ namespace TestCoverage.Tests
 	                            }	
                             }}";
 
+            _semanticModelMock.GetConstantValue(Arg.Any<SyntaxNode>()).Returns(14);
             var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
 
             // act
@@ -273,7 +247,7 @@ namespace TestCoverage.Tests
             Assert.That(testMethods.Count, Is.EqualTo(1));
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("5+9"));
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo(14));
         }
 
         [Test]
@@ -299,8 +273,8 @@ namespace TestCoverage.Tests
             Assert.That(testMethods.Count, Is.EqualTo(1));
             Assert.That(testMethods[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testMethods[0].Arguments.Length, Is.EqualTo(1));
-            Assert.That(testMethods[0].Arguments[0], Is.EqualTo("1"));
-        }
+            Assert.That(testMethods[0].Arguments[0], Is.EqualTo(1));
+        }   
 
         [Test]
         public void ShouldExtract_OnlyTestCase_When_Test_And_TestCase_AraAvailable()
