@@ -59,7 +59,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest(Arg.Is<string[]>(x=>x[0]==allProjectReferences[0]), Arg.Any<string>());
+                RunTest(Arg.Is<string[]>(x=>x[0]==allProjectReferences[0]), Arg.Any<TestExecutionScriptParameters>());
         }
 
         [Test]
@@ -90,7 +90,7 @@ namespace TestCoverage.Tests.CoverageCalculation
 
             // assert
             _testExecutorEngineMock.Received(1).
-                RunTest( Arg.Is<string[]>(x=>x[0]== rewrittenAssemblies[0]), Arg.Any<string>());
+                RunTest( Arg.Is<string[]>(x=>x[0]== rewrittenAssemblies[0]), Arg.Any<TestExecutionScriptParameters>());
         }
 
  
@@ -170,7 +170,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<string>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<TestExecutionScriptParameters>()).Returns(testRunResultMock);
 
             var project = CreateProject("SampleTestsProject");
             var rewrittenDocument = new RewrittenDocument( testNode, null);
@@ -209,7 +209,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 Arg.Any<string>())
                 .Returns(expectedLineCoverage);
 
-            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<string>()).Returns(testRunResultMock);
+            _testExecutorEngineMock.RunTest(Arg.Any<string[]>(), Arg.Any<TestExecutionScriptParameters>()).Returns(testRunResultMock);
 
             var project = CreateProject("SampleTestsProject");
             var rewrittenDocument = new RewrittenDocument( testNode, null);

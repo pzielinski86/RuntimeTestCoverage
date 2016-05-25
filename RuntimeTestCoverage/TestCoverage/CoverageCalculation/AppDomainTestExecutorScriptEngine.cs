@@ -12,7 +12,6 @@ namespace TestCoverage.CoverageCalculation
 
         public AppDomainTestExecutorScriptEngine()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
 
             _appDomain = AppDomain.CreateDomain("testing_sandbox", null, appDomainSetup);
@@ -24,29 +23,15 @@ namespace TestCoverage.CoverageCalculation
                 engineType.FullName);
         }
 
-        public ITestRunResult RunTest(string[] references, string code)
+        public ITestRunResult RunTest(string[] references, TestExecutionScriptParameters testExecutionScriptParameters)
         {
-            return _engine.RunTest(references, code);
+            return _engine.RunTest(references, testExecutionScriptParameters);
         }
 
         public void Dispose()
         {
             AppDomain.Unload(_appDomain);
             _appDomain = null;
-        }
-
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var assembly = typeof(SolutionCoverageEngine).Assembly;
-
-            if (args.Name == assembly.FullName)
-            {                
-                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-
-                return Assembly.LoadFrom(assembly.Location);
-            }
-
-            return null;
         }
     }
 }

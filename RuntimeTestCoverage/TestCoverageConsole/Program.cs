@@ -11,7 +11,7 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\projects\TestingSandox\3\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
+        private const string TestSubjectSlnPath = @"C:\projects\TestingSandox\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
 
         private static void Main(string[] args)
         {

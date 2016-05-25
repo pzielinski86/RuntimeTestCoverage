@@ -108,9 +108,18 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (var testCase in testCases)
             {
+                var scriptParameters = new TestExecutionScriptParameters
+                {
+                    TestFixtureTypeFullName = testCase.TestFixture.FullQualifiedName,
+                    SetupMethodName = testCase.TestFixture.SetupMethodName,
+                    TestName = testCase.MethodName,
+                    TestParameters = testCase.Arguments,
+                    IsAsync = testCase.IsAsync
+                };
+
                 var testResult =
                     _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.AllReferences,
-                        testCase.CreateRunTestScript());
+                        scriptParameters);
 
                 var partialCoverage = testResult.GetCoverage(
                                  testCase.SyntaxNode,

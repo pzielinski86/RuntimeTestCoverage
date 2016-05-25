@@ -14,6 +14,7 @@ namespace TestCoverage.CoverageCalculation
         public string SetupMethodName { get; set; }
         public string ClassScriptTypeName => "testFixtureType";
         public string FullClassName { get; set; }
+        public string FullQualifiedName => $"{FullClassName},{AssemblyName}";
 
         public string CreateSetupFixtureCode(string instanceName)
         {

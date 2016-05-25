@@ -1,6 +1,11 @@
 using Microsoft.CodeAnalysis.Scripting;
 using System;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Security;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using TestCoverage.Compilation;
@@ -8,23 +13,35 @@ using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {
-    public class TestExecutorScriptEngine : MarshalByRefObject,ITestExecutorScriptEngine
+    public class TestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        public ITestRunResult RunTest(string[] references,
-            string code)
-        {            
+        private string[] _references = null;
+        private Script<object> _runnerScript;
 
-            // todo: clean-up code to remove hardcoded dlls like mscorlib.
-            var options = ScriptOptions.Default.
-                WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
-                AddReferences(typeof(int).Assembly).
-                AddImports("System", "System.Reflection");
+        public ITestRunResult RunTest(string[] references,
+            TestExecutionScriptParameters testExecutionScriptParameters)
+        {
+
+            if (_references == null || _references.Length != references.Length)
+            {
+                // todo: clean-up code to remove hardcoded dlls like mscorlib.
+                var options = ScriptOptions.Default.
+               WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
+               AddReferences(typeof(int).Assembly).
+               AddImports("System", "System.Reflection");
+
+                _references = references;
+
+                string runnerScriptCode = File.ReadAllText("CoverageCalculation\\TestRunnerCode.txt");
+                _runnerScript = CSharpScript.Create(runnerScriptCode, options, typeof(TestExecutionScriptParameters));
+            }
 
             ScriptState state = null;
 
             try
             {
-                state = CSharpScript.RunAsync(code, options).Result;
+
+                state = _runnerScript.RunAsync(testExecutionScriptParameters).Result;
             }
             catch (CompilationErrorException e)
             {
@@ -53,6 +70,5 @@ namespace TestCoverage.CoverageCalculation
 
             return variables;
         }
-
     }
 }

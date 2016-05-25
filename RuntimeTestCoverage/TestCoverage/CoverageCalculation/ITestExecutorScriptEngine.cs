@@ -4,6 +4,6 @@ namespace TestCoverage.CoverageCalculation
 {
     public interface ITestExecutorScriptEngine
     {
-        ITestRunResult RunTest(string[] references, string code);
+        ITestRunResult RunTest(string[] references, TestExecutionScriptParameters testExecutionScriptParameters);
     }
 }
