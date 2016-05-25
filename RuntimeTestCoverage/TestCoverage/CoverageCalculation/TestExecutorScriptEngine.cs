@@ -32,7 +32,7 @@ namespace TestCoverage.CoverageCalculation
 
                 _references = references;
 
-                string runnerScriptCode = File.ReadAllText("CoverageCalculation\\TestRunnerCode.txt");
+                string runnerScriptCode = Resources.TestRunnerScriptCode;
                 _runnerScript = CSharpScript.Create(runnerScriptCode, options, typeof(TestExecutionScriptParameters));
             }
 
