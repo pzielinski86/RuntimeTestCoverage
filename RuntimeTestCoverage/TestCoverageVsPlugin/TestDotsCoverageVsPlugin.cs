@@ -36,9 +36,7 @@ namespace TestCoverageVsPlugin
             IWpfTextView textView,
             IVsStatusbar statusBar,
             Solution solution)
-        {
-            ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(Int32.MaxValue));
-
+        {            
             _canvas = new Canvas();
             _textView = textView;
             _statusBar = statusBar;

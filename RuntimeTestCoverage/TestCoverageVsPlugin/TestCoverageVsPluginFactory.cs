@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition;
+using System.Windows;
+using System.Windows.Controls;
 using TestCoverage;
 using TestCoverage.Storage;
 
@@ -35,6 +37,7 @@ namespace TestCoverageVsPlugin
         [ImportingConstructor]
         public MarginFactory([Import]SVsServiceProvider serviceProvider)
         {
+            ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(Int32.MaxValue));
             _dte = (DTE)serviceProvider.GetService(typeof(DTE));
 
             _solutionEvents = _dte.Events.SolutionEvents;
