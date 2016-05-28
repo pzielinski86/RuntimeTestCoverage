@@ -101,7 +101,6 @@ namespace TestCoverageVsPlugin
         {
             return new TestDotsCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView, _statusBar, _dte.Solution);
         }
-
     }
     #endregion
 }

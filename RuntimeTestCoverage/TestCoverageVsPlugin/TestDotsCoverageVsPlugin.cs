@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TestCoverage.CoverageCalculation;
+using TestCoverageVsPlugin.Tasks;
 using Solution = EnvDTE.Solution;
 
 namespace TestCoverageVsPlugin
@@ -50,7 +51,7 @@ namespace TestCoverageVsPlugin
             textView.TextBuffer.Changed += TextBuffer_Changed;
 
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), _vsSolutionTestCoverage);
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(),new RoslynDocumentProvider(),  _vsSolutionTestCoverage);
             _taskCoverageManager.MethodCoverageTaskCompleted += MethodCoverageTaskCompleted;
             _taskCoverageManager.MethodCoverageTaskStarted += MethodCoverageTaskStarted;
         }
@@ -58,7 +59,6 @@ namespace TestCoverageVsPlugin
         private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskArgs e)
         {
             _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(e.DocPath)}_{e.MethodName}");
-            CSharpSyntaxTree.ParseText(_textView.TextBuffer.CurrentSnapshot.GetText());
         }
 
         private void MethodCoverageTaskCompleted(object sender, MethodCoverageTaskArgs e)

@@ -18,6 +18,7 @@ namespace TestCoverageVsPlugin.Tests
     {
         private TaskCoverageManager _sut;
         private IVsSolutionTestCoverage _vsSolutionTestCoverageMock;
+        private IDocumentProvider _documentProviderMock;
         private ITextSnapshot _textSnapshotMock;
         private TimerMock _timerMock;
 
@@ -26,8 +27,9 @@ namespace TestCoverageVsPlugin.Tests
         {
             _vsSolutionTestCoverageMock = Substitute.For<IVsSolutionTestCoverage>();
             _timerMock = new TimerMock();
+            _documentProviderMock = Substitute.For<IDocumentProvider>();
             _textSnapshotMock = Substitute.For<ITextSnapshot>();
-            _sut = new TaskCoverageManager(_timerMock, _vsSolutionTestCoverageMock);
+            _sut = new TaskCoverageManager(_timerMock, _documentProviderMock, _vsSolutionTestCoverageMock);
 
             var taskSchedulerMock = Substitute.For<ITaskSchedulerManager>();
             SynchronizationContext.SetSynchronizationContext(new TestSyncContext());
@@ -59,7 +61,10 @@ namespace TestCoverageVsPlugin.Tests
             var code = "class Tests{ [Test]public void Test1(){}}";
             int position = code.IndexOf("Test1");
             _textSnapshotMock.GetText().Returns(code);
-            
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+
             // act
             _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
             _timerMock.ExecuteNow();
@@ -89,6 +94,9 @@ namespace TestCoverageVsPlugin.Tests
             _textSnapshotMock.GetText().Returns(code);
 
             _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
 
             // act
             _sut.EnqueueMethodTask(projectName, method2Position, _textSnapshotMock, documentPath);
@@ -120,6 +128,9 @@ namespace TestCoverageVsPlugin.Tests
             _textSnapshotMock.GetText().Returns(code);
 
             _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
 
             // act
             _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);

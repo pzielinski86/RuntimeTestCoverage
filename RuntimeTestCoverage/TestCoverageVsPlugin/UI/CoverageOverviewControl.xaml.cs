@@ -4,6 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using EnvDTE;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
@@ -20,6 +21,9 @@ namespace TestCoverageVsPlugin.UI
     /// </summary>
     public partial class CoverageOverviewControl : UserControl
     {
+        private SolutionEvents _solutionEvents;
+        private DTE _dte;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CoverageOverviewControl"/> class.
         /// </summary>
@@ -29,7 +33,6 @@ namespace TestCoverageVsPlugin.UI
 
             this.InitializeComponent();
             this.Loaded += CoverageOverviewControl_Loaded;
-
         }
 
         private void CoverageOverviewControl_Loaded(object sender, RoutedEventArgs e)
@@ -39,11 +42,18 @@ namespace TestCoverageVsPlugin.UI
 
         private async void InitDataContext()
         {
-            var dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
+            _dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
+            _solutionEvents=_dte.Events.SolutionEvents;
+            _solutionEvents.Opened += SolutionEventsOpened;
 
-            if (!string.IsNullOrEmpty(dte.Solution.FileName))
+            await ReloadDataContext();
+        }
+
+        private async Task ReloadDataContext()
+        {
+            if (!string.IsNullOrEmpty(_dte.Solution.FileName))
             {
-                ISolutionExplorer solutionExplorer = new SolutionExplorer(dte.Solution.FileName);
+                ISolutionExplorer solutionExplorer = new SolutionExplorer(_dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
                 ICoverageStore coverageStore = new SqlCompactCoverageStore();
 
@@ -51,17 +61,23 @@ namespace TestCoverageVsPlugin.UI
                     new NUnitTestExtractor(), coverageStore, settingsStore);
                 var xmlCoverageStore = new SqlCompactCoverageStore();
 
-                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(dte.Solution.FileName,
-                    new SolutionCoverageEngine(), 
+                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_dte.Solution.FileName,
+                    new SolutionCoverageEngine(),
                     xmlCoverageStore,
                     new Logger(CoverageOverviewCommand.Instance.ServiceProvider));
 
-                var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore, vsSolutionTestCoverage);
+                var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore,
+                    vsSolutionTestCoverage);
 
                 await coverageOverviewViewModel.PopulateWithTestProjectsAsync();
 
                 DataContext = coverageOverviewViewModel;
             }
+        }
+
+        private async void SolutionEventsOpened()
+        {
+            await ReloadDataContext();
         }
     }
 }

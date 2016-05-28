@@ -105,8 +105,13 @@ namespace TestCoverageVsPlugin.UI.ViewModels
 
             int documentsCount = _vsSolutionTestCoverage.SolutionCoverageByDocument.Count;
             int coverage = _vsSolutionTestCoverage.SolutionCoverageByDocument.Sum(x => x.Value.Count);
+            int successes =
+                _vsSolutionTestCoverage.SolutionCoverageByDocument.Sum(x => x.Value.Count(y => y.IsSuccess));
 
-            Title = $"Documents: {documentsCount} , Coverage: {coverage}";
+            int failures =
+                _vsSolutionTestCoverage.SolutionCoverageByDocument.Sum(x => x.Value.Count(y => !y.IsSuccess));
+
+            Title = $"Documents: {documentsCount}, Coverage: {coverage}, Success: {successes}, Failures: {failures}";
         }
         public ObservableCollection<TestProjectViewModel> TestProjects { get; }
     }

@@ -8,7 +8,7 @@ using TestCoverage.Compilation;
 
 namespace TestCoverage
 {
-    public class SolutionExplorer : MarshalByRefObject,ISolutionExplorer
+    public class SolutionExplorer : MarshalByRefObject, ISolutionExplorer
     {
         private readonly Solution _solution;
 
@@ -19,17 +19,17 @@ namespace TestCoverage
 
             var workspace = MSBuildWorkspace.Create(props);
             // TODO: Get rid of blocking a thread
-            _solution = workspace.OpenSolutionAsync(solutionPath).Result;            
-        }  
+            _solution = workspace.OpenSolutionAsync(solutionPath).Result;
+        }
 
         public string[] GetAllProjectReferences(string projectName)
         {
             var project = Solution.Projects.First(x => x.Name == projectName);
             var allReferences = new HashSet<MetadataReference>();
 
-            PopulateWithReferences(allReferences,project);
+            PopulateWithReferences(allReferences, project);
 
-            return allReferences.Select(x=>x.Display).ToArray();
+            return allReferences.Select(x => x.Display).ToArray();
         }
 
         private void PopulateWithReferences(HashSet<MetadataReference> allReferences, Project project)
@@ -64,7 +64,7 @@ namespace TestCoverage
         {
             foreach (var document in project.Documents)
             {
-                if (excludedDocuments.Any(x=>PathHelper.AreEqual(x,document.FilePath)))
+                if (excludedDocuments.Any(x => PathHelper.AreEqual(x, document.FilePath)))
                     continue;
 
                 yield return document.GetSyntaxTreeAsync().Result;

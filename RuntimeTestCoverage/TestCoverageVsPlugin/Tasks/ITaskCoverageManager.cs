@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.Text;
-using System;
+﻿using System;
+using Microsoft.VisualStudio.Text;
 
-namespace TestCoverageVsPlugin
+namespace TestCoverageVsPlugin.Tasks
 {
     public interface ITaskCoverageManager
     {
