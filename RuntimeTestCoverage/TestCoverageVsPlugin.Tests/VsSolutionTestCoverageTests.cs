@@ -181,7 +181,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateForDocument_Should_RemoveOldCoverageValues()
+        public async Task CalculateForDocument_Should_RemoveOldCoverageValues()
         {
             // arrange
             const string testDocumentPath = "MathHelperTests.cs";
@@ -202,7 +202,7 @@ namespace TestCoverageVsPlugin.Tests
                 Returns(new CoverageResult(new[] { newTestLineCoverage }));
 
             // act
-            _sut.CalculateForDocument("CurrentProject", testDocumentPath, string.Empty);
+            await _sut.CalculateForDocumentAsync("CurrentProject", testDocumentPath, string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(1));
@@ -210,7 +210,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateForDocument_Should_PopulateCoverageWithNewData_When_NewDataIsAvailable()
+        public async Task CalculateForDocument_Should_PopulateCoverageWithNewData_When_NewDataIsAvailable()
         {
             // arrange
             const string newDocumentPath = "MathHelper.cs";
@@ -222,7 +222,7 @@ namespace TestCoverageVsPlugin.Tests
 
             // act
 
-            _sut.CalculateForDocument("CurrentProject", "MathHelperTests.cs", string.Empty);
+           await _sut.CalculateForDocumentAsync("CurrentProject", "MathHelperTests.cs", string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[newDocumentPath].Count, Is.EqualTo(1));
@@ -230,7 +230,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateForDocument_ShouldNot_ClearCoverageOfUnrelatedDocuments()
+        public async Task CalculateForDocument_ShouldNot_ClearCoverageOfUnrelatedDocuments()
         {
             // arrange
             var testLineCoverage = new LineCoverage();
@@ -246,7 +246,7 @@ namespace TestCoverageVsPlugin.Tests
                 Throws(new TestCoverageCompilationException(new string[0]));
 
             // act
-            _sut.CalculateForDocument("CurrentProject", "test.xml", string.Empty);
+            await _sut.CalculateForDocumentAsync("CurrentProject", "test.xml", string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
@@ -276,7 +276,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateForDocument_ShouldClearAllCoverage_When_CompilationExceptionIsThrown()
+        public async Task CalculateForDocument_ShouldClearAllCoverage_When_CompilationExceptionIsThrown()
         {
             // arrange
             const string documentPath = "EmployeeRepository.cs";
@@ -287,7 +287,7 @@ namespace TestCoverageVsPlugin.Tests
             _solutionCoverageEngineMock.CalculateForDocument(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).
                 Returns(new CoverageResult(new LineCoverage[0]));
             // act
-            _sut.CalculateForDocument("CurrentProject", documentPath, string.Empty);
+            await _sut.CalculateForDocumentAsync("CurrentProject", documentPath, string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(1));

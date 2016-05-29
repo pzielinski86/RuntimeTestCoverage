@@ -19,7 +19,7 @@ namespace TestCoverageVsPlugin.Tests
         private TaskCoverageManager _sut;
         private IVsSolutionTestCoverage _vsSolutionTestCoverageMock;
         private IDocumentProvider _documentProviderMock;
-        private ITextSnapshot _textSnapshotMock;
+        private ITextBuffer _textBufferMock;
         private TimerMock _timerMock;
 
         [SetUp]
@@ -28,7 +28,11 @@ namespace TestCoverageVsPlugin.Tests
             _vsSolutionTestCoverageMock = Substitute.For<IVsSolutionTestCoverage>();
             _timerMock = new TimerMock();
             _documentProviderMock = Substitute.For<IDocumentProvider>();
-            _textSnapshotMock = Substitute.For<ITextSnapshot>();
+
+            var textSnapshotMock = Substitute.For<ITextSnapshot>();
+            _textBufferMock = Substitute.For<ITextBuffer>();
+            _textBufferMock.CurrentSnapshot.Returns(textSnapshotMock);
+
             _sut = new TaskCoverageManager(_timerMock, _documentProviderMock, _vsSolutionTestCoverageMock);
 
             var taskSchedulerMock = Substitute.For<ITaskSchedulerManager>();
@@ -59,10 +63,10 @@ namespace TestCoverageVsPlugin.Tests
             const string documentPath = @"c:\\MathHelperTests.cs";
             const string documentContent = "class Tests{ [Test]public void Test1(){}}";
 
-            _textSnapshotMock.GetText().Returns(documentContent);
+            _textBufferMock.CurrentSnapshot.GetText().Returns(documentContent);
 
             // act
-            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
@@ -71,7 +75,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void CalculateDocumentCoverage_Should_Invalidate_MethodExecutionTasks_Which_BelongTo_TheSameDocument()
+        public void CalculateDocumentCoverage_After_SuccessfulCompletion_Should_Invalidate_MethodExecutionTasks_Which_BelongTo_TheSameDocument()
         {
             // arrange 
             const string projectName = "MathHelper.Tests";
@@ -79,18 +83,48 @@ namespace TestCoverageVsPlugin.Tests
 
             var code = "class Tests{ [Test]public void Test1(){}}";
             int position = code.IndexOf("Test1");
-            _textSnapshotMock.GetText().Returns(code);
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
 
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
-            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
+            _vsSolutionTestCoverageMock.CalculateForDocumentAsync(projectName, documentPath, code)
+                .Returns(Task.FromResult(true));
 
             // act
-            _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
-            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, position, _textBufferMock, documentPath);            
             _timerMock.ExecuteNow();
 
             // assert
             _vsSolutionTestCoverageMock.Received(0)
+                .CalculateForSelectedMethodAsync(Arg.Any<string>(), Arg.Any<MethodDeclarationSyntax>());
+
+            _vsSolutionTestCoverageMock.Received(1)
+                .CalculateForDocumentAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public void CalculateDocumentCoverage_After_UnsuccessfulCompletion_ShouldNot_Invalidate_MethodExecutionTasks_Which_BelongTo_TheSameDocument()
+        {
+            // arrange 
+            const string projectName = "MathHelper.Tests";
+            const string documentPath = @"c:\\MathHelperTests.cs";
+
+            var code = "class Tests{ [Test]public void Test1(){}}";
+            int position = code.IndexOf("Test1");
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
+            _vsSolutionTestCoverageMock.CalculateForDocumentAsync(projectName, documentPath, code)
+                .Returns(Task.FromResult(false));
+            // act
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, position, _textBufferMock, documentPath);
+            _timerMock.ExecuteNow();
+
+            // assert
+            _vsSolutionTestCoverageMock.Received(1)
                 .CalculateForSelectedMethodAsync(Arg.Any<string>(), Arg.Any<MethodDeclarationSyntax>());
 
             _vsSolutionTestCoverageMock.Received(1)
@@ -105,8 +139,8 @@ namespace TestCoverageVsPlugin.Tests
             const string documentPath = @"c:\\MathHelperTests.cs";
 
             // act
-            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
-            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
 
             _timerMock.ExecuteNow();
 
@@ -124,13 +158,13 @@ namespace TestCoverageVsPlugin.Tests
 
             var code = "class Tests{ [Test]public void Test1(){}}";
             int position = code.IndexOf("Test1");
-            _textSnapshotMock.GetText().Returns(code);
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
 
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
-            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
 
             // act
-            _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, position, _textBufferMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
@@ -155,15 +189,15 @@ namespace TestCoverageVsPlugin.Tests
             int method1Position = code.IndexOf("Test1");
             int method2Position = code.IndexOf("Test2");
 
-            _textSnapshotMock.GetText().Returns(code);
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
 
-            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, method1Position, _textBufferMock, documentPath);
 
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
-            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
 
             // act
-            _sut.EnqueueMethodTask(projectName, method2Position, _textSnapshotMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, method2Position, _textBufferMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
@@ -189,20 +223,52 @@ namespace TestCoverageVsPlugin.Tests
 
             int method1Position = code.IndexOf("Test1");
 
-            _textSnapshotMock.GetText().Returns(code);
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
 
-            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, method1Position, _textBufferMock, documentPath);
 
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
-            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
 
             // act
-            _sut.EnqueueMethodTask(projectName, method1Position, _textSnapshotMock, documentPath);
+            _sut.EnqueueMethodTask(projectName, method1Position, _textBufferMock, documentPath);
             _timerMock.ExecuteNow();
 
             // assert
             _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName,
                 Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test1"));
+        }
+
+        [Test]
+        public void UnsuccessfulDocumentTask_ShouldBe_Retried_After_AnySucessfulOperationInThatDocument()
+        {
+            // arrange
+            const string projectName = "MathHelper.Tests";
+            const string documentPath = @"c:\\MathHelperTests1.cs";
+
+            var code = "class Tests{ " +
+                       "[Test]public void Test1()" +
+                       "{}" +
+                       "}";
+
+            int method1Position = code.IndexOf("Test1");
+            _textBufferMock.CurrentSnapshot.GetText().Returns(code);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textBufferMock.CurrentSnapshot).Returns(syntaxTree.GetRoot());
+            _vsSolutionTestCoverageMock.CalculateForDocumentAsync(projectName, documentPath, code).Returns(false);
+            _vsSolutionTestCoverageMock.CalculateForSelectedMethodAsync(Arg.Any<string>(), Arg.Any<MethodDeclarationSyntax>()).
+                Returns(true);
+
+            // act
+            _sut.EnqueueDocumentTask(projectName, _textBufferMock, documentPath);
+            _timerMock.ExecuteNow();
+
+            _sut.EnqueueMethodTask(projectName, method1Position, _textBufferMock, documentPath);
+            _timerMock.ExecuteNow();
+
+            // assert
+            _vsSolutionTestCoverageMock.Received(2).CalculateForDocumentAsync(projectName,documentPath, code);
         }
     }
 }

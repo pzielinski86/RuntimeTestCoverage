@@ -85,12 +85,12 @@ namespace TestCoverageVsPlugin
 
             bool foundMethod = _taskCoverageManager.EnqueueMethodTask(_projectName,
                 _textView.Caret.Position.BufferPosition.Position,
-                e.After,
+                _textView.TextBuffer,
                 _documentPath);
 
             if (!foundMethod)
             {
-                _taskCoverageManager.EnqueueDocumentTask(_projectName, e.After, _documentPath);
+                _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, _documentPath);
             }
         }
 

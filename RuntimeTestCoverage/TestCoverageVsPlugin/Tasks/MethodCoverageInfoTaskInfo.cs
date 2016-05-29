@@ -10,34 +10,39 @@ namespace TestCoverageVsPlugin.Tasks
     {
         public string ProjectName { get; }
         public MethodDeclarationSyntax Method { get; }
-        public ITextSnapshot TextSnapshot { get; set; }
+        public ITextBuffer TextBuffer { get; set; }
         public string DocumentPath => Method.SyntaxTree.FilePath;
         public string MethodName => Method.Identifier.ValueText;
 
-        public MethodCoverageInfoTaskInfo(string projectName, MethodDeclarationSyntax method, ITextSnapshot textSnapshot)
+        public MethodCoverageInfoTaskInfo(string projectName, MethodDeclarationSyntax method, ITextBuffer textBuffer)
         {
             ProjectName = projectName;
             Method = method;
-            TextSnapshot = textSnapshot;
+            TextBuffer = textBuffer;
         }
 
-        public Task ExecuteAsync(ITaskCoverageManager taskCoverageManager, IVsSolutionTestCoverage vsSolutionTestCoverage, IDocumentProvider documentProvider)
+        public Task<bool> ExecuteAsync(ITaskCoverageManager taskCoverageManager, IVsSolutionTestCoverage vsSolutionTestCoverage, IDocumentProvider documentProvider)
         {
           
             string methodName = Method.Identifier.ValueText;
             RaiseTaskStartedEvent(taskCoverageManager);
 
-            var documentSyntaxTree = documentProvider.GetSyntaxNodeFromTextSnapshot(TextSnapshot);
+            var documentSyntaxTree = documentProvider.GetSyntaxNodeFromTextSnapshot(TextBuffer.CurrentSnapshot);
 
             var methodNode = documentSyntaxTree.DescendantNodes()
                 .OfType<MethodDeclarationSyntax>()
                 .FirstOrDefault(x => x.Identifier.ValueText == methodName);
 
-            Task task = vsSolutionTestCoverage.CalculateForSelectedMethodAsync(ProjectName, methodNode);
+            if (methodNode == null)
+                return Task.FromResult(false);
+
+            Task<bool> task = vsSolutionTestCoverage.CalculateForSelectedMethodAsync(ProjectName, methodNode);
 
             var finalTask = task.ContinueWith((x, y) =>
             {
                 RaiseTasCompletedEvent(taskCoverageManager);
+                return x.Result;
+
             }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
 
             return finalTask;
