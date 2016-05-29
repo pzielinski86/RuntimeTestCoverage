@@ -29,23 +29,16 @@ namespace TestCoverageVsPlugin.UI
         /// </summary>
         public CoverageOverviewControl()
         {
-            InitDataContext();
+            _dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
+            _solutionEvents = _dte.Events.SolutionEvents;
+            _solutionEvents.Opened += SolutionEventsOpened;
 
             this.InitializeComponent();
             this.Loaded += CoverageOverviewControl_Loaded;
         }
 
-        private void CoverageOverviewControl_Loaded(object sender, RoutedEventArgs e)
+        private async void CoverageOverviewControl_Loaded(object sender, RoutedEventArgs e)
         {
-            InitDataContext();
-        }
-
-        private async void InitDataContext()
-        {
-            _dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
-            _solutionEvents=_dte.Events.SolutionEvents;
-            _solutionEvents.Opened += SolutionEventsOpened;
-
             await ReloadDataContext();
         }
 
@@ -53,6 +46,8 @@ namespace TestCoverageVsPlugin.UI
         {
             if (!string.IsNullOrEmpty(_dte.Solution.FileName))
             {
+                Config.SetSolution(_dte.Solution.FileName);
+
                 ISolutionExplorer solutionExplorer = new SolutionExplorer(_dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
                 ICoverageStore coverageStore = new SqlCompactCoverageStore();

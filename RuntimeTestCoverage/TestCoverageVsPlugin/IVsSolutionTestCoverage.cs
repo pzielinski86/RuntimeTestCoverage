@@ -10,7 +10,6 @@ namespace TestCoverageVsPlugin
     {
         string SolutionPath { get; }
         Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; }
-        void LoadCurrentCoverage();
         Task CalculateForAllDocumentsAsync();
         Task<bool> CalculateForSelectedMethodAsync(string projectName, MethodDeclarationSyntax method);
         Task<bool> CalculateForDocumentAsync(string projectName, string documentPath, string documentContent);

@@ -77,8 +77,6 @@ namespace TestCoverageVsPlugin
                 new SqlCompactCoverageStore(),
                 _logger);
 
-            _vsSolutionTestCoverage.Reinit();
-            _vsSolutionTestCoverage.LoadCurrentCoverage();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

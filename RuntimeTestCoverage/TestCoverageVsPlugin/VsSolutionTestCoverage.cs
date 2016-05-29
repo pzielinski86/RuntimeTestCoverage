@@ -51,6 +51,8 @@ namespace TestCoverageVsPlugin
                     if (_vsSolutionTestCoverage == null)
                     {
                         _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionPath, solutionCoverageEngine, coverageStore, logger);
+                        _vsSolutionTestCoverage.Reinit();
+                        _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }
                 }
             }
@@ -59,13 +61,6 @@ namespace TestCoverageVsPlugin
         }
 
         public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
-
-        public void LoadCurrentCoverage()
-        {
-            LineCoverage[] coverage = _coverageStore.ReadAll();
-
-            SolutionCoverageByDocument = coverage.GroupBy(x => x.DocumentPath).ToDictionary(x => x.Key, x => x.ToList());
-        }
 
         public async Task CalculateForAllDocumentsAsync()
         {
@@ -160,6 +155,13 @@ namespace TestCoverageVsPlugin
         public void Dispose()
         {
             _vsSolutionTestCoverage = null;
+        }
+
+        public void LoadCurrentCoverage()
+        {
+            LineCoverage[] coverage = _coverageStore.ReadAll();
+
+            SolutionCoverageByDocument = coverage.GroupBy(x => x.DocumentPath).ToDictionary(x => x.Key, x => x.ToList());
         }
     }
 }
