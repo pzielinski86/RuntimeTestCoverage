@@ -40,7 +40,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void Should_AcceptOnlyCsharpDocuments()
+        public void EnqueueMethodTask_Should_AcceptOnlyCsharpDocuments()
         {
             // arrange
 
@@ -52,7 +52,71 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public void Should_CalculateCoverage_After_SpecifiedTime_When_ThereAreNoOtherPendingTasks()
+        public void Should_CalculateDocumentCoverage_After_SpecifiedTime_When_ThereAreNoOtherPendingTasks()
+        {
+            // arrange
+            const string projectName = "MathHelper.Tests";
+            const string documentPath = @"c:\\MathHelperTests.cs";
+            const string documentContent = "class Tests{ [Test]public void Test1(){}}";
+
+            _textSnapshotMock.GetText().Returns(documentContent);
+
+            // act
+            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _timerMock.ExecuteNow();
+
+            // assert
+            _vsSolutionTestCoverageMock.Received(1)
+                .CalculateForDocumentAsync(projectName, documentPath, documentContent);
+        }
+
+        [Test]
+        public void CalculateDocumentCoverage_Should_Invalidate_MethodExecutionTasks_Which_BelongTo_TheSameDocument()
+        {
+            // arrange 
+            const string projectName = "MathHelper.Tests";
+            const string documentPath = @"c:\\MathHelperTests.cs";
+
+            var code = "class Tests{ [Test]public void Test1(){}}";
+            int position = code.IndexOf("Test1");
+            _textSnapshotMock.GetText().Returns(code);
+
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            _documentProviderMock.GetSyntaxNodeFromTextSnapshot(_textSnapshotMock).Returns(syntaxTree.GetRoot());
+
+            // act
+            _sut.EnqueueMethodTask(projectName, position, _textSnapshotMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _timerMock.ExecuteNow();
+
+            // assert
+            _vsSolutionTestCoverageMock.Received(0)
+                .CalculateForSelectedMethodAsync(Arg.Any<string>(), Arg.Any<MethodDeclarationSyntax>());
+
+            _vsSolutionTestCoverageMock.Received(1)
+                .CalculateForDocumentAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public void Should_CalculateCoverageDocument_Only_OneTime_When_TwoTheSameDocuments_Were_Requested()
+        {
+            // arrange
+            const string projectName = "MathHelper.Tests";
+            const string documentPath = @"c:\\MathHelperTests.cs";
+
+            // act
+            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+            _sut.EnqueueDocumentTask(projectName, _textSnapshotMock, documentPath);
+
+            _timerMock.ExecuteNow();
+
+            // assert
+            _vsSolutionTestCoverageMock.Received(1)
+                .CalculateForDocumentAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public void Should_CalculateMethodCoverage_After_SpecifiedTime_When_ThereAreNoOtherPendingTasks()
         {
             // arrange
             const string projectName = "MathHelper.Tests";

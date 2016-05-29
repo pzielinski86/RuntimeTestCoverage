@@ -104,14 +104,16 @@ namespace TestCoverage.Tests.Extensions
             // arrange
             const string code = "class Sample" +
                           "{ " +
+                              "//test-start\n"+
+                              "[Test]\n"+
                               "public void Test() " +
                               "{ " +
                                  "int a=0;" +
                               "}" +
-                          "}";
+                          "}\n//test-end";
 
             var tree = CSharpSyntaxTree.ParseText(code);
-            int position = code.IndexOf("}")+1;
+            int position = code.IndexOf("test-start");
 
             // act
             MethodDeclarationSyntax method = tree.GetRoot().GetMethodAt(position);

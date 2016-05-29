@@ -34,7 +34,7 @@ namespace TestCoverage.Extensions
             var method =
                 root.DescendantNodes()
                     .OfType<MethodDeclarationSyntax>().
-                    FirstOrDefault(x => x.FullSpan.Start < position && x.FullSpan.End > position);
+                    FirstOrDefault(x => x.Span.Start < position && x.Span.End > position);
 
             return method;
         }

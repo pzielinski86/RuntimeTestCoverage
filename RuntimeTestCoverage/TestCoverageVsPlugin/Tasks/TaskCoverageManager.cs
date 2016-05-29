@@ -18,12 +18,17 @@ namespace TestCoverageVsPlugin.Tasks
         private readonly ITimer _timer;
         private readonly IDocumentProvider _documentProvider;
         private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
-        private readonly Queue<MethodCoverageTaskInfo> _tasks;
+        private readonly List<ITaskCoverageInfo> _tasks;
 
-        public event EventHandler<MethodCoverageTaskArgs> MethodCoverageTaskCompleted;
-        public event EventHandler<MethodCoverageTaskArgs> MethodCoverageTaskStarted;
+        public event EventHandler<CoverageTaskArgsBase> CoverageTaskEvent;
+
         public bool AreJobsPending => _tasks.Count > 0;
+
         public bool IsBusy { get; private set; }
+        public void RaiseEvent(CoverageTaskArgsBase args)
+        {
+            CoverageTaskEvent?.Invoke(this, args);
+        }
 
         public TaskCoverageManager(ITimer timer,
             IDocumentProvider documentProvider,
@@ -31,33 +36,51 @@ namespace TestCoverageVsPlugin.Tasks
         {
             _timer = timer;
             _documentProvider = documentProvider;
-            _tasks = new Queue<MethodCoverageTaskInfo>();
+            _tasks = new List<ITaskCoverageInfo>();
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
         }
 
-        public void EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath)
+        public void EnqueueDocumentTask(string projectName, ITextSnapshot textSnapshot, string documentPath)
+        {
+            _tasks.RemoveAll(x => x.DocumentPath == documentPath);
+            
+            var existingTask = _tasks.OfType<DocumentCoverageInfoTaskInfo>().
+                FirstOrDefault(x => x.DocumentPath == documentPath);
+            
+            if (existingTask == null)
+            {
+                var task = new DocumentCoverageInfoTaskInfo(projectName,documentPath, textSnapshot);
+                _tasks.Add(task);
+            }
+
+            _timer.Schedule(ExecutionDelayInMilliseconds, ExecuteTask);
+        }
+
+        public bool EnqueueMethodTask(string projectName, int position, ITextSnapshot textSnapshot, string documentPath)
         {
             if (Path.GetExtension(documentPath) != ".cs")
-                return;
+                return false;
 
             var root = CSharpSyntaxTree.ParseText(textSnapshot.GetText(), path: documentPath).GetRoot();
             var method = root.GetMethodAt(position);
 
             if (method == null)
-                return;
+                return false;
 
-            var existingTask = _tasks.FirstOrDefault(x => x.Method.Identifier.ToString() == method.Identifier.ToString());
+            var existingTask = _tasks.OfType<MethodCoverageInfoTaskInfo>().
+                FirstOrDefault(x => x.Method.Identifier.ToString() == method.Identifier.ToString());
 
             if (existingTask == null)
             {
-                var task = new MethodCoverageTaskInfo(projectName,method, textSnapshot);
-                _tasks.Enqueue(task);
+                var task = new MethodCoverageInfoTaskInfo(projectName, method, textSnapshot);
+                _tasks.Add(task);
             }
             else
                 existingTask.TextSnapshot = textSnapshot;
 
             IsBusy = true;
             _timer.Schedule(ExecutionDelayInMilliseconds, ExecuteTask);
+            return true;
         }
 
         private void ExecuteTask()
@@ -68,44 +91,15 @@ namespace TestCoverageVsPlugin.Tasks
                 return;
             }
 
-            MethodCoverageTaskInfo taskInfo = _tasks.Dequeue();
+            ITaskCoverageInfo taskInfo = _tasks[0];
+            _tasks.RemoveAt(0);
 
-            var filePath = taskInfo.Method.SyntaxTree.FilePath;
-            string methodName = taskInfo.Method.Identifier.ValueText;
-            MethodCoverageTaskStarted?.Invoke(this, new MethodCoverageTaskArgs(filePath, methodName));
-
-            var documentSyntaxTree = _documentProvider.GetSyntaxNodeFromTextSnapshot(taskInfo.TextSnapshot);
-            
-            var methodNode = documentSyntaxTree.DescendantNodes()
-                .OfType<MethodDeclarationSyntax>()
-                .FirstOrDefault(x => x.Identifier.ValueText == methodName);
-
-            Task task = _vsSolutionTestCoverage.CalculateForSelectedMethodAsync(taskInfo.ProjectName, methodNode);
+            var task = taskInfo.ExecuteAsync(this, _vsSolutionTestCoverage, _documentProvider);
 
             task.ContinueWith((x, y) =>
             {
-                MethodCalculationsCompleted(filePath, methodName);
                 ExecuteTask();
             }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
-        }
-
-        private void MethodCalculationsCompleted(string documentPath, string methodName)
-        {
-            MethodCoverageTaskCompleted?.Invoke(this, new MethodCoverageTaskArgs(documentPath, methodName));
-        }
-
-        class MethodCoverageTaskInfo
-        {
-            public string ProjectName { get; }
-            public MethodDeclarationSyntax Method { get; }
-            public ITextSnapshot TextSnapshot { get; set; }
-
-            public MethodCoverageTaskInfo(string projectName, MethodDeclarationSyntax method, ITextSnapshot textSnapshot)
-            {
-                ProjectName = projectName;
-                Method = method;
-                TextSnapshot = textSnapshot;
-            }
         }
     }
 }

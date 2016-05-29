@@ -163,6 +163,7 @@
     <Compile Include="CoverageResult.cs" />
     <Compile Include="Extensions\ConcurrentExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\SymbolExtensions.cs" />
     <Compile Include="Extensions\SyntaxNodeExtensions.cs" />
     <Compile Include="ISolutionCoverageEngine.cs" />

@@ -6,6 +6,7 @@ using System.Data.SqlServerCe;
 using System.IO;
 using System.Linq;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Extensions;
 
 namespace TestCoverage.Storage
 {
@@ -111,7 +112,7 @@ namespace TestCoverage.Storage
                     row["TestDocumentPath"] = lineCoverage.TestDocumentPath;
                     row["Span"] = lineCoverage.Span;
                     row["IsSuccess"] = lineCoverage.IsSuccess;
-                    row["ErrorMessage"] = lineCoverage.ErrorMessage;
+                    row["ErrorMessage"] = lineCoverage.ErrorMessage.Truncate(4000);
 
                     table.Rows.Add(row);
                 }
@@ -139,7 +140,7 @@ namespace TestCoverage.Storage
                 var sql = "create table Coverage("
                           + "NodePath nvarchar(500) not null, "
                           + "TestPath nvarchar(500) not null, "
-                          + "ErrorMessage nvarchar(1000) null, "
+                          + "ErrorMessage nvarchar(4000) null, "
                           + "DocumentPath nvarchar(500)  not null, "
                           + "TestDocumentPath nvarchar(500) not null, "
                           + "Span int not null, "

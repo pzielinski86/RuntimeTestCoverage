@@ -10,7 +10,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TestCoverage.CoverageCalculation;
+using TestCoverageVsPlugin.Extensions;
 using TestCoverageVsPlugin.Tasks;
+using TestCoverageVsPlugin.Tasks.Events;
 using Solution = EnvDTE.Solution;
 
 namespace TestCoverageVsPlugin
@@ -37,7 +39,7 @@ namespace TestCoverageVsPlugin
             IWpfTextView textView,
             IVsStatusbar statusBar,
             Solution solution)
-        {            
+        {
             _canvas = new Canvas();
             _textView = textView;
             _statusBar = statusBar;
@@ -51,28 +53,45 @@ namespace TestCoverageVsPlugin
             textView.TextBuffer.Changed += TextBuffer_Changed;
 
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(),new RoslynDocumentProvider(),  _vsSolutionTestCoverage);
-            _taskCoverageManager.MethodCoverageTaskCompleted += MethodCoverageTaskCompleted;
-            _taskCoverageManager.MethodCoverageTaskStarted += MethodCoverageTaskStarted;
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), new RoslynDocumentProvider(), _vsSolutionTestCoverage);
+            _taskCoverageManager.CoverageTaskEvent += TaskCoverageManagerCoverageTaskEvent;
         }
 
-        private void MethodCoverageTaskStarted(object sender, MethodCoverageTaskArgs e)
+        private void TaskCoverageManagerCoverageTaskEvent(object sender, CoverageTaskArgsBase e)
         {
-            _statusBar.SetText($"Calculating coverage for {System.IO.Path.GetFileName(e.DocPath)}_{e.MethodName}");
-        }
+            if (e is MethodCoverageTaskStartedArgs)
+            {
+                var startedEvent = (MethodCoverageTaskStartedArgs)e;
+                _statusBar.SetText(
+                    $"Calculating coverage for the method {System.IO.Path.GetFileName(e.DocPath)}_{startedEvent.MethodName}");
+            }
+            else if (e is DocumentCoverageTaskStartedArgs)
+            {
+                _statusBar.SetText(
+                    $"Calculating coverage for the document {System.IO.Path.GetFileName(e.DocPath)}");
+            }
 
-        private void MethodCoverageTaskCompleted(object sender, MethodCoverageTaskArgs e)
-        {
-            _statusBar.SetText("");
-            Redraw();
+            else if (e is MethodCoverageTaskCompletedArgs || e is DocumentCoverageTaskCompletedArgs)
+            {
+                _statusBar.SetText("");
+                Redraw();
+            }
         }
 
         private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
         {
-            _taskCoverageManager.EnqueueMethodTask(_projectName,
-                _textView.Caret.Position.BufferPosition,
+            if (!e.Changes.Any(x => x.AnyCodeChanges()))
+                return;
+
+            bool foundMethod = _taskCoverageManager.EnqueueMethodTask(_projectName,
+                _textView.Caret.Position.BufferPosition.Position,
                 e.After,
                 _documentPath);
+
+            if (!foundMethod)
+            {
+                _taskCoverageManager.EnqueueDocumentTask(_projectName, e.After, _documentPath);
+            }
         }
 
         private bool InitProperties()

@@ -2,9 +2,9 @@ namespace TestCoverageVsPlugin.Tasks
 {
     public static class TaskSchedulerManager
     {
-        static TaskSchedulerManager ()
+        static TaskSchedulerManager()
         {
-            Current=new TplTaskSchedulerManager();
+            Current = new TplTaskSchedulerManager();
         }
 
         public static ITaskSchedulerManager Current { get; set; }
