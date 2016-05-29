@@ -80,15 +80,12 @@ namespace TestCoverageVsPlugin
 
         private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
         {
-            if (!e.Changes.Any(x => x.AnyCodeChanges()))
-                return;
-
             bool foundMethod = _taskCoverageManager.EnqueueMethodTask(_projectName,
-                _textView.Caret.Position.BufferPosition.Position,
-                _textView.TextBuffer,
-                _documentPath);
+                    _textView.Caret.Position.BufferPosition.Position,
+                    _textView.TextBuffer,
+                    _documentPath);
 
-            if (!foundMethod)
+            if (!foundMethod&& e.Changes.Any(x => x.AnyCodeChanges()))
             {
                 _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, _documentPath);
             }
