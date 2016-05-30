@@ -131,6 +131,7 @@
   <ItemGroup>
     <Compile Include="CoverageDotDrawerTests.cs" />
     <Compile Include="Extensions\ITextChangeExtensionsTests.cs" />
+    <Compile Include="Extensions\SolutionCoverageByDocumentExtensionsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskCoverageManagerTests.cs" />
     <Compile Include="TestSyncContext.cs" />

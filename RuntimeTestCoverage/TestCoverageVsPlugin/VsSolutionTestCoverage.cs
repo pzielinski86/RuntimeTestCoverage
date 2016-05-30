@@ -101,7 +101,7 @@ namespace TestCoverageVsPlugin
                     string path = NodePathBuilder.BuildPath(method,
                         Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
-                    SolutionCoverageByDocument.RemvoeByPath(path);
+                    SolutionCoverageByDocument.MarkAsCompilationError(path,e.ToString());
                     _logger.Error(e.ToString());
                     return false;
                 }

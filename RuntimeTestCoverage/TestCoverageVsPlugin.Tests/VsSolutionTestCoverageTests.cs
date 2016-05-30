@@ -110,7 +110,7 @@ namespace TestCoverageVsPlugin.Tests
         }
 
         [Test]
-        public async Task When_CalculateForMethod_Fails_Should_RemoveCoverageOnlyFromExecutedPath()
+        public async Task When_CalculateForMethod_Fails_Should_MarkCoverageAsFaileddOnlyFromExecutedPath()
         {
             // arrange
             const string code = "class MathHelperTests{" +
@@ -119,14 +119,15 @@ namespace TestCoverageVsPlugin.Tests
                                 " [Test] public void Test2() " +
                                 "{}" +
                                 "}";
+
             var tree = CSharpSyntaxTree.ParseText(code);
             var method = tree.GetRoot().GetPublicMethods()[1];
             const string testDocumentPath = "MathHelperTests.cs";
 
             var oldTestLineCoverage1 = new LineCoverage();
             oldTestLineCoverage1.DocumentPath = testDocumentPath;
-            oldTestLineCoverage1.NodePath = "CurrentProject..MathHelperTests.Test";
-            oldTestLineCoverage1.TestPath = "CurrentProject..MathHelperTests.Test";
+            oldTestLineCoverage1.NodePath = "CurrentProject..MathHelperTests.AnotherTest";
+            oldTestLineCoverage1.TestPath = "CurrentProject..MathHelperTests.AnotherTest";
 
             var coverageToBeRecalculated = new LineCoverage();
             coverageToBeRecalculated.DocumentPath = testDocumentPath;
@@ -136,14 +137,19 @@ namespace TestCoverageVsPlugin.Tests
             _sut.SolutionCoverageByDocument.Add(testDocumentPath, new List<LineCoverage>() { oldTestLineCoverage1, coverageToBeRecalculated });
 
             _solutionCoverageEngineMock.CalculateForMethod(Arg.Any<string>(), Arg.Any<MethodDeclarationSyntax>()).
-                Throws(new TestCoverageCompilationException(new string[0]));
+                Throws(new TestCoverageCompilationException(new string[1]));
 
             // act
             await _sut.CalculateForSelectedMethodAsync("CurrentProject", method);
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(1));
-            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][0].TestPath,Is.EqualTo(oldTestLineCoverage1.TestPath));
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(2));
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][0],Is.EqualTo(oldTestLineCoverage1));
+
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][1].NodePath, Is.EqualTo(coverageToBeRecalculated.NodePath));
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][1].TestPath, Is.EqualTo(coverageToBeRecalculated.TestPath));
+            Assert.IsFalse(_sut.SolutionCoverageByDocument[testDocumentPath][1].IsSuccess);
+            Assert.IsNotNull(_sut.SolutionCoverageByDocument[testDocumentPath][1].ErrorMessage);
         }
 
         [Test]
