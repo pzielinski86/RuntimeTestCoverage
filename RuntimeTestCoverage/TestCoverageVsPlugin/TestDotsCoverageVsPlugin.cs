@@ -40,6 +40,9 @@ namespace TestCoverageVsPlugin
             IVsStatusbar statusBar,
             Solution solution)
         {
+            _vsSolutionTestCoverage = vsSolutionTestCoverage;
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), new RoslynDocumentProvider(), _vsSolutionTestCoverage);
+
             _canvas = new Canvas();
             _textView = textView;
             _statusBar = statusBar;
@@ -51,9 +54,7 @@ namespace TestCoverageVsPlugin
             this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
             textView.TextBuffer.Changed += TextBuffer_Changed;
-
-            _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), new RoslynDocumentProvider(), _vsSolutionTestCoverage);
+                        
             _taskCoverageManager.CoverageTaskEvent += TaskCoverageManagerCoverageTaskEvent;
         }
 

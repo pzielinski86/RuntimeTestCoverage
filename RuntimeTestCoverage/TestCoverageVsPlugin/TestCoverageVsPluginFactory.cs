@@ -92,7 +92,7 @@ namespace TestCoverageVsPlugin
                 project.Save();
             }
 
-            _vsSolutionTestCoverage.Reinit();
+            InitSolutionCoverageEngine();
         }
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
