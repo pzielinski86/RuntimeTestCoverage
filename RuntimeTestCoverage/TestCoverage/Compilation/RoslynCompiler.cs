@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Compilation
@@ -55,7 +56,11 @@ namespace TestCoverage.Compilation
             var auditTree = CSharpSyntaxTree.ParseText(AuditVariablesMap.GenerateCode());
 
             // TODO - remove hardcoded .NET 3.5 dll
-            var references = new[] { MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll") };
+            var references = new[]
+            {
+                MetadataReference.CreateFromFile(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\mscorlib.dll"),
+                MetadataReference.CreateFromFile(typeof(HashSet<int>).Assembly.Location)
+            };
 
             CSharpCompilation compilation = Compile("Audit.dll", new[] { auditTree }, references);
 
@@ -103,7 +108,8 @@ namespace TestCoverage.Compilation
         private static CSharpCompilation Compile(string dllName, SyntaxTree[] allTrees, MetadataReference[] references)
         {
             var settings = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).
-                         WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
+                WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
+                .WithOptimizationLevel(OptimizationLevel.Release);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 dllName,

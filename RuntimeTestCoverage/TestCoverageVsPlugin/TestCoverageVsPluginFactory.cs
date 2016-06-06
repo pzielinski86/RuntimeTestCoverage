@@ -97,6 +97,8 @@ namespace TestCoverageVsPlugin
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
+            InitSolutionCoverageEngine();
+
             return new TestDotsCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView, _statusBar, _dte.Solution);
         }
     }

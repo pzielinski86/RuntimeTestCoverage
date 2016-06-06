@@ -1,12 +1,6 @@
 using Microsoft.CodeAnalysis.Scripting;
 using System;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
@@ -25,9 +19,9 @@ namespace TestCoverage.CoverageCalculation
             {
                 // todo: clean-up code to remove hardcoded dlls like mscorlib.
                 var options = ScriptOptions.Default.
-               WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
-               AddReferences(typeof(int).Assembly).
-               AddImports("System", "System.Reflection");
+                    WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
+                    AddReferences(typeof (int).Assembly).
+                    AddImports("System", "System.Reflection");
 
                 _references = references;
 
@@ -54,16 +48,17 @@ namespace TestCoverage.CoverageCalculation
         }
 
         private AuditVariablePlaceholder[] GetVariables(dynamic dynamicVariables)
-        {
+        {         
             var variables = new AuditVariablePlaceholder[dynamicVariables.Count];
+            int i = 0;
 
-            for (int i = 0; i < dynamicVariables.Count; i++)
+            foreach (var dynamicVar in dynamicVariables)
             {
-                var variable = new AuditVariablePlaceholder(dynamicVariables[i].DocumentPath,
-                    dynamicVariables[i].NodePath,
-                    dynamicVariables[i].Span);
+                var variable = new AuditVariablePlaceholder(dynamicVar.DocumentPath,
+                    dynamicVar.NodePath,
+                    dynamicVar.Span); 
 
-                variables[i] = variable;
+                 variables[i++] = variable;
             }
 
             return variables;

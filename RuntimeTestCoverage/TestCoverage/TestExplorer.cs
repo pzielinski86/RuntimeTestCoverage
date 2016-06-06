@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
 using TestCoverage.Rewrite;
@@ -41,7 +42,7 @@ namespace TestCoverage
                 if (fixtures.Length > 0)
                 {
                     var testProject = new TestProject();
-                    testProject.Project = project;
+                    testProject.Project = project.WithParseOptions(new CSharpParseOptions());
                     testProject.TestFixtures = fixtures;
 
                     var storedProject = settings.Projects.SingleOrDefault(x => x.Name == project.Name);

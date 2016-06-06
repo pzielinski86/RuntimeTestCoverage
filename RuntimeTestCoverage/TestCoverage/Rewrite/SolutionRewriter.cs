@@ -1,6 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace TestCoverage.Rewrite
 {
@@ -15,7 +19,7 @@ namespace TestCoverage.Rewrite
 
         public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
         {
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent,CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent, CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
             SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
@@ -40,9 +44,32 @@ namespace TestCoverage.Rewrite
 
                     rewrittenItems[document.Project].Add(rewrittenDocument);
                 }
+
+                AddInternalVisibleToAttribute(rewrittenItems, project);
             }
 
             return new RewriteResult(rewrittenItems);
+        }
+
+        private void AddInternalVisibleToAttribute(Dictionary<Project, List<RewrittenDocument>> rewrittenDocuments, Project project)
+        {
+            foreach (ProjectReference referencedProjectRef in project.ProjectReferences)
+            {
+                var referencedProject =
+                    project.Solution.Projects.First(x => x.Id == referencedProjectRef.ProjectId);
+
+                string attribute =
+                    $"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"{PathHelper.GetCoverageDllName(project.Name)}\")]";
+
+                if (!rewrittenDocuments.ContainsKey(referencedProject))
+                    rewrittenDocuments.Add(referencedProject, new List<RewrittenDocument>());
+
+                var node = CSharpSyntaxTree.ParseText(attribute);
+                                
+                RewrittenDocument document = new RewrittenDocument(node, Path.GetTempFileName() + ".cs");
+
+                rewrittenDocuments[referencedProject].Add(document);
+            }
         }
     }
 }

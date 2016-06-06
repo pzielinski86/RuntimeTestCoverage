@@ -1,8 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NSubstitute;
 using NUnit.Framework;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Tests.Rewrite
@@ -122,18 +125,36 @@ namespace TestCoverage.Tests.Rewrite
             Assert.That(result.Items.Keys.Last().Id, Is.EqualTo(project2.Id));
         }
 
-        private Solution SetupSolutionWithOneProject(params string[] documentNames)
-        {
-            var workspace = new AdhocWorkspace();
-            var project1 = workspace.AddProject("foo.dll", LanguageNames.CSharp);
 
-            foreach (var documentPath in documentNames)
-            {
-                DocumentInfo documentInfo1 = DocumentInfo.Create(DocumentId.CreateNewId(project1.Id), documentPath,
-                    filePath: documentPath + ".cs");
-                workspace.AddDocument(documentInfo1);
-            }
-            return workspace.CurrentSolution;
+        [Test]
+        public void Should_Add_InternalToVisible_To_AllReferencedProjects()
+        {
+            // arrange
+            const string expectedAttribute= @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""Tests.dll_COVERAGE.dll"")]";
+            const string sourceCode = "class SampleClass{}";
+            SyntaxNode node = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
+
+            var workspace = new AdhocWorkspace();
+
+            var referencedProject1 = workspace.AddProject("foo2.dll", LanguageNames.CSharp);
+            var testsProject = workspace.AddProject("Tests.dll", LanguageNames.CSharp);
+
+            var solution = workspace.CurrentSolution.AddProjectReference(testsProject.Id, new ProjectReference(referencedProject1.Id));
+
+            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+
+            // act
+            RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);
+            List<RewrittenDocument> projectItems1 = result.Items.Values.First();
+            var attributes=projectItems1[0].SyntaxTree.GetRoot().ChildNodes().ToArray();
+
+            // assert
+            Assert.That(result.Items.Count,Is.EqualTo(1));
+            Assert.That(projectItems1.Count, Is.EqualTo(1));
+
+            Assert.That(attributes.Length, Is.EqualTo(1));
+            Assert.That(attributes[0].ToString(), Is.EqualTo(expectedAttribute));
+
         }
     }
 }

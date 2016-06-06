@@ -153,7 +153,7 @@ namespace TestCoverage.Storage
 
         private string GetConnectionString()
         {
-            return $"Data Source={_filePath};Persist Security Info=False;";
+            return $"Data Source={_filePath};Persist Security Info=False;Max Database Size=4090";
         }
     }
 }
