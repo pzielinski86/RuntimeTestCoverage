@@ -34,7 +34,7 @@ namespace TestCoverage.Storage
             }
         }
 
-        public void Append( IEnumerable<LineCoverage> coverage)
+        public void Append(IEnumerable<LineCoverage> coverage)
         {
             string[] testMethods = coverage.Select(x => x.TestPath).Distinct().ToArray();
 
@@ -44,11 +44,20 @@ namespace TestCoverage.Storage
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
                 connection.Open();
+                object testMethodsArgs;
+                string delete;
 
-                const string delete =
-                "DELETE FROM Coverage where TestPath in @testMethods";
+                if (testMethods.Length == 1)
+                {
+                    delete = "DELETE FROM Coverage where TestPath = @testMethod";
+                    connection.Execute(delete, new { testMethod = testMethods[0] });
+                }
+                else
+                {
+                    delete = "DELETE FROM Coverage where TestPath in @testMethods";
+                    connection.Execute(delete, new { testMethods });
+                }
 
-                connection.Execute(delete, new { testMethods });
                 InsertLineCoverage(connection, coverage.ToArray());
             }
         }
@@ -147,6 +156,7 @@ namespace TestCoverage.Storage
                           + "IsSuccess bit not null)";
 
                 connection.Execute(sql);
+                connection.Execute("CREATE INDEX TestPathIndex ON Coverage (TestPath);");
             }
         }
 

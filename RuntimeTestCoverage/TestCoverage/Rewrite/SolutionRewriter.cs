@@ -30,8 +30,9 @@ namespace TestCoverage.Rewrite
         public RewriteResult RewriteAllClasses(IEnumerable<Project> projects)
         {
             var rewrittenItems = new Dictionary<Project, List<RewrittenDocument>>();
+            var allProjects = projects.ToArray();
 
-            foreach (Project project in projects)
+            foreach (Project project in allProjects)
             {
                 foreach (Document document in project.Documents)
                 {
@@ -45,18 +46,18 @@ namespace TestCoverage.Rewrite
                     rewrittenItems[document.Project].Add(rewrittenDocument);
                 }
 
-                AddInternalVisibleToAttribute(rewrittenItems, project);
+                AddInternalVisibleToAttribute(rewrittenItems, project, allProjects);
             }
 
             return new RewriteResult(rewrittenItems);
         }
 
-        private void AddInternalVisibleToAttribute(Dictionary<Project, List<RewrittenDocument>> rewrittenDocuments, Project project)
+        private void AddInternalVisibleToAttribute(Dictionary<Project, List<RewrittenDocument>> rewrittenDocuments, Project project,Project[] allProjects )
         {
             foreach (ProjectReference referencedProjectRef in project.ProjectReferences)
             {
                 var referencedProject =
-                    project.Solution.Projects.First(x => x.Id == referencedProjectRef.ProjectId);
+                    allProjects.First(x => x.Id == referencedProjectRef.ProjectId);
 
                 string attribute =
                     $"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"{PathHelper.GetCoverageDllName(project.Name)}\")]";
