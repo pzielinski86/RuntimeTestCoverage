@@ -29,7 +29,7 @@ namespace TestCoverageVsPlugin
             var coverageDots = new List<CoverageDot>();
             int lineNumber = 0;
 
-            foreach (var methodDeclarationSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
+            foreach (var methodDeclarationSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<BaseMethodDeclarationSyntax>())
             {
                 if (methodDeclarationSyntax.Span.End < lineStartPositions[0])
                     continue;
@@ -47,7 +47,7 @@ namespace TestCoverageVsPlugin
         }
 
         private List<CoverageDot> ProcessMethod(string projectName,
-            MethodDeclarationSyntax methodDeclarationSyntax,
+            BaseMethodDeclarationSyntax methodDeclarationSyntax,
             int[] lineStartPositions,
             bool areCalcsInProgress,
             ref int lineNumber)
