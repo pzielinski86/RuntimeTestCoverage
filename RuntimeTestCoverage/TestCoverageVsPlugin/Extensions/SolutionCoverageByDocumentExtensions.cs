@@ -21,39 +21,39 @@ namespace TestCoverageVsPlugin.Extensions
                 {
                     if (testPaths.Contains(documentCoverage[i].TestPath) || documentCoverage[i].NodePath == path)
                     {
-                    documentCoverage[i].IsSuccess = false;
-                    documentCoverage[i].ErrorMessage = errorMsg;
+                        documentCoverage[i].IsSuccess = false;
+                        documentCoverage[i].ErrorMessage = errorMsg;
+                    }
+                }
+            }
+        }
+
+        public static void MergeByNodePath(this Dictionary<string, List<LineCoverage>> source,
+            List<LineCoverage> newCoverage)
+        {
+            string[] nodePaths = newCoverage.Select(x => x.NodePath).Distinct().ToArray();
+
+            RemoveByTestMethodNodePath(source, nodePaths);
+
+            foreach (var lineCoverage in newCoverage)
+            {
+                if (!source.ContainsKey(lineCoverage.DocumentPath))
+                    source[lineCoverage.DocumentPath] = new List<LineCoverage>();
+
+                source[lineCoverage.DocumentPath].Add(lineCoverage);
+            }
+        }
+
+        private static void RemoveByTestMethodNodePath(Dictionary<string, List<LineCoverage>> source, string[] nodePaths)
+        {
+            foreach (var documentCoverage in source.Values)
+            {
+                for (int i = 0; i < documentCoverage.Count; i++)
+                {
+                    if (nodePaths.Contains(documentCoverage[i].NodePath))
+                        documentCoverage.RemoveAt(i--);
                 }
             }
         }
     }
-
-    public static void MergeByNodePath(this Dictionary<string, List<LineCoverage>> source,
-        List<LineCoverage> newCoverage)
-    {
-        string[] testMethods = newCoverage.Select(x => x.TestPath).Distinct().ToArray();
-
-        RemoveByTestMethodNodePath(source, testMethods);
-
-        foreach (var lineCoverage in newCoverage)
-        {
-            if (!source.ContainsKey(lineCoverage.DocumentPath))
-                source[lineCoverage.DocumentPath] = new List<LineCoverage>();
-
-            source[lineCoverage.DocumentPath].Add(lineCoverage);
-        }
-    }
-
-    private static void RemoveByTestMethodNodePath(Dictionary<string, List<LineCoverage>> source, string[] testMethodNodePath)
-    {
-        foreach (var documentCoverage in source.Values)
-        {
-            for (int i = 0; i < documentCoverage.Count; i++)
-            {
-                if (testMethodNodePath.Contains(documentCoverage[i].TestPath))
-                    documentCoverage.RemoveAt(i--);
-            }
-        }
-    }
-}
 }

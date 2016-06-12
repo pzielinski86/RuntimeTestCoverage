@@ -8,7 +8,7 @@ namespace TestCoverage
     {
         public static string BuildPath(SyntaxNode node, string documentName, string projectName)
         {
-            SyntaxNode parent = node;
+            SyntaxNode parent = node; 
             StringBuilder path = new StringBuilder();
 
             while (parent != null)
