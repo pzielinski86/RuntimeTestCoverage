@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text;
 
@@ -6,6 +7,12 @@ namespace TestCoverage
 {
     public static class NodePathBuilder
     {
+        public static string GetMethodName(string path)
+        {
+            string[] parts = path.Split('.');
+
+            return parts.Last();
+        }
         public static string BuildPath(SyntaxNode node, string documentName, string projectName)
         {
             SyntaxNode parent = node; 

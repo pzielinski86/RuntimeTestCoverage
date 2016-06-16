@@ -20,6 +20,14 @@ namespace TestCoverage.Extensions
                     .ToArray();
         }
 
+        public static string[] GetAllMethodNames(this SyntaxNode node)
+        {
+            return
+                node.DescendantNodes()
+                    .OfType<MethodDeclarationSyntax>().Select(x=>x.Identifier.ValueText)
+                    .ToArray();
+        }
+
         public static MemberDeclarationSyntax GetParentMethod(this SyntaxNode node)
         {
             return node.Ancestors().OfType<MemberDeclarationSyntax>().FirstOrDefault();

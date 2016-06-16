@@ -6,9 +6,19 @@ using System.Linq;
 
 namespace TestCoverage.Tests
 {
+
     [TestFixture]
     public class NodePathBuilderTests
     {
+        [TestCase("Math.Helpers.Test","Test")]
+        public void ShouldReturn_MethodName(string path, string expectedMethodName)
+        {
+            string methodName = NodePathBuilder.GetMethodName(path);
+            
+            Assert.That(methodName,Is.EqualTo(expectedMethodName));
+        }
+
+
         [Test]
         public void Should_ReturnValidPath()
         {

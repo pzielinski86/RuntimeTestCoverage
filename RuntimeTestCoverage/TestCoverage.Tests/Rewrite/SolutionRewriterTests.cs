@@ -36,7 +36,7 @@ namespace TestCoverage.Tests.Rewrite
             SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
 
-            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocument("projectName", documentPath, sourceCode);
+            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocumentWithAssemblyInfo("projectName", documentPath, sourceCode);
 
             Assert.That(rewrittenDocument.DocumentPath, Is.EqualTo(documentPath));
             Assert.That(rewrittenDocument.SyntaxTree, Is.EqualTo(rewrittenNode.SyntaxTree));

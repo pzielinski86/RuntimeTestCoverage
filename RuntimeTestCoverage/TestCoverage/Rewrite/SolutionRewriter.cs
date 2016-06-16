@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestCoverage.Rewrite
 {
@@ -17,7 +18,18 @@ namespace TestCoverage.Rewrite
             _auditVariablesRewriter = auditVariablesRewriter;
         }
 
-        public RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
+        public RewrittenDocument RewriteDocumentWithAssemblyInfo(Project currentProject, Project[] allProjects, string documentPath, string documentContent)
+        {
+            var rewrittenDocument = RewriteDocument(currentProject.Name, documentPath, documentContent);
+            var internalAttrDoc = CreateInternalVisibleToAttributeDocument(currentProject, allProjects);
+
+            var statements = new SyntaxList<StatementSyntax>();            
+            statements.Add(SyntaxFactory.ExpressionStatement(rewrittenDocument.SyntaxTree.GetRoot()));
+            statements.Add(SyntaxFactory.ExpressionStatement(invocation));
+            var wrapper = SyntaxFactory.Block(statements);
+        }
+
+        private RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent, CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
@@ -46,31 +58,41 @@ namespace TestCoverage.Rewrite
                     rewrittenItems[document.Project].Add(rewrittenDocument);
                 }
 
-                AddInternalVisibleToAttribute(rewrittenItems, project, allProjects);
+                var internalVisibleToAttrDoc = CreateInternalVisibleToAttributeDocument(project, allProjects);
+                if (internalVisibleToAttrDoc != null)
+                    rewrittenItems[project].Add(internalVisibleToAttrDoc);
             }
 
             return new RewriteResult(rewrittenItems);
         }
 
-        private void AddInternalVisibleToAttribute(Dictionary<Project, List<RewrittenDocument>> rewrittenDocuments, Project project,Project[] allProjects )
+        private string CreateInternalVisibleToAttribute(Project project)
         {
-            foreach (ProjectReference referencedProjectRef in project.ProjectReferences)
+            string attribute =
+                $"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"{PathHelper.GetCoverageDllName(project.Name)}\")]";
+
+            return attribute;
+        }
+
+        private RewrittenDocument CreateInternalVisibleToAttributeDocument(Project project, Project[] allProjects)
+        {
+            var testProjects = allProjects.Where(x => x.ProjectReferences.Any(y => y.ProjectId == project.Id)).ToArray();
+            if (testProjects.Length == 0)
+                return null;
+
+            var propertiesBuilder = new StringBuilder();
+
+            foreach (var testProject in testProjects)
             {
-                var referencedProject =
-                    allProjects.First(x => x.Id == referencedProjectRef.ProjectId);
+                var attribute = CreateInternalVisibleToAttribute(testProject);
 
-                string attribute =
-                    $"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"{PathHelper.GetCoverageDllName(project.Name)}\")]";
-
-                if (!rewrittenDocuments.ContainsKey(referencedProject))
-                    rewrittenDocuments.Add(referencedProject, new List<RewrittenDocument>());
-
-                var node = CSharpSyntaxTree.ParseText(attribute);
-                                
-                RewrittenDocument document = new RewrittenDocument(node, Path.GetTempFileName() + ".cs");
-
-                rewrittenDocuments[referencedProject].Add(document);
+                propertiesBuilder.AppendLine(attribute);
             }
+
+            var tree = CSharpSyntaxTree.ParseText(propertiesBuilder.ToString());
+            RewrittenDocument document = new RewrittenDocument(tree, Path.GetTempFileName() + ".cs");
+
+            return document;
         }
     }
 }

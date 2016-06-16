@@ -106,6 +106,19 @@ namespace TestCoverageVsPlugin
                     return false;
                 }
 
+                //var allMethods = method.Parent.GetAllMethodNames();
+                //var docPath = method.SyntaxTree.FilePath;
+
+                //SolutionCoverageByDocument[docPath].RemoveAll(x=>x)
+
+                //foreach (var documentCoverage in SolutionCoverageByDocument.Values)
+                //{
+                //    foreach (var lineCoverage in documentCoverage)
+                //    {
+                        
+                //    }
+                //}
+
                 SolutionCoverageByDocument.MergeByNodePath(coverage);
 
                 return true;

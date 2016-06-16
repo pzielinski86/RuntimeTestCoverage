@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin.Extensions
@@ -31,9 +32,9 @@ namespace TestCoverageVsPlugin.Extensions
         public static void MergeByNodePath(this Dictionary<string, List<LineCoverage>> source,
             List<LineCoverage> newCoverage)
         {
-            string[] nodePaths = newCoverage.Select(x => x.NodePath).Distinct().ToArray();
+            string[] nodePaths = newCoverage.Select(x => x.NodePath).Distinct().ToArray();            
 
-            RemoveByTestMethodNodePath(source, nodePaths);
+            RemoveByNodePaths(source, nodePaths);
 
             foreach (var lineCoverage in newCoverage)
             {
@@ -44,7 +45,7 @@ namespace TestCoverageVsPlugin.Extensions
             }
         }
 
-        private static void RemoveByTestMethodNodePath(Dictionary<string, List<LineCoverage>> source, string[] nodePaths)
+        private static void RemoveByNodePaths(Dictionary<string, List<LineCoverage>> source, string[] nodePaths)
         {
             foreach (var documentCoverage in source.Values)
             {
