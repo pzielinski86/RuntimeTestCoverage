@@ -39,7 +39,6 @@ namespace TestCoverage.Compilation
                     throw new TestCoverageCompilationException(
                         emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
                 }
-
             }
 
             DllPath = dllPath;

@@ -6,6 +6,8 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Tests.Rewrite
@@ -27,6 +29,7 @@ namespace TestCoverage.Tests.Rewrite
         [Test]
         public void Should_ReturnValidDocumentPathAndRewrittenSyntaxTree()
         {
+            // arrange
             const string sourceCode = "class SampleClass{" +
                                          "public void Test(int a){}" +
                                       "}";
@@ -36,8 +39,13 @@ namespace TestCoverage.Tests.Rewrite
             SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
             _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
 
-            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocumentWithAssemblyInfo("projectName", documentPath, sourceCode);
+            var workspace = new AdhocWorkspace();
+            var project = workspace.AddProject("projectName", LanguageNames.CSharp);
 
+            // act
+            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocumentWithAssemblyInfo(project, new Project[0], documentPath, sourceCode);
+
+            // assert
             Assert.That(rewrittenDocument.DocumentPath, Is.EqualTo(documentPath));
             Assert.That(rewrittenDocument.SyntaxTree, Is.EqualTo(rewrittenNode.SyntaxTree));
         }
@@ -68,7 +76,7 @@ namespace TestCoverage.Tests.Rewrite
 
             Assert.That(result.Items.Values.First().Count, Is.EqualTo(1));
             Assert.That(result.Items.Values.First().First().DocumentPath, Is.EqualTo(document.FilePath));
-            Assert.That(result.Items.Values.First().First().SyntaxTree, Is.EqualTo(node.SyntaxTree));
+            Assert.That(result.Items.Values.First().First().SyntaxTree.ToString(), Is.EqualTo(node.SyntaxTree.ToString()));
         }
 
         [Test]
@@ -130,13 +138,15 @@ namespace TestCoverage.Tests.Rewrite
         public void Should_Add_InternalToVisible_To_AllReferencedProjects()
         {
             // arrange
-            const string expectedAttribute= @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""Tests.dll_COVERAGE.dll"")]";
+            const string expectedAttribute = @"System.Runtime.CompilerServices.InternalsVisibleTo(""Tests.dll_COVERAGE.dll"")";
             const string sourceCode = "class SampleClass{}";
             SyntaxNode node = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
             var workspace = new AdhocWorkspace();
 
             var referencedProject1 = workspace.AddProject("foo2.dll", LanguageNames.CSharp);
+            workspace.AddDocument(referencedProject1.Id, "1.cs", SourceText.From(""));
+
             var testsProject = workspace.AddProject("Tests.dll", LanguageNames.CSharp);
 
             var solution = workspace.CurrentSolution.AddProjectReference(testsProject.Id, new ProjectReference(referencedProject1.Id));
@@ -146,10 +156,10 @@ namespace TestCoverage.Tests.Rewrite
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);
             List<RewrittenDocument> projectItems1 = result.Items.Values.First();
-            var attributes=projectItems1[0].SyntaxTree.GetRoot().ChildNodes().ToArray();
+            var attributes = projectItems1[0].SyntaxTree.GetRoot().DescendantNodes().OfType<AttributeSyntax>().ToArray();
 
             // assert
-            Assert.That(result.Items.Count,Is.EqualTo(1));
+            Assert.That(result.Items.Count, Is.EqualTo(1));
             Assert.That(projectItems1.Count, Is.EqualTo(1));
 
             Assert.That(attributes.Length, Is.EqualTo(1));

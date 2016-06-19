@@ -63,7 +63,7 @@ namespace TestCoverage
                 return new CoverageResult(new LineCoverage[0]);
 
             var rewritter = new SolutionRewriter(_auditVariablesRewriter);
-            RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project.Name, method.SyntaxTree.FilePath, method.SyntaxTree.ToString());
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project, projects, method.SyntaxTree.FilePath, method.SyntaxTree.ToString());
 
             LineCoverage[] coverage = null;
 
@@ -89,7 +89,7 @@ namespace TestCoverage
                 return new CoverageResult(new LineCoverage[0]);
 
             var rewritter = new SolutionRewriter(_auditVariablesRewriter);
-            RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project.Name, documentPath, documentContent);
+            RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project, projects, documentPath, documentContent);
 
             LineCoverage[] coverage = null;
             using (var appDomainTestExecutorScriptEngine = new AppDomainTestExecutorScriptEngine())

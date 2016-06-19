@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -20,21 +21,21 @@ namespace TestCoverage.Rewrite
 
         public RewrittenDocument RewriteDocumentWithAssemblyInfo(Project currentProject, Project[] allProjects, string documentPath, string documentContent)
         {
-            var rewrittenDocument = RewriteDocument(currentProject.Name, documentPath, documentContent);
-            var internalAttrDoc = CreateInternalVisibleToAttributeDocument(currentProject, allProjects);
+            var attrs = CreateInternalVisibleToAttributeList(currentProject, allProjects);
+            var rewrittenDocument = RewriteDocument(currentProject.Name, documentPath, documentContent, attrs);
 
-            var statements = new SyntaxList<StatementSyntax>();            
-            statements.Add(SyntaxFactory.ExpressionStatement(rewrittenDocument.SyntaxTree.GetRoot()));
-            statements.Add(SyntaxFactory.ExpressionStatement(invocation));
-            var wrapper = SyntaxFactory.Block(statements);
+            return rewrittenDocument;
         }
 
-        private RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent)
+        private RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent, AttributeListSyntax attrs)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent, CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            SyntaxNode rewrittenNode = _auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
+            var rewrittenNode = (CompilationUnitSyntax)_auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
+
+            if (attrs != null)
+                rewrittenNode = rewrittenNode.AddAttributeLists(attrs);
 
             return new RewrittenDocument(rewrittenNode.SyntaxTree, documentPath);
         }
@@ -46,53 +47,54 @@ namespace TestCoverage.Rewrite
 
             foreach (Project project in allProjects)
             {
+                var internalVisibleToAttrDoc = CreateInternalVisibleToAttributeList(project, allProjects);
+                int i = 0;
+
                 foreach (Document document in project.Documents)
                 {
                     SyntaxNode syntaxNode = document.GetSyntaxRootAsync().Result;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString());
+                    // attach InternalsVisibleToAttribute only to the first document
+                    var attributes = i == 0 ? internalVisibleToAttrDoc : null;
+
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString(), attributes);
 
                     if (!rewrittenItems.ContainsKey(document.Project))
                         rewrittenItems[document.Project] = new List<RewrittenDocument>();
 
                     rewrittenItems[document.Project].Add(rewrittenDocument);
+                    i++;
                 }
-
-                var internalVisibleToAttrDoc = CreateInternalVisibleToAttributeDocument(project, allProjects);
-                if (internalVisibleToAttrDoc != null)
-                    rewrittenItems[project].Add(internalVisibleToAttrDoc);
             }
 
             return new RewriteResult(rewrittenItems);
         }
 
-        private string CreateInternalVisibleToAttribute(Project project)
+        private AttributeSyntax CreateInternalVisibleToAttribute(Project project)
         {
-            string attribute =
-                $"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"{PathHelper.GetCoverageDllName(project.Name)}\")]";
+            var name = SyntaxFactory.ParseName("System.Runtime.CompilerServices.InternalsVisibleTo");
+            var arguments = SyntaxFactory.ParseAttributeArgumentList($"(\"{PathHelper.GetCoverageDllName(project.Name)}\")");
+            var attribute = SyntaxFactory.Attribute(name, arguments);
 
             return attribute;
         }
 
-        private RewrittenDocument CreateInternalVisibleToAttributeDocument(Project project, Project[] allProjects)
+        private AttributeListSyntax CreateInternalVisibleToAttributeList(Project project, Project[] allProjects)
         {
             var testProjects = allProjects.Where(x => x.ProjectReferences.Any(y => y.ProjectId == project.Id)).ToArray();
             if (testProjects.Length == 0)
                 return null;
 
-            var propertiesBuilder = new StringBuilder();
+            List<AttributeSyntax> attrs = testProjects.Select(CreateInternalVisibleToAttribute).ToList();
 
-            foreach (var testProject in testProjects)
-            {
-                var attribute = CreateInternalVisibleToAttribute(testProject);
 
-                propertiesBuilder.AppendLine(attribute);
-            }
+            var attributeList = new SeparatedSyntaxList<AttributeSyntax>();
+            attributeList = attributeList.AddRange(attrs);
 
-            var tree = CSharpSyntaxTree.ParseText(propertiesBuilder.ToString());
-            RewrittenDocument document = new RewrittenDocument(tree, Path.GetTempFileName() + ".cs");
+            var assemblyLevelSpecifier =
+                SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword));
 
-            return document;
+            return SyntaxFactory.AttributeList(assemblyLevelSpecifier, attributeList);
         }
     }
 }
