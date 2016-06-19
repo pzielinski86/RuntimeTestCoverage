@@ -19,7 +19,7 @@ namespace TestCoverage
 
         public void Init(string solutionPath)
         {
-            _solutionExplorer = new SolutionExplorer(solutionPath);
+            _solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), solutionPath);
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
             _coverageStore = new SqlCompactCoverageStore();
             var settingsStore = new XmlCoverageSettingsStore();
@@ -34,7 +34,7 @@ namespace TestCoverage
 
         public async Task<CoverageResult> CalculateForAllDocumentsAsync()
         {
-            var rewritter = new SolutionRewriter(_auditVariablesRewriter);
+            var rewritter = new SolutionRewriter(new RewrittenDocumentsStorage(), _auditVariablesRewriter);
 
             //TODO: Change a method to async and don't use .Result
             var projects = await _testExplorer.GetUnignoredTestProjectsWithCoveredProjectsAsync().ConfigureAwait(false);
@@ -62,7 +62,7 @@ namespace TestCoverage
             if (project == null)
                 return new CoverageResult(new LineCoverage[0]);
 
-            var rewritter = new SolutionRewriter(_auditVariablesRewriter);
+            var rewritter = new SolutionRewriter(new RewrittenDocumentsStorage(), _auditVariablesRewriter);
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project, projects, method.SyntaxTree.FilePath, method.SyntaxTree.ToString());
 
             LineCoverage[] coverage = null;
@@ -88,7 +88,7 @@ namespace TestCoverage
             if (project == null)
                 return new CoverageResult(new LineCoverage[0]);
 
-            var rewritter = new SolutionRewriter(_auditVariablesRewriter);
+            var rewritter = new SolutionRewriter(new RewrittenDocumentsStorage(), _auditVariablesRewriter);
             RewrittenDocument rewrittenDocument = rewritter.RewriteDocumentWithAssemblyInfo(project, projects, documentPath, documentContent);
 
             LineCoverage[] coverage = null;

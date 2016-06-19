@@ -9,7 +9,7 @@ namespace TestCoverage
         string[] GetAllProjectReferences(string projectName);
         SyntaxTree OpenFile(string path);
         ISemanticModel GetSemanticModelByDocument(string docPath);
-        IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments);
+        IEnumerable<SyntaxTree> LoadRewrittenProjectSyntaxTrees(Project project, params string[] excludedDocuments);
         string[] GetCompiledAssemblies(params string[] excludedProjects);
         Solution Solution { get; }
         string SolutionPath { get; }

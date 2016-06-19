@@ -23,15 +23,18 @@ namespace TestCoverage.Rewrite
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
         {
-            List<StatementSyntax> newStatements = new List<StatementSyntax>();
+            var newStatements = new List<StatementSyntax>();
 
             foreach (var statement in node.Statements)
             {
                 newStatements.Add(CreateLineAuditNode());
                 newStatements.Add(statement);
             }
+            var syntaxList = SyntaxFactory.List<StatementSyntax>(newStatements);
 
-            return base.VisitBlock(SyntaxFactory.Block(newStatements));
+            var block = SyntaxFactory.Block(node.OpenBraceToken, syntaxList, node.CloseBraceToken);
+
+            return base.VisitBlock(block);
         }
 
         public override SyntaxNode VisitWhileStatement(WhileStatementSyntax node)

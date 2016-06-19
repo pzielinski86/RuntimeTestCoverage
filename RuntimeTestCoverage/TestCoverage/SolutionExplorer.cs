@@ -4,16 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using TestCoverage.Compilation;
+using TestCoverage.Storage;
 
 namespace TestCoverage
 {
-    public class SolutionExplorer : MarshalByRefObject, ISolutionExplorer
+    public class SolutionExplorer : ISolutionExplorer
     {
+        private readonly IRewrittenDocumentsStorage _rewrittenDocumentsStorage;
         private readonly Solution _solution;
 
-        public SolutionExplorer(string solutionPath)
+        public SolutionExplorer(IRewrittenDocumentsStorage rewrittenDocumentsStorage, string solutionPath)
         {
+            _rewrittenDocumentsStorage = rewrittenDocumentsStorage;
             var props = new Dictionary<string, string>();
             props["CheckForSystemRuntimeDependency"] = "true";
 
@@ -60,15 +64,10 @@ namespace TestCoverage
             return new RoslynSemanticModel(document.GetSemanticModelAsync().Result);
         }
 
-        public IEnumerable<SyntaxTree> LoadProjectSyntaxTrees(Project project, params string[] excludedDocuments)
+        public IEnumerable<SyntaxTree> LoadRewrittenProjectSyntaxTrees(Project project,
+            params string[] excludedDocuments)
         {
-            foreach (var document in project.Documents)
-            {
-                if (excludedDocuments.Any(x => PathHelper.AreEqual(x, document.FilePath)))
-                    continue;
-
-                yield return document.GetSyntaxTreeAsync().Result;
-            }
+            return _rewrittenDocumentsStorage.GetRewrittenDocuments(_solution.FilePath, project.Name, excludedDocuments);
         }
 
         public string[] GetCompiledAssemblies(params string[] excludedProjects)
@@ -105,6 +104,5 @@ namespace TestCoverage
 
             return project;
         }
-
     }
 }

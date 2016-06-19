@@ -196,6 +196,8 @@
     <Compile Include="Compilation\TestCoverageCompilationException.cs" />
     <Compile Include="CoverageCalculation\AppDomainTestExecutorScriptEngine.cs" />
     <Compile Include="Storage\CoverageSettings.cs" />
+    <Compile Include="Storage\IRewrittenDocumentsStorage.cs" />
+    <Compile Include="Storage\RewrittenDocumentsStorage.cs" />
     <Compile Include="Storage\SqlCompactCoverageStore.cs" />
     <Compile Include="Storage\ICoverageSettingsStore.cs" />
     <Compile Include="Storage\ICoverageStore.cs" />

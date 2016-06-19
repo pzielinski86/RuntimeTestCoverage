@@ -7,35 +7,40 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Storage;
 
 namespace TestCoverage.Rewrite
 {
     public class SolutionRewriter
     {
+        private readonly IRewrittenDocumentsStorage _rewrittenDocumentsStorage;
         private readonly IAuditVariablesRewriter _auditVariablesRewriter;
 
-        public SolutionRewriter(IAuditVariablesRewriter auditVariablesRewriter)
+        public SolutionRewriter(IRewrittenDocumentsStorage rewrittenDocumentsStorage, IAuditVariablesRewriter auditVariablesRewriter)
         {
+            _rewrittenDocumentsStorage = rewrittenDocumentsStorage;
             _auditVariablesRewriter = auditVariablesRewriter;
         }
 
         public RewrittenDocument RewriteDocumentWithAssemblyInfo(Project currentProject, Project[] allProjects, string documentPath, string documentContent)
         {
             var attrs = CreateInternalVisibleToAttributeList(currentProject, allProjects);
-            var rewrittenDocument = RewriteDocument(currentProject.Name, documentPath, documentContent, attrs);
+            var rewrittenDocument = RewriteDocument(currentProject, documentPath, documentContent, attrs);
 
             return rewrittenDocument;
         }
 
-        private RewrittenDocument RewriteDocument(string projectName, string documentPath, string documentContent, AttributeListSyntax attrs)
+        private RewrittenDocument RewriteDocument(Project project, string documentPath, string documentContent, AttributeListSyntax attrs)
         {
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent, CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            var rewrittenNode = (CompilationUnitSyntax)_auditVariablesRewriter.Rewrite(projectName, documentPath, syntaxNode);
+            var rewrittenNode = (CompilationUnitSyntax)_auditVariablesRewriter.Rewrite(project.Name, documentPath, syntaxNode);
 
             if (attrs != null)
                 rewrittenNode = rewrittenNode.AddAttributeLists(attrs);
+
+            _rewrittenDocumentsStorage.Store(project.Solution.FilePath, project.Name, documentPath, rewrittenNode);
 
             return new RewrittenDocument(rewrittenNode.SyntaxTree, documentPath);
         }
@@ -47,6 +52,8 @@ namespace TestCoverage.Rewrite
 
             foreach (Project project in allProjects)
             {
+                _rewrittenDocumentsStorage.Clear(project.Name);
+
                 var internalVisibleToAttrDoc = CreateInternalVisibleToAttributeList(project, allProjects);
                 int i = 0;
 
@@ -57,7 +64,7 @@ namespace TestCoverage.Rewrite
                     // attach InternalsVisibleToAttribute only to the first document
                     var attributes = i == 0 ? internalVisibleToAttrDoc : null;
 
-                    RewrittenDocument rewrittenDocument = RewriteDocument(project.Name, document.FilePath, syntaxNode.ToFullString(), attributes);
+                    RewrittenDocument rewrittenDocument = RewriteDocument(project, document.FilePath, syntaxNode.ToFullString(), attributes);
 
                     if (!rewrittenItems.ContainsKey(document.Project))
                         rewrittenItems[document.Project] = new List<RewrittenDocument>();

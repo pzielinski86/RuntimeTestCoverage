@@ -104,7 +104,7 @@ namespace TestCoverage.CoverageCalculation
         {
             List<string> assemblies = _testExplorer.SolutionExplorer.GetCompiledAssemblies(project.Name).ToList();
 
-            SyntaxTree[] projectTrees = _testExplorer.SolutionExplorer.LoadProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
+            SyntaxTree[] projectTrees = _testExplorer.SolutionExplorer.LoadRewrittenProjectSyntaxTrees(project, rewrittenDocument.DocumentPath).ToArray();
 
             var allProjectTrees = projectTrees.Union(new[] { rewrittenDocument.SyntaxTree }).ToArray();
             var compiledItems = _compiler.Compile(new CompilationItem(project, allProjectTrees), assemblies);

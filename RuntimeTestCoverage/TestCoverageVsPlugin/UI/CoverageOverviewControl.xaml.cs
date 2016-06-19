@@ -48,7 +48,7 @@ namespace TestCoverageVsPlugin.UI
             {
                 Config.SetSolution(_dte.Solution.FileName);
 
-                ISolutionExplorer solutionExplorer = new SolutionExplorer(_dte.Solution.FileName);
+                ISolutionExplorer solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), _dte.Solution.FileName);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
                 ICoverageStore coverageStore = new SqlCompactCoverageStore();
 

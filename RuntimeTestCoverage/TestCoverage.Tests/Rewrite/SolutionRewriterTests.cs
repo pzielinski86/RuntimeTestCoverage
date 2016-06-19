@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using TestCoverage.Rewrite;
+using TestCoverage.Storage;
 
 namespace TestCoverage.Tests.Rewrite
 {
@@ -16,14 +17,16 @@ namespace TestCoverage.Tests.Rewrite
     public class SolutionRewriterTests
     {
         private SolutionRewriter _solutionRewriter;
-        private IAuditVariablesRewriter _auditVariablesRewriter;
+        private IAuditVariablesRewriter _auditVariablesRewriterMock;
+        private IRewrittenDocumentsStorage _rewrittenDocumentsStorageMock;
 
         [SetUp]
         public void Setup()
         {
-            _auditVariablesRewriter = Substitute.For<IAuditVariablesRewriter>();
+            _auditVariablesRewriterMock = Substitute.For<IAuditVariablesRewriter>();
+            _rewrittenDocumentsStorageMock = Substitute.For<IRewrittenDocumentsStorage>();
 
-            _solutionRewriter = new SolutionRewriter(_auditVariablesRewriter);
+            _solutionRewriter = new SolutionRewriter(_rewrittenDocumentsStorageMock, _auditVariablesRewriterMock);
         }
 
         [Test]
@@ -37,7 +40,7 @@ namespace TestCoverage.Tests.Rewrite
             const string documentPath = "documentPath";
 
             SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
 
             var workspace = new AdhocWorkspace();
             var project = workspace.AddProject("projectName", LanguageNames.CSharp);
@@ -65,7 +68,7 @@ namespace TestCoverage.Tests.Rewrite
             Document document = workspace.AddDocument(documentInfo);
 
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>()).Returns(node);
 
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
@@ -96,7 +99,7 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
@@ -124,7 +127,7 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
@@ -151,7 +154,7 @@ namespace TestCoverage.Tests.Rewrite
 
             var solution = workspace.CurrentSolution.AddProjectReference(testsProject.Id, new ProjectReference(referencedProject1.Id));
 
-            _auditVariablesRewriter.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
 
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);
