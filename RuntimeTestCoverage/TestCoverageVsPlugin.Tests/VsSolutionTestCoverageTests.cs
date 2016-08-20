@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
@@ -22,7 +23,6 @@ namespace TestCoverageVsPlugin.Tests
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
         private ILogger _logger;
-        private readonly string _solutionPath = @"c:\Project.sln";
 
         [SetUp]
         public void Setup()
@@ -31,7 +31,8 @@ namespace TestCoverageVsPlugin.Tests
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _logger = Substitute.For<ILogger>();
 
-            _sut = new VsSolutionTestCoverage(_solutionPath, _solutionCoverageEngineMock, _coverageStoreMock, _logger);
+            Workspace workspace = new AdhocWorkspace();
+            _sut = new VsSolutionTestCoverage(workspace, _solutionCoverageEngineMock, _coverageStoreMock, _logger);
         }
 
 
@@ -83,7 +84,7 @@ namespace TestCoverageVsPlugin.Tests
                                 "}";
             var tree = CSharpSyntaxTree.ParseText(code);
             var method = tree.GetRoot().GetPublicMethods().First();
-            
+
             const string testDocumentPath = "MathHelperTests.cs";
 
             var oldTestLineCoverage = new LineCoverage();
@@ -144,7 +145,7 @@ namespace TestCoverageVsPlugin.Tests
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath].Count, Is.EqualTo(2));
-            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][0],Is.EqualTo(oldTestLineCoverage1));
+            Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][0], Is.EqualTo(oldTestLineCoverage1));
 
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][1].NodePath, Is.EqualTo(coverageToBeRecalculated.NodePath));
             Assert.That(_sut.SolutionCoverageByDocument[testDocumentPath][1].TestPath, Is.EqualTo(coverageToBeRecalculated.TestPath));
@@ -228,7 +229,7 @@ namespace TestCoverageVsPlugin.Tests
 
             // act
 
-           await _sut.CalculateForDocumentAsync("CurrentProject", "MathHelperTests.cs", string.Empty);
+            await _sut.CalculateForDocumentAsync("CurrentProject", "MathHelperTests.cs", string.Empty);
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[newDocumentPath].Count, Is.EqualTo(1));
@@ -297,6 +298,33 @@ namespace TestCoverageVsPlugin.Tests
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument[documentPath].Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void RemoveByFilePath_Should_RemoveAllCoverage_From_ThatFile()
+        {
+            // arrange
+            _sut.SolutionCoverageByDocument.Add("Tests.cs", new List<LineCoverage>() { new LineCoverage() { DocumentPath = "Tests.cs" } });
+
+            // act
+            _sut.RemoveByPath("Tests.cs");
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemoveByFilePath_Should_RemoveCoverageFromOtherFiles_WhichAreRelatedTo_TheRemovedFile()
+        {
+            // arrange
+            _sut.SolutionCoverageByDocument.Add("Tests.cs", new List<LineCoverage>() {new LineCoverage() {DocumentPath = "Tests.cs"} });
+            _sut.SolutionCoverageByDocument.Add("Sut.cs", new List<LineCoverage>() { new LineCoverage() { TestDocumentPath = "Tests.cs" } });
+
+            // act
+            _sut.RemoveByPath("Tests.cs");
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
         }
     }
 }

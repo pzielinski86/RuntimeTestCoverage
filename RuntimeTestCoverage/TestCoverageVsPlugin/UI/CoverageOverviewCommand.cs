@@ -8,6 +8,10 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.LanguageServices;
 
 namespace TestCoverageVsPlugin.UI
 {
@@ -15,7 +19,7 @@ namespace TestCoverageVsPlugin.UI
     /// Command handler
     /// </summary>
     internal sealed class CoverageOverviewCommand
-    {
+    {       
         /// <summary>
         /// Command ID.
         /// </summary>
@@ -78,7 +82,12 @@ namespace TestCoverageVsPlugin.UI
         public static void Initialize(Package package)
         {
             Instance = new CoverageOverviewCommand(package);
+      
+            var componentModel = (IComponentModel)Instance.ServiceProvider.GetService(typeof(SComponentModel));
+            Instance.MyWorkspace = componentModel.GetService<Microsoft.VisualStudio.LanguageServices.VisualStudioWorkspace>();
         }
+
+        public Workspace MyWorkspace { get; private set; }
 
         /// <summary>
         /// Shows the tool window when the menu item is clicked.

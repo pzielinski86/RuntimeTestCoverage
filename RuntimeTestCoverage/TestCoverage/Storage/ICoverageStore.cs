@@ -10,7 +10,10 @@ namespace TestCoverage.Storage
         void Append( IEnumerable<LineCoverage> coverage);
         void WriteAll(IEnumerable<LineCoverage> coverage);
 
+        void RemoveByFile(string filePath);
+
         LineCoverage[] ReadAll();
 
+        void RemoveByTestPath(IEnumerable<string> testPaths);
     }
 }

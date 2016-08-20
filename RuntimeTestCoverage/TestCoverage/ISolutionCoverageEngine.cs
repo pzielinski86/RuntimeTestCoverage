@@ -1,12 +1,13 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 
 namespace TestCoverage
 {
     public interface ISolutionCoverageEngine : IDisposable
     {
-        void Init(string solutionPath);
+        void Init(Workspace myWorkspace);
         Task<CoverageResult> CalculateForAllDocumentsAsync();
         CoverageResult CalculateForDocument(string projectName, string documentPath, string documentContent);
 

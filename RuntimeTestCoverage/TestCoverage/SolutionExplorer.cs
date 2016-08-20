@@ -15,7 +15,7 @@ namespace TestCoverage
         private readonly IRewrittenDocumentsStorage _rewrittenDocumentsStorage;
         private readonly Solution _solution;
 
-        public SolutionExplorer(IRewrittenDocumentsStorage rewrittenDocumentsStorage, string solutionPath)
+        public SolutionExplorer(IRewrittenDocumentsStorage rewrittenDocumentsStorage, Workspace myWorkspace)
         {
             _rewrittenDocumentsStorage = rewrittenDocumentsStorage;
             var props = new Dictionary<string, string>();
@@ -23,7 +23,7 @@ namespace TestCoverage
 
             var workspace = MSBuildWorkspace.Create(props);
             // TODO: Get rid of blocking a thread
-            _solution = workspace.OpenSolutionAsync(solutionPath).Result;
+            _solution = myWorkspace.CurrentSolution;
         }
 
         public string[] GetAllProjectReferences(string projectName)
@@ -54,7 +54,9 @@ namespace TestCoverage
         public SyntaxTree OpenFile(string path)
         {
             //TODO Convert to async
-            return GetAllDocuments().First(x => x.FilePath == path).GetSyntaxTreeAsync().Result;
+            var document = GetAllDocuments().First(x => x.FilePath == path);
+
+            return document.GetSyntaxTreeAsync().Result;
         }
 
         public ISemanticModel GetSemanticModelByDocument(string docPath)

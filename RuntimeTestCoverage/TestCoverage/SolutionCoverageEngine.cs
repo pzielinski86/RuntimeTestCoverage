@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Rewrite;
@@ -17,9 +18,9 @@ namespace TestCoverage
         private ITestExplorer _testExplorer;
         private bool _isDisposed;
 
-        public void Init(string solutionPath)
+        public void Init(Workspace myWorkspace)
         {
-            _solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), solutionPath);
+            _solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), myWorkspace);
             _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
             _coverageStore = new SqlCompactCoverageStore();
             var settingsStore = new XmlCoverageSettingsStore();

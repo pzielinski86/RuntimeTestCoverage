@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.VisualStudio.Shell;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
@@ -22,27 +23,30 @@ namespace TestCoverageVsPlugin
 {
     public sealed class VsSolutionTestCoverage : IVsSolutionTestCoverage, IDisposable
     {
-        public string SolutionPath { get; }
+        // Singleton
+        private static VsSolutionTestCoverage _vsSolutionTestCoverage;
+
+        public string SolutionPath => _myWorkspace.CurrentSolution.FilePath;
+        private readonly Workspace _myWorkspace;
         private readonly ISolutionCoverageEngine _solutionCoverageEngine;
         private readonly ICoverageStore _coverageStore;
-        private static VsSolutionTestCoverage _vsSolutionTestCoverage;
         private static readonly object SyncObject = new object();
-        private readonly object _sync = new object();
         private readonly ILogger _logger;
+        public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
 
-        public VsSolutionTestCoverage(string solutionPath,
+        public VsSolutionTestCoverage(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore,
             ILogger logger)
         {
-            SolutionPath = solutionPath;
+            _myWorkspace = myWorkspace;
             _solutionCoverageEngine = solutionCoverageEngine;
             _coverageStore = coverageStore;
             _logger = logger;
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
         }
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(string solutionPath, ISolutionCoverageEngine solutionCoverageEngine, ICoverageStore coverageStore, ILogger logger)
+        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, ISolutionCoverageEngine solutionCoverageEngine, ICoverageStore coverageStore, ILogger logger)
         {
             if (_vsSolutionTestCoverage == null)
             {
@@ -50,7 +54,7 @@ namespace TestCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(solutionPath, solutionCoverageEngine, coverageStore, logger);
+                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore, logger);
                         _vsSolutionTestCoverage.Reinit();
                         _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }
@@ -59,8 +63,6 @@ namespace TestCoverageVsPlugin
 
             return _vsSolutionTestCoverage;
         }
-
-        public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
 
         public async Task CalculateForAllDocumentsAsync()
         {
@@ -129,12 +131,27 @@ namespace TestCoverageVsPlugin
 
         public void Reinit()
         {
-            _solutionCoverageEngine.Init(SolutionPath);
+            _solutionCoverageEngine.Init(_myWorkspace);
         }
 
         public Task<bool> CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
         {
             return Task.Run(() => CalculateForDocument(projectName, documentPath, documentContent));
+        }
+
+        public void RemoveByPath(string filePath)
+        {
+            var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();
+
+            _coverageStore.RemoveByFile(filePath);
+            _coverageStore.RemoveByTestPath(allTestPaths);
+
+            SolutionCoverageByDocument.Remove(filePath);
+
+            foreach (var documentCoverage in SolutionCoverageByDocument.Values)
+            {
+                documentCoverage.RemoveAll(x => allTestPaths.Contains(x.TestPath));
+            }
         }
 
         private bool CalculateForDocument(string projectName, string documentPath, string documentContent)

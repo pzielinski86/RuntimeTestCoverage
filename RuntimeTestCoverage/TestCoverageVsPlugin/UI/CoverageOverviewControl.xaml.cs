@@ -48,7 +48,7 @@ namespace TestCoverageVsPlugin.UI
             {
                 Config.SetSolution(_dte.Solution.FileName);
 
-                ISolutionExplorer solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), _dte.Solution.FileName);
+                ISolutionExplorer solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), CoverageOverviewCommand.Instance.MyWorkspace);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
                 ICoverageStore coverageStore = new SqlCompactCoverageStore();
 
@@ -56,7 +56,7 @@ namespace TestCoverageVsPlugin.UI
                     new NUnitTestExtractor(), coverageStore, settingsStore);
                 var xmlCoverageStore = new SqlCompactCoverageStore();
 
-                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_dte.Solution.FileName,
+                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(CoverageOverviewCommand.Instance.MyWorkspace,
                     new SolutionCoverageEngine(),
                     xmlCoverageStore,
                     new Logger(CoverageOverviewCommand.Instance.ServiceProvider));

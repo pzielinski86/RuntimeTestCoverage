@@ -73,6 +73,16 @@ namespace TestCoverage.Storage
             }
         }
 
+        public void RemoveByFile(string filePath)
+        {
+            using (var connection = new SqlCeConnection(GetConnectionString()))
+            {
+                var sql = "DELETE FROM Coverage where DocumentPath=@path";
+
+                connection.Execute(sql, new {path = filePath});
+            }
+        }
+
         public LineCoverage[] ReadAll()
         {
             if (!File.Exists(_filePath))
@@ -83,6 +93,16 @@ namespace TestCoverage.Storage
                 var data = connection.Query<LineCoverage>("SELECT * FROM Coverage");
 
                 return data.ToArray();
+            }
+        }
+
+        public void RemoveByTestPath(IEnumerable<string> testPaths)
+        {
+            using (var connection = new SqlCeConnection(GetConnectionString()))
+            {
+                var sql = "DELETE FROM Coverage where TestPath in @testPaths";
+
+                connection.Execute(sql, new {  testPaths });
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="TestDotsCoverageVsPlugin..2dd35ec3-3635-4763-969d-34627a9179d7" Version="1.0" Language="en-US" Publisher="Piotr Zielinski" />
+    <Identity Id="TestDotsCoverageVsPlugin..2dd35ec3-3635-4763-969d-34627a9179d7" Version="1.13" Language="en-US" Publisher="Piotr Zielinski" />
     <DisplayName>TestDotsCoverageVsPlugin</DisplayName>
     <Description>This is a sample margin extension to the Visual Studio Editor.</Description>
   </Metadata>

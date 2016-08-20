@@ -13,5 +13,6 @@ namespace TestCoverageVsPlugin
         Task CalculateForAllDocumentsAsync();
         Task<bool> CalculateForSelectedMethodAsync(string projectName, MethodDeclarationSyntax method);
         Task<bool> CalculateForDocumentAsync(string projectName, string documentPath, string documentContent);
+        void RemoveByPath(string filePath);
     }
 }
