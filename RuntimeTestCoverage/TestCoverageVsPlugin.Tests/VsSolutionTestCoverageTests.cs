@@ -317,14 +317,17 @@ namespace TestCoverageVsPlugin.Tests
         public void RemoveByFilePath_Should_RemoveCoverageFromOtherFiles_WhichAreRelatedTo_TheRemovedFile()
         {
             // arrange
-            _sut.SolutionCoverageByDocument.Add("Tests.cs", new List<LineCoverage>() {new LineCoverage() {DocumentPath = "Tests.cs"} });
-            _sut.SolutionCoverageByDocument.Add("Sut.cs", new List<LineCoverage>() { new LineCoverage() { TestDocumentPath = "Tests.cs" } });
+            _sut.SolutionCoverageByDocument.Add("Tests.cs",
+                new List<LineCoverage>() {new LineCoverage() {DocumentPath = "Tests.cs", TestPath = "Tests.Method"}});
+            _sut.SolutionCoverageByDocument.Add("Sut.cs",
+                new List<LineCoverage>() {new LineCoverage() {TestDocumentPath = "Tests.cs", TestPath = "Tests.Method"}});
 
             // act
             _sut.RemoveByPath("Tests.cs");
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
+            Assert.IsFalse(_sut.SolutionCoverageByDocument.ContainsKey("Tests.cs"));
+            Assert.That(_sut.SolutionCoverageByDocument["Sut.cs"].Count,Is.EqualTo(0));
         }
     }
 }
