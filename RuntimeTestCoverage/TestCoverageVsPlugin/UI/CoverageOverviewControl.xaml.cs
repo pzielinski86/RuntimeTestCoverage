@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Monitors;
 using TestCoverage.Storage;
 using TestCoverageVsPlugin.UI.ViewModels;
 
@@ -48,7 +49,10 @@ namespace TestCoverageVsPlugin.UI
             {
                 Config.SetSolution(_dte.Solution.FileName);
 
-                ISolutionExplorer solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), CoverageOverviewCommand.Instance.MyWorkspace);
+                var myWorkspace = CoverageOverviewCommand.Instance.MyWorkspace;
+                var rewrittenDocumentsStorage = new RewrittenDocumentsStorage();
+
+                ISolutionExplorer solutionExplorer = new SolutionExplorer(rewrittenDocumentsStorage, myWorkspace);
                 ICoverageSettingsStore settingsStore = new XmlCoverageSettingsStore();
                 ICoverageStore coverageStore = new SqlCompactCoverageStore();
 
@@ -56,10 +60,11 @@ namespace TestCoverageVsPlugin.UI
                     new NUnitTestExtractor(), coverageStore, settingsStore);
                 var xmlCoverageStore = new SqlCompactCoverageStore();
 
-                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(CoverageOverviewCommand.Instance.MyWorkspace,
+                var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(myWorkspace,
                     new SolutionCoverageEngine(),
                     xmlCoverageStore,
-                    new Logger(CoverageOverviewCommand.Instance.ServiceProvider));
+                    new Logger(CoverageOverviewCommand.Instance.ServiceProvider),
+                    new RoslynSolutionWatcher(myWorkspace, coverageStore, rewrittenDocumentsStorage));
 
                 var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore,
                     vsSolutionTestCoverage);

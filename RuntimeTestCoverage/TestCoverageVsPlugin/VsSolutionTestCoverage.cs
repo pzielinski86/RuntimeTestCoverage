@@ -14,6 +14,7 @@ using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
+using TestCoverage.Monitors;
 using TestCoverage.Storage;
 using TestCoverageVsPlugin.Annotations;
 using TestCoverageVsPlugin.Extensions;
@@ -26,27 +27,38 @@ namespace TestCoverageVsPlugin
         // Singleton
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
 
-        public string SolutionPath => _myWorkspace.CurrentSolution.FilePath;
-        private readonly Workspace _myWorkspace;
+        public string SolutionPath => MyWorkspace.CurrentSolution.FilePath;
+        public Workspace MyWorkspace { get; }
         private readonly ISolutionCoverageEngine _solutionCoverageEngine;
         private readonly ICoverageStore _coverageStore;
         private static readonly object SyncObject = new object();
         private readonly ILogger _logger;
+        private readonly ISolutionWatcher _solutionWatcher;
         public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
 
+        // TODO: Remove logger from constructor
         public VsSolutionTestCoverage(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore,
-            ILogger logger)
+            ILogger logger,
+            ISolutionWatcher solutionWatcher)
         {
-            _myWorkspace = myWorkspace;
+            MyWorkspace = myWorkspace;
             _solutionCoverageEngine = solutionCoverageEngine;
             _coverageStore = coverageStore;
             _logger = logger;
-            SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
-        }
+            _solutionWatcher = solutionWatcher;
+            solutionWatcher.Start();
+            solutionWatcher.DocumentRemoved += SolutionWatcher_DocumentRemoved;
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, ISolutionCoverageEngine solutionCoverageEngine, ICoverageStore coverageStore, ILogger logger)
+            SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
+        }  
+
+        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, 
+            ISolutionCoverageEngine solutionCoverageEngine, 
+            ICoverageStore coverageStore, 
+            ILogger logger,
+            ISolutionWatcher solutionWatcher)
         {
             if (_vsSolutionTestCoverage == null)
             {
@@ -54,7 +66,7 @@ namespace TestCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore, logger);
+                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore, logger,solutionWatcher);
                         _vsSolutionTestCoverage.Reinit();
                         _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }
@@ -73,7 +85,8 @@ namespace TestCoverageVsPlugin
 
             try
             {
-                coverage = await _solutionCoverageEngine.CalculateForAllDocumentsAsync().ConfigureAwait(false);
+                var task = Task.Factory.StartNew(() => _solutionCoverageEngine.CalculateForAllDocumentsAsync().Result);
+                coverage = await task;
             }
 
             catch (TestCoverageCompilationException e)
@@ -108,18 +121,6 @@ namespace TestCoverageVsPlugin
                     return false;
                 }
 
-                //var allMethods = method.Parent.GetAllMethodNames();
-                //var docPath = method.SyntaxTree.FilePath;
-
-                //SolutionCoverageByDocument[docPath].RemoveAll(x=>x)
-
-                //foreach (var documentCoverage in SolutionCoverageByDocument.Values)
-                //{
-                //    foreach (var lineCoverage in documentCoverage)
-                //    {
-                        
-                //    }
-                //}
 
                 SolutionCoverageByDocument.MergeByNodePath(coverage);
 
@@ -131,7 +132,7 @@ namespace TestCoverageVsPlugin
 
         public void Reinit()
         {
-            _solutionCoverageEngine.Init(_myWorkspace);
+            _solutionCoverageEngine.Init(MyWorkspace);
         }
 
         public Task<bool> CalculateForDocumentAsync(string projectName, string documentPath, string documentContent)
@@ -139,12 +140,9 @@ namespace TestCoverageVsPlugin
             return Task.Run(() => CalculateForDocument(projectName, documentPath, documentContent));
         }
 
-        public void RemoveByPath(string filePath)
+        private void RemoveByPath(string filePath)
         {
-            var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();
-
-            _coverageStore.RemoveByFile(filePath);
-            _coverageStore.RemoveByTestPath(allTestPaths);
+            var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();    
 
             SolutionCoverageByDocument.Remove(filePath);
 
@@ -152,6 +150,11 @@ namespace TestCoverageVsPlugin
             {
                 documentCoverage.RemoveAll(x => allTestPaths.Contains(x.TestPath));
             }
+        }
+
+        private void SolutionWatcher_DocumentRemoved(object sender, DocumentRemovedEventArgs e)
+        {
+            RemoveByPath(e.DocumentPath);
         }
 
         private bool CalculateForDocument(string projectName, string documentPath, string documentContent)

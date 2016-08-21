@@ -17,7 +17,7 @@ namespace TestCoverageConsole
         {
             Config.SetSolution(TestSubjectSlnPath);
             var engine = new SolutionCoverageEngine();
-            engine.Init(TestSubjectSlnPath);
+            engine.Init(null);
 
             for (int i = 0; i < 1; i++)
             {

@@ -175,6 +175,7 @@
     <Compile Include="CoverageCalculation\TestRunnerTests.cs" />
     <Compile Include="CoverageCalculation\TestRunResultTests.cs" />
     <Compile Include="Extensions\SyntaxNodeExtensionsTests.cs" />
+    <Compile Include="Monitors\RoslynSolutionWatcherTests.cs" />
     <Compile Include="NodePathBuilderTests.cs" />
     <Compile Include="NUnitTestExtractorTests.cs" />
     <Compile Include="PathHelperTests.cs" />
@@ -186,6 +187,7 @@
     <Compile Include="Rewrite\SolutionRewriterTests.cs" />
     <Compile Include="TestExplorerTests.cs" />
     <Compile Include="TestFixtureDetailsTests.cs" />
+    <Compile Include="Utilities\EventWaiter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -207,6 +209,7 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -96,17 +96,15 @@ namespace TestCoverage.Storage
             }
         }
 
-        public void RemoveByTestPath(IEnumerable<string> testPaths)
+        public void RemoveByDocumentTestNodePath(string documentFilePath)
         {
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
-                var sql = "DELETE FROM Coverage where TestPath in @testPaths";
+                var sql = "delete from Coverage where TestPath in (SELECT TestPath from Coverage WHERE DocumentPath=@documentFilePath)";
 
-                connection.Execute(sql, new {  testPaths });
+                connection.Execute(sql, new { documentFilePath });
             }
         }
-
-
         private void SetupDatabase()
         {
             if (File.Exists(_filePath))

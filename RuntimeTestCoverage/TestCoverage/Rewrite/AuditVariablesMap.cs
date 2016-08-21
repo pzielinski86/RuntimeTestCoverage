@@ -10,7 +10,7 @@ namespace TestCoverage.Rewrite
 
             classBuilder.AppendLine(string.Format("public static class {0}", AuditVariablesListClassName));
             classBuilder.AppendLine("{");
-            
+
             string list = $"\tpublic static System.Collections.Generic.HashSet<{AuditVariablePlaceholder.AuditVariableStructureName}> {AuditVariablesListName} = new  System.Collections.Generic.HashSet<{AuditVariablePlaceholder.AuditVariableStructureName}>();";
             classBuilder.AppendLine(list);
 

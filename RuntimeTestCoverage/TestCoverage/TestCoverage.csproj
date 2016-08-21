@@ -210,6 +210,9 @@
     <Compile Include="ISolutionCoverageEngine.cs" />
     <Compile Include="ISolutionExplorer.cs" />
     <Compile Include="ITestExplorer.cs" />
+    <Compile Include="Monitors\DocumentRemovedEventArgs.cs" />
+    <Compile Include="Monitors\ISolutionWatcher.cs" />
+    <Compile Include="Monitors\RoslynSolutionWatcher.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

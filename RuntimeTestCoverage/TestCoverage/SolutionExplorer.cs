@@ -13,17 +13,17 @@ namespace TestCoverage
     public class SolutionExplorer : ISolutionExplorer
     {
         private readonly IRewrittenDocumentsStorage _rewrittenDocumentsStorage;
-        private readonly Solution _solution;
+        private readonly Workspace _myWorkspace;
 
         public SolutionExplorer(IRewrittenDocumentsStorage rewrittenDocumentsStorage, Workspace myWorkspace)
         {
             _rewrittenDocumentsStorage = rewrittenDocumentsStorage;
+            _myWorkspace = myWorkspace;
             var props = new Dictionary<string, string>();
             props["CheckForSystemRuntimeDependency"] = "true";
 
             var workspace = MSBuildWorkspace.Create(props);
             // TODO: Get rid of blocking a thread
-            _solution = myWorkspace.CurrentSolution;
         }
 
         public string[] GetAllProjectReferences(string projectName)
@@ -69,7 +69,7 @@ namespace TestCoverage
         public IEnumerable<SyntaxTree> LoadRewrittenProjectSyntaxTrees(Project project,
             params string[] excludedDocuments)
         {
-            return _rewrittenDocumentsStorage.GetRewrittenDocuments(_solution.FilePath, project.Name, excludedDocuments);
+            return _rewrittenDocumentsStorage.GetRewrittenDocuments(Solution.FilePath, project.Name, excludedDocuments);
         }
 
         public string[] GetCompiledAssemblies(params string[] excludedProjects)
@@ -91,18 +91,18 @@ namespace TestCoverage
             return allAssemblies.ToArray();
         }
 
-        public Solution Solution => _solution;
+        public Solution Solution => _myWorkspace.CurrentSolution;
 
         public string SolutionPath => Solution.FilePath;
 
         public IEnumerable<Document> GetAllDocuments()
         {
-            return _solution.Projects.SelectMany(project => project.Documents);
+            return Solution.Projects.SelectMany(project => project.Documents);
         }
 
         public Project GetProjectByDocument(string documentPath)
         {
-            var project = _solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
+            var project = Solution.Projects.FirstOrDefault(p => p.Documents.Any(d => d.FilePath == documentPath));
 
             return project;
         }

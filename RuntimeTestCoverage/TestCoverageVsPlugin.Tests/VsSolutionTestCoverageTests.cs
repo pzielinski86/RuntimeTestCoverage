@@ -12,6 +12,7 @@ using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
+using TestCoverage.Monitors;
 using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin.Tests
@@ -23,16 +24,18 @@ namespace TestCoverageVsPlugin.Tests
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
         private ILogger _logger;
+        private ISolutionWatcher _solutionWatcherMock;
 
         [SetUp]
         public void Setup()
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
+            _solutionWatcherMock = Substitute.For<ISolutionWatcher>();
             _logger = Substitute.For<ILogger>();
 
             Workspace workspace = new AdhocWorkspace();
-            _sut = new VsSolutionTestCoverage(workspace, _solutionCoverageEngineMock, _coverageStoreMock, _logger);
+            _sut = new VsSolutionTestCoverage(workspace, _solutionCoverageEngineMock, _coverageStoreMock, _logger, _solutionWatcherMock);
         }
 
 
@@ -307,7 +310,7 @@ namespace TestCoverageVsPlugin.Tests
             _sut.SolutionCoverageByDocument.Add("Tests.cs", new List<LineCoverage>() { new LineCoverage() { DocumentPath = "Tests.cs" } });
 
             // act
-            _sut.RemoveByPath("Tests.cs");
+            _solutionWatcherMock.DocumentRemoved+=Raise.EventWith(null,new DocumentRemovedEventArgs("Tests.cs"));
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
@@ -323,7 +326,7 @@ namespace TestCoverageVsPlugin.Tests
                 new List<LineCoverage>() {new LineCoverage() {TestDocumentPath = "Tests.cs", TestPath = "Tests.Method"}});
 
             // act
-            _sut.RemoveByPath("Tests.cs");
+            _solutionWatcherMock.DocumentRemoved += Raise.EventWith(null, new DocumentRemovedEventArgs("Tests.cs"));
 
             // assert
             Assert.IsFalse(_sut.SolutionCoverageByDocument.ContainsKey("Tests.cs"));

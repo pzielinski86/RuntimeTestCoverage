@@ -32,10 +32,12 @@ namespace TestCoverage.CoverageCalculation
             foreach (var variable in AuditVariables)
             {
                 LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
+                lineCoverage.DocumentPath = variable.DocumentPath;
+                lineCoverage.TestDocumentPath = testDocumentPath;
 
                 if (ThrownException)
                 {
-                    if (lineCoverage.NodePath == lineCoverage.TestPath && variable != AuditVariables.Last())
+                    if (lineCoverage.IsItInTestMethod && variable != AuditVariables.Last())
                         lineCoverage.IsSuccess = true;
                     else
                     {
@@ -45,10 +47,7 @@ namespace TestCoverage.CoverageCalculation
                 }
                 else
                     lineCoverage.IsSuccess = true;
-
-
-                lineCoverage.DocumentPath = variable.DocumentPath;
-                lineCoverage.TestDocumentPath = testDocumentPath;
+              
 
                 coverage.Add(lineCoverage);
             }

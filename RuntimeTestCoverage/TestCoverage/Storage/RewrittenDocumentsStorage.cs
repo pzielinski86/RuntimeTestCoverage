@@ -43,20 +43,29 @@ namespace TestCoverage.Storage
             }
         }
 
-        private string GetDocumentFileName(string solutionPath, string docPath)
-        {
-            string docRelativePathToSolution = MakeRelative(docPath, Path.GetDirectoryName(solutionPath));
-
-            string docName = docRelativePathToSolution.Replace("/", "_");
-            return docName;
-        }
-
         public void Clear(string projectName)
         {
             var folderPath = GetProjectFolder(projectName);
 
             if (Directory.Exists(folderPath))
                 Directory.Delete(folderPath, true);
+        }
+
+        public void RemoveByDocument(string docPath, string projectName,string solutionPath)
+        {
+            var docName = GetDocumentFileName(solutionPath, docPath);
+            string folder = GetProjectFolder(projectName);
+            string path = Path.Combine(folder, docName);
+
+            File.Delete(path);
+        }
+
+        private string GetDocumentFileName(string solutionPath, string docPath)
+        {
+            string docRelativePathToSolution = MakeRelative(docPath, Path.GetDirectoryName(solutionPath));
+
+            string docName = docRelativePathToSolution.Replace("/", "_");
+            return docName;
         }
 
         private static string GetProjectFolder(string projectName)

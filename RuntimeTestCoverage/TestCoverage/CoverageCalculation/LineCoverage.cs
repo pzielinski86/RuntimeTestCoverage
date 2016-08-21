@@ -14,7 +14,7 @@ namespace TestCoverage.CoverageCalculation
         public string DocumentPath { get; set; }
         public string TestDocumentPath { get; set; }
         public bool IsSuccess { get; set; }
-
+        public bool IsItInTestMethod => TestDocumentPath == DocumentPath;
         public static LineCoverage EvaluateAuditVariable(
             AuditVariablePlaceholder variableName,
             SyntaxNode testMethodNode,

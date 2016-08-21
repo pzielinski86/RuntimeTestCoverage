@@ -14,6 +14,6 @@ namespace TestCoverage.Storage
 
         LineCoverage[] ReadAll();
 
-        void RemoveByTestPath(IEnumerable<string> testPaths);
+        void RemoveByDocumentTestNodePath(string documentFilePath);
     }
 }
