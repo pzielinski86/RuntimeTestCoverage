@@ -29,6 +29,8 @@ namespace TestCoverage.CoverageCalculation
             List<LineCoverage> coverage = new List<LineCoverage>();
             string testDocName = Path.GetFileNameWithoutExtension(testDocumentPath);
 
+            var lastAuditVariableInTest = AuditVariables.Last(x => x.DocumentPath == testDocumentPath);
+
             foreach (var variable in AuditVariables)
             {
                 LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
@@ -37,7 +39,7 @@ namespace TestCoverage.CoverageCalculation
 
                 if (ThrownException)
                 {
-                    if (lineCoverage.IsItInTestMethod && variable != AuditVariables.Last())
+                    if (lineCoverage.IsItInTestMethod && variable != lastAuditVariableInTest)
                         lineCoverage.IsSuccess = true;
                     else
                     {
