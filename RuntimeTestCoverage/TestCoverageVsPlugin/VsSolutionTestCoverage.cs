@@ -18,6 +18,7 @@ using TestCoverage.Monitors;
 using TestCoverage.Storage;
 using TestCoverageVsPlugin.Annotations;
 using TestCoverageVsPlugin.Extensions;
+using TestCoverageVsPlugin.Logging;
 using Task = System.Threading.Tasks.Task;
 
 namespace TestCoverageVsPlugin
@@ -32,22 +33,17 @@ namespace TestCoverageVsPlugin
         private readonly ISolutionCoverageEngine _solutionCoverageEngine;
         private readonly ICoverageStore _coverageStore;
         private static readonly object SyncObject = new object();
-        private readonly ILogger _logger;
-        private readonly ISolutionWatcher _solutionWatcher;
         public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
 
         // TODO: Remove logger from constructor
         public VsSolutionTestCoverage(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore,
-            ILogger logger,
             ISolutionWatcher solutionWatcher)
         {
             MyWorkspace = myWorkspace;
             _solutionCoverageEngine = solutionCoverageEngine;
             _coverageStore = coverageStore;
-            _logger = logger;
-            _solutionWatcher = solutionWatcher;
             solutionWatcher.Start();
             solutionWatcher.DocumentRemoved += SolutionWatcher_DocumentRemoved;
 
@@ -57,7 +53,6 @@ namespace TestCoverageVsPlugin
         public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, 
             ISolutionCoverageEngine solutionCoverageEngine, 
             ICoverageStore coverageStore, 
-            ILogger logger,
             ISolutionWatcher solutionWatcher)
         {
             if (_vsSolutionTestCoverage == null)
@@ -66,7 +61,7 @@ namespace TestCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore, logger,solutionWatcher);
+                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore,solutionWatcher);
                         _vsSolutionTestCoverage.Reinit();
                         _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }
@@ -78,7 +73,7 @@ namespace TestCoverageVsPlugin
 
         public async Task CalculateForAllDocumentsAsync()
         {
-            _logger.Info("Calculating coverage for all documents");
+            LogFactory.CurrentLogger.Info("Calculating coverage for all documents");
 
             CoverageResult coverage;
             Reinit();
@@ -92,7 +87,7 @@ namespace TestCoverageVsPlugin
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.Clear();
-                _logger.Error(e.ToString());
+                LogFactory.CurrentLogger.Error(e.ToString());
                 return;
             }
 
@@ -117,7 +112,7 @@ namespace TestCoverageVsPlugin
                         Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
                     SolutionCoverageByDocument.MarkAsCompilationError(path,e.ToString());
-                    _logger.Error(e.ToString());
+                    LogFactory.CurrentLogger.Error(e.ToString());
                     return false;
                 }
 
@@ -168,7 +163,7 @@ namespace TestCoverageVsPlugin
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.Clear();
-                _logger.Error(e.ToString());
+                LogFactory.CurrentLogger.Error(e.ToString());
                 return false;
             }
 

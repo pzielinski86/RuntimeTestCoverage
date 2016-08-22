@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.LanguageServices;
 using TestCoverage;
 using TestCoverage.Monitors;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Logging;
 
 namespace TestCoverageVsPlugin
 {
@@ -36,7 +37,6 @@ namespace TestCoverageVsPlugin
         private IVsStatusbar _statusBar;
         private DTE _dte;
         private readonly ProjectItemsEvents _projectItemsEvents;
-        private Logger _logger;
         private Workspace _myWorkspace;
         private readonly SolutionEvents _solutionEvents;
 
@@ -55,7 +55,7 @@ namespace TestCoverageVsPlugin
             _projectItemsEvents = ((Events2)_dte.Events).ProjectItemsEvents;
             _projectItemsEvents.ItemAdded += ProjectItemAdded;
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
-            _logger = new Logger(serviceProvider);
+            LogFactory.CurrentLogger = new VisualStudioLogger(serviceProvider);
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
@@ -91,14 +91,13 @@ namespace TestCoverageVsPlugin
             _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_myWorkspace,
                new SolutionCoverageEngine(),
                 sqlCompactCoverageStore,
-                _logger,
                 new RoslynSolutionWatcher(_myWorkspace,sqlCompactCoverageStore,new RewrittenDocumentsStorage()));
 
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            _logger.Error(e.ExceptionObject.ToString());
+            LogFactory.CurrentLogger.Error(e.ExceptionObject.ToString());
         }
 
         private void ProjectItemAdded(ProjectItem projectItem)

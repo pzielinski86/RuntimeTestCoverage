@@ -1,13 +1,18 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.VisualStudio.Shell.Interop;
 
-namespace TestCoverageVsPlugin
+namespace TestCoverageVsPlugin.Logging
 {
-    class Logger : ILogger
+    class VisualStudioLogger : ILogger
     {
         private readonly System.IServiceProvider _serviceProvider;
 
-        public Logger(System.IServiceProvider serviceProvider)
+        public VisualStudioLogger(System.IServiceProvider serviceProvider)
         {
+            if(serviceProvider==null)
+                throw new ArgumentNullException();
+
             _serviceProvider = serviceProvider;            
         }
 
@@ -25,7 +30,9 @@ namespace TestCoverageVsPlugin
         {
             var logger = _serviceProvider.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
 
+            Debug.Assert(logger!=null);
+
             logger.LogEntry((uint)msgType, "RuntimeTestCoverage", message);
-        }
+        }        
     }
 }

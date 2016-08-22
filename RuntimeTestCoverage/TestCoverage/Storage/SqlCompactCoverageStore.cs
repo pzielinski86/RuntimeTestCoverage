@@ -44,7 +44,7 @@ namespace TestCoverage.Storage
             using (var connection = new SqlCeConnection(GetConnectionString()))
             {
                 connection.Open();
-                object testMethodsArgs;
+                
                 string delete;
 
                 if (testMethods.Length == 1)

@@ -10,6 +10,7 @@ using TestCoverage;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Monitors;
 using TestCoverage.Storage;
+using TestCoverageVsPlugin.Logging;
 using TestCoverageVsPlugin.UI.ViewModels;
 
 namespace TestCoverageVsPlugin.UI
@@ -33,6 +34,7 @@ namespace TestCoverageVsPlugin.UI
             _dte = (DTE)CoverageOverviewCommand.Instance.ServiceProvider.GetService(typeof(DTE));
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.Opened += SolutionEventsOpened;
+            LogFactory.CurrentLogger = new VisualStudioLogger(CoverageOverviewCommand.Instance.ServiceProvider);
 
             this.InitializeComponent();
             this.Loaded += CoverageOverviewControl_Loaded;
@@ -58,12 +60,11 @@ namespace TestCoverageVsPlugin.UI
 
                 ITestExplorer testExplorer = new TestExplorer(solutionExplorer,
                     new NUnitTestExtractor(), coverageStore, settingsStore);
-                var xmlCoverageStore = new SqlCompactCoverageStore();
+                var xmlCoverageStore = new SqlCompactCoverageStore();                
 
                 var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(myWorkspace,
                     new SolutionCoverageEngine(),
                     xmlCoverageStore,
-                    new Logger(CoverageOverviewCommand.Instance.ServiceProvider),
                     new RoslynSolutionWatcher(myWorkspace, coverageStore, rewrittenDocumentsStorage));
 
                 var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore,
