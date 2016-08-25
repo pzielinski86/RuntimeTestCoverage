@@ -21,35 +21,43 @@ namespace TestCoverage.CoverageCalculation
             ErrorMessage = errorMessage;
         }
 
-        public virtual LineCoverage[] GetCoverage( 
-            SyntaxNode testMethod, 
-            string testProjectName, 
+        public virtual LineCoverage[] GetCoverage(
+            SyntaxNode testMethod,
+            string testProjectName,
             string testDocumentPath)
         {
             List<LineCoverage> coverage = new List<LineCoverage>();
             string testDocName = Path.GetFileNameWithoutExtension(testDocumentPath);
 
-            var lastAuditVariableInTest = AuditVariables.Last(x => x.DocumentPath == testDocumentPath);
+            var variablesSortedByExecutionOrder = AuditVariables.OrderBy(x => x.ExecutionCounter);
+
+            var lastAuditVariableInTest = variablesSortedByExecutionOrder.Last(x => x.DocumentPath == testDocumentPath);
+            var lastAuditVariableInSut =
+                variablesSortedByExecutionOrder.LastOrDefault(x => x.DocumentPath != testDocumentPath);
 
             foreach (var variable in AuditVariables)
             {
                 LineCoverage lineCoverage = LineCoverage.EvaluateAuditVariable(variable, testMethod, testProjectName, testDocName);
                 lineCoverage.DocumentPath = variable.DocumentPath;
                 lineCoverage.TestDocumentPath = testDocumentPath;
+                lineCoverage.IsSuccess = true;
 
                 if (ThrownException)
                 {
-                    if (lineCoverage.IsItInTestMethod && variable != lastAuditVariableInTest)
-                        lineCoverage.IsSuccess = true;
-                    else
+                    if (lineCoverage.IsItInTestMethod)
+                    {
+                        if (variable == lastAuditVariableInTest)
+                        {
+                            lineCoverage.IsSuccess = false;
+                            lineCoverage.ErrorMessage = ErrorMessage;
+                        }
+                    }
+                    else if (variable == lastAuditVariableInSut)
                     {
                         lineCoverage.IsSuccess = false;
                         lineCoverage.ErrorMessage = ErrorMessage;
                     }
                 }
-                else
-                    lineCoverage.IsSuccess = true;
-              
 
                 coverage.Add(lineCoverage);
             }

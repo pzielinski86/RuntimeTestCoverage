@@ -8,12 +8,19 @@ namespace TestCoverage.Rewrite
         public string DocumentPath { get; set; }
         public string NodePath { get; private set; }
         public int SpanStart { get; private set; }
+        public int ExecutionCounter { get; }
 
-        public AuditVariablePlaceholder(string documentPath,string nodePath, int spanStart)
+        public AuditVariablePlaceholder(string documentPath,string nodePath, int spanStart):
+            this(documentPath,nodePath,spanStart,0)
+        {
+        }
+
+        public AuditVariablePlaceholder(string documentPath, string nodePath, int spanStart,int executionCounter)
         {
             DocumentPath = documentPath;
             NodePath = nodePath;
             SpanStart = spanStart;
+            ExecutionCounter = executionCounter;
         }
 
         public static string AuditVariableStructureName
@@ -21,9 +28,14 @@ namespace TestCoverage.Rewrite
             get { return "AuditVariable"; }
         }
 
-        public override string ToString()
+        public string GetKey() => $"{DocumentPath}_{SpanStart}";
+        public string GetInitializationCode()
         {
-            string initVarCode = $"new {AuditVariableStructureName}(){{NodePath=\"{NodePath}\",DocumentPath=@\"{DocumentPath}\",Span={SpanStart}}}";
+            string initVarCode = $"new {AuditVariableStructureName}()" +
+                                 $"{{NodePath=\"{NodePath}\"," +
+                                 $"DocumentPath=@\"{DocumentPath}\"," +
+                                 $"Span={SpanStart}, " +
+                                 $"ExecutionCounter={AuditVariablesMap.ExecutionCounterCall}++}}";
 
             return initVarCode;
         }

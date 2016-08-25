@@ -35,7 +35,6 @@ namespace TestCoverageVsPlugin
         private static readonly object SyncObject = new object();
         public Dictionary<string, List<LineCoverage>> SolutionCoverageByDocument { get; private set; }
 
-        // TODO: Remove logger from constructor
         public VsSolutionTestCoverage(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore,

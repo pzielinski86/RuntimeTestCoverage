@@ -14,13 +14,13 @@ namespace TestCoverage.Tests.CoverageCalculation
         public void GetCoverage_Should_ReturnOnePassedCoverage_When_ThereIsOneVariable_And_AssertionDidNotFail()
         {
             // arrange
-            var variables = new[] { new AuditVariablePlaceholder("doc.cs", "", 1) };
+            var variables = new[] { new AuditVariablePlaceholder("HelloWorldTests.cs", "", 1) };
             var testResult = new TestRunResult(variables, false, null);
 
             var testNode = CSharpSyntaxTree.ParseText("");
 
             // act
-            LineCoverage[] totalCoverage = testResult.GetCoverage(testNode.GetRoot(), "SampleHelloWorldTests", "HelloWorldTests");
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testNode.GetRoot(), "SampleHelloWorldTests", "HelloWorldTests.cs");
 
             // assert
             Assert.That(totalCoverage.Length, Is.EqualTo(1));
@@ -48,7 +48,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
 
             // act
-            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", "HelloWorldTests");
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
 
             // assert
             Assert.That(totalCoverage.Length, Is.EqualTo(2));
@@ -60,7 +60,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         }
 
         [Test]
-        public void GetCoverage_Should_MarkBothLines_As_Failed_Ones_When_ExceptionWasThrown_And_TheyAreInNotTestDocument()
+        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_TheyAreInSutDocument()
         {
             // arrange
             string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
@@ -80,7 +80,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
 
             // act
-            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", "HelloWorldTests");
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
 
             // assert
             Assert.That(totalCoverage.Length, Is.EqualTo(2));

@@ -54,9 +54,12 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (var dynamicVar in dynamicVariables)
             {
-                var variable = new AuditVariablePlaceholder(dynamicVar.DocumentPath,
-                    dynamicVar.NodePath,
-                    dynamicVar.Span); 
+                var value = dynamicVar.Value;
+
+                var variable = new AuditVariablePlaceholder(value.DocumentPath,
+                    value.NodePath,
+                    value.Span,
+                    value.ExecutionCounter); 
 
                  variables[i++] = variable;
             }

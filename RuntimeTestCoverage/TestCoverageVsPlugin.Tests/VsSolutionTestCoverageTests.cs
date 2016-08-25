@@ -23,7 +23,6 @@ namespace TestCoverageVsPlugin.Tests
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
-        private ILogger _logger;
         private ISolutionWatcher _solutionWatcherMock;
 
         [SetUp]
@@ -32,10 +31,12 @@ namespace TestCoverageVsPlugin.Tests
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _solutionWatcherMock = Substitute.For<ISolutionWatcher>();
-            _logger = Substitute.For<ILogger>();
 
             Workspace workspace = new AdhocWorkspace();
-            _sut = new VsSolutionTestCoverage(workspace, _solutionCoverageEngineMock, _coverageStoreMock, _logger, _solutionWatcherMock);
+            _sut = new VsSolutionTestCoverage(workspace, 
+                _solutionCoverageEngineMock, 
+                _coverageStoreMock, 
+                _solutionWatcherMock);
         }
 
 

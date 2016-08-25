@@ -116,10 +116,12 @@ namespace TestCoverage.Rewrite
         }
         private StatementSyntax CreateLineAuditNode()
         {
+            string key = _auditVariablePlaceholders[_auditIndex].GetKey();
+            string initVariableCode = _auditVariablePlaceholders[_auditIndex].GetInitializationCode();
 
-            string initVariableCode = _auditVariablePlaceholders[_auditIndex].ToString();
             string auditNodeSourceCode =
-                $"\t{AuditVariablesMap.AuditVariablesListClassName}.{AuditVariablesMap.AuditVariablesListName}.Add({initVariableCode});\n";
+                $"\t{AuditVariablesMap.AuditVariablesListClassName}.{AuditVariablesMap.AuditVariablesListName}[@\"{key}\"] = " +
+                $"{initVariableCode};\n";
 
             _auditIndex++;
 
