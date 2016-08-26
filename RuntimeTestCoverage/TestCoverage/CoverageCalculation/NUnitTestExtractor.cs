@@ -38,33 +38,50 @@ namespace TestCoverage.CoverageCalculation
 
         private void ExtractMethodTests(TestFixtureDetails testFixture, MethodDeclarationSyntax methodNode, ISemanticModel semanticModel)
         {
-            var methodTestCases = new List<TestCase>();
+            var allMethodTestCases = new List<TestCase>();
 
             foreach (AttributeSyntax attribute in methodNode.DescendantNodes().OfType<AttributeSyntax>())
             {
-                if (attribute.Name.ToString() == "Test")
-                {
-                    var testCase = ExtractTest(attribute, testFixture);
-                    if (testCase != null)
-                        methodTestCases.Add(testCase);
-                }
-
-                else if (attribute.Name.ToString() == "TestCase")
-                {
-                    var testCase = ExtractTestCase(attribute, testFixture, semanticModel);
-                    if (testCase != null)
-                        methodTestCases.Add(testCase);
-                }
-                else if (attribute.Name.ToString() == "SetUp")
-                    testFixture.SetupMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+                var methodTestCases=ExtractMethodsFromAttributes(testFixture, semanticModel, attribute);
+                allMethodTestCases.AddRange(methodTestCases);
             }
 
-            if (methodTestCases.Count > 0)
+            if (allMethodTestCases.Count > 0)
             {
-                int maxPars = methodTestCases.Max(x => x.Arguments.Length);
-                testFixture.Cases.AddRange(methodTestCases.Where(x => x.Arguments.Length == maxPars));
+                int maxPars = allMethodTestCases.Max(x => x.Arguments.Length);
+                testFixture.Cases.AddRange(allMethodTestCases.Where(x => x.Arguments.Length == maxPars));
             }
         }
+
+        private static List<TestCase> ExtractMethodsFromAttributes(TestFixtureDetails testFixture, ISemanticModel semanticModel,
+            AttributeSyntax attribute)
+        {
+            List<TestCase> methodTestCases=new List<TestCase>();
+
+            if (attribute.Name.ToString() == "Test")
+            {
+                var testCase = ExtractTest(attribute, testFixture);
+                if (testCase != null)
+                    methodTestCases.Add(testCase);
+            }
+            else if (attribute.Name.ToString() == "TestCase")
+            {
+                var testCase = ExtractTestCase(attribute, testFixture, semanticModel);
+                if (testCase != null)
+                    methodTestCases.Add(testCase);
+            }
+            else if (attribute.Name.ToString() == "SetUp")
+                testFixture.TestSetUpMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+            else if (attribute.Name.ToString() == "TestFixtureSetUp")
+                testFixture.TestFixtureSetUpMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+            else if (attribute.Name.ToString() == "TearDown")
+                testFixture.TestTearDownMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+            else if (attribute.Name.ToString() == "TestFixtureTearDown")
+                testFixture.TestFixtureTearDownMethodName = GetAttributeMethod(attribute).Identifier.ValueText;
+
+            return methodTestCases;
+        }
+
         private static TestCase ExtractTestCase(AttributeSyntax attribute, TestFixtureDetails testFixture, ISemanticModel semanticModel)
         {
             var methodDeclarationSyntax = GetAttributeMethod(attribute);

@@ -31,7 +31,7 @@ namespace TestCoverage.Tests
             var sut = new TestFixtureDetails();
             const string expectedCode = "testFixtureType.GetMethod(\"Init\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(testInstance, null);";
             sut.FullClassName = "Tests.MathHelperTests";
-            sut.SetupMethodName = "Init";
+            sut.TestSetUpMethodName = "Init";
 
             // act
             string code = sut.CreateSetupFixtureCode("testInstance");

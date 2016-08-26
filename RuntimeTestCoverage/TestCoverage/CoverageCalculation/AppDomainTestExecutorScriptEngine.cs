@@ -28,6 +28,11 @@ namespace TestCoverage.CoverageCalculation
             return _engine.RunTest(references, testExecutionScriptParameters);
         }
 
+        public ITestRunResult[] RunTestFixture(string[] references, TestFixtureExecutionScriptParameters pars)
+        {
+            return _engine.RunTestFixture(references, pars);
+        }
+
         public void Dispose()
         {
             AppDomain.Unload(_appDomain);

@@ -53,7 +53,10 @@ namespace TestCoverage.CoverageCalculation
                 SemanticModel = semanticModel
             };
 
-            var coverage = RunTestCases(testCases, compiledTestInfo, project.Name);
+
+            fixtureDetails.Cases = testCases;
+
+            var coverage = RunTestCases(fixtureDetails, compiledTestInfo, project.Name);
 
             return coverage;
         }
@@ -94,38 +97,47 @@ namespace TestCoverage.CoverageCalculation
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
 
-            var coverage = RunTestCases(testFixtureDetails.Cases, compiledTestFixtureInfo, testProjectName);
+            var coverage = RunTestCases(testFixtureDetails, compiledTestFixtureInfo, testProjectName);
 
             return coverage;
         }
 
-        private LineCoverage[] RunTestCases(List<TestCase> testCases,
+        private LineCoverage[] RunTestCases(TestFixtureDetails testFixtureDetails,
             CompiledTestFixtureInfo compiledTestFixtureInfo,
             string testProjectName)
         {
 
             var coverage = new List<LineCoverage>();
 
-            foreach (var testCase in testCases)
+            var testFixtureExecutionScriptParameters = new TestFixtureExecutionScriptParameters
+            {
+                TestFixtureTypeFullName = testFixtureDetails.FullQualifiedName,
+                TestCases = new List<TestExecutionScriptParameters>(),
+                TestFixtureSetUpMethodName = testFixtureDetails.TestFixtureSetUpMethodName
+            };
+
+            foreach (var testCase in testFixtureDetails.Cases)
             {
                 var scriptParameters = new TestExecutionScriptParameters
                 {
-                    TestFixtureTypeFullName = testCase.TestFixture.FullQualifiedName,
-                    SetupMethodName = testCase.TestFixture.SetupMethodName,
+                    SetUpMethodName  = testCase.TestFixture.TestSetUpMethodName,
+                    TearDownMethodName = testCase.TestFixture.TestTearDownMethodName,
                     TestName = testCase.MethodName,
                     TestParameters = testCase.Arguments,
                     IsAsync = testCase.IsAsync
                 };
 
-                var testResult =
-                    _testExecutorScriptEngine.RunTest(compiledTestFixtureInfo.AllReferences,
-                        scriptParameters);
+                testFixtureExecutionScriptParameters.TestCases.Add(scriptParameters);                
+            }
 
-                var partialCoverage = testResult.GetCoverage(
-                                 testCase.SyntaxNode,
-                                 testProjectName,
-                                 compiledTestFixtureInfo.TestDocumentPath);
+            var results = _testExecutorScriptEngine.RunTestFixture(compiledTestFixtureInfo.AllReferences,
+                testFixtureExecutionScriptParameters);
 
+            foreach (var testRunResult in results)
+            {
+                var methodSyntaxNode = testFixtureDetails.Cases.First(x => x.MethodName == testRunResult.TestName).SyntaxNode;
+
+                var partialCoverage = testRunResult.GetCoverage(methodSyntaxNode, testProjectName, compiledTestFixtureInfo.TestDocumentPath);
                 coverage.AddRange(partialCoverage);
             }
 

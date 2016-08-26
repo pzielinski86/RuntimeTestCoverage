@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.MSBuild;
 using TestCoverage;
 using TestCoverage.Extensions;
 
@@ -11,13 +12,15 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\projects\TestingSandox\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
+        private const string TestSubjectSlnPath = @"C:\code\RuntimeTestCoverage\TestSolution\TestSolution.sln";
 
         private static void Main(string[] args)
         {
             Config.SetSolution(TestSubjectSlnPath);
             var engine = new SolutionCoverageEngine();
-            engine.Init(null);
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            workspace.OpenSolutionAsync(TestSubjectSlnPath).Wait();
+            engine.Init(workspace);
 
             for (int i = 0; i < 1; i++)
             {

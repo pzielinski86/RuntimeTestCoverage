@@ -10,14 +10,15 @@ namespace TestCoverage.CoverageCalculation
     [Serializable]
     public class TestRunResult : ITestRunResult
     {
+        public string TestName { get; private set; }
         public AuditVariablePlaceholder[] AuditVariables { get; }
-        public bool ThrownException { get; }
+        public bool ThrownException => ErrorMessage != null;
         public string ErrorMessage { get; }
 
-        public TestRunResult(AuditVariablePlaceholder[] auditVariables, bool thrownException, string errorMessage)
+        public TestRunResult(string testName, AuditVariablePlaceholder[] auditVariables, string errorMessage)
         {
+            TestName = testName;
             AuditVariables = auditVariables;
-            ThrownException = thrownException;
             ErrorMessage = errorMessage;
         }
 
