@@ -32,9 +32,9 @@ namespace TestCoverageVsPlugin.Extensions
         public static void MergeByNodePath(this Dictionary<string, List<LineCoverage>> source,
             List<LineCoverage> newCoverage)
         {
-            string[] nodePaths = newCoverage.Select(x => x.NodePath).Distinct().ToArray();            
+            string[] testPaths = newCoverage.Select(x => x.TestPath).Distinct().ToArray();            
 
-            RemoveByNodePaths(source, nodePaths);
+            RemoveByTestPaths(source, testPaths);
 
             foreach (var lineCoverage in newCoverage)
             {
@@ -45,13 +45,13 @@ namespace TestCoverageVsPlugin.Extensions
             }
         }
 
-        private static void RemoveByNodePaths(Dictionary<string, List<LineCoverage>> source, string[] nodePaths)
+        private static void RemoveByTestPaths(Dictionary<string, List<LineCoverage>> source, string[] testPaths)
         {
             foreach (var documentCoverage in source.Values)
             {
                 for (int i = 0; i < documentCoverage.Count; i++)
                 {
-                    if (nodePaths.Contains(documentCoverage[i].NodePath))
+                    if (testPaths.Contains(documentCoverage[i].TestPath))
                         documentCoverage.RemoveAt(i--);
                 }
             }

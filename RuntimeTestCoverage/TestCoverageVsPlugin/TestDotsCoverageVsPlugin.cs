@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.CodeAnalysis;
@@ -160,7 +161,8 @@ namespace TestCoverageVsPlugin
                 Ellipse ellipse = new Ellipse
                 {
                     Fill = dotCoverage.Color,
-                    ToolTip = dotCoverage.Tooltip
+                    ToolTip = dotCoverage.Tooltip,
+                    Cursor = System.Windows.Input.Cursors.Arrow
                 };
                 ellipse.Width = ellipse.Height = 15;
 
