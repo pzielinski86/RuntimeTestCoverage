@@ -13,12 +13,6 @@ namespace TestCoverage.CoverageCalculation
         private string[] _references = null;
         private Script<object> _runnerScript;
 
-        public ITestRunResult RunTest(string[] references,
-            TestExecutionScriptParameters testExecutionScriptParameters)
-        {
-            throw new NotImplementedException();
-        }
-
         public ITestRunResult[] RunTestFixture(string[] references, TestFixtureExecutionScriptParameters pars)
         {
             if (_references == null || _references.Length != references.Length)
@@ -55,11 +49,11 @@ namespace TestCoverage.CoverageCalculation
         {
             var results = new List<TestRunResult>(output.Count);
 
-            foreach (var testResults in output)
+            foreach (var testResult in output)
             {
-                string testName = testResults.TestName;                
-                string errorMessage = testResults.ErrorMessage;
-                var auditVariables = testResults.Variables;
+                string testName = testResult.TestName;                
+                string errorMessage = testResult.ErrorMessage;
+                var auditVariables = testResult.Variables;
 
                 var result = new TestRunResult(testName, GetVariables(auditVariables), errorMessage);
                 results.Add(result);

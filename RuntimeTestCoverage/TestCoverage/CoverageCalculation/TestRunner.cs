@@ -41,9 +41,9 @@ namespace TestCoverage.CoverageCalculation
             var fixtureDetails = _testsExtractor.GetTestFixtureDetails(rewrittenTestClass, semanticModel);
             var allReferences = _solutionExplorer.GetAllProjectReferences(project.Name);
 
-            var testCases = fixtureDetails.Cases.Where(x => x.MethodName == method.Identifier.ToString()).ToList();
+            fixtureDetails.Cases.RemoveAll(x => x.MethodName != method.Identifier.ToString());
 
-            if (testCases.Count == 0)
+            if (fixtureDetails.Cases.Count == 0)
                 return null;
 
             var compiledTestInfo = new CompiledTestFixtureInfo
@@ -53,10 +53,7 @@ namespace TestCoverage.CoverageCalculation
                 SemanticModel = semanticModel
             };
 
-
-            fixtureDetails.Cases = testCases;
-
-            var coverage = RunTestCases(fixtureDetails, compiledTestInfo, project.Name);
+            var coverage = RunTestFixture(fixtureDetails, compiledTestInfo, project.Name);
 
             return coverage;
         }
@@ -97,41 +94,46 @@ namespace TestCoverage.CoverageCalculation
         {
             TestFixtureDetails testFixtureDetails = _testsExtractor.GetTestFixtureDetails(compiledTestFixtureInfo.TestClass, compiledTestFixtureInfo.SemanticModel);
 
-            var coverage = RunTestCases(testFixtureDetails, compiledTestFixtureInfo, testProjectName);
+            var coverage = RunTestFixture(testFixtureDetails, compiledTestFixtureInfo, testProjectName);
 
             return coverage;
         }
 
-        private LineCoverage[] RunTestCases(TestFixtureDetails testFixtureDetails,
+        private LineCoverage[] RunTestFixture(TestFixtureDetails testFixtureDetails,
             CompiledTestFixtureInfo compiledTestFixtureInfo,
             string testProjectName)
         {
-
-            var coverage = new List<LineCoverage>();
-
             var testFixtureExecutionScriptParameters = new TestFixtureExecutionScriptParameters
             {
                 TestFixtureTypeFullName = testFixtureDetails.FullQualifiedName,
                 TestCases = new List<TestExecutionScriptParameters>(),
-                TestFixtureSetUpMethodName = testFixtureDetails.TestFixtureSetUpMethodName
+                TestFixtureSetUpMethodName = testFixtureDetails.TestFixtureSetUpMethodName,
+                TestFixtureTearDownMethodName = testFixtureDetails.TestFixtureTearDownMethodName,
+                TestSetUpMethodName = testFixtureDetails.TestSetUpMethodName,
+                TestTearDownMethodName = testFixtureDetails.TestTearDownMethodName,
             };
 
             foreach (var testCase in testFixtureDetails.Cases)
             {
                 var scriptParameters = new TestExecutionScriptParameters
                 {
-                    SetUpMethodName  = testCase.TestFixture.TestSetUpMethodName,
-                    TearDownMethodName = testCase.TestFixture.TestTearDownMethodName,
                     TestName = testCase.MethodName,
                     TestParameters = testCase.Arguments,
                     IsAsync = testCase.IsAsync
                 };
 
-                testFixtureExecutionScriptParameters.TestCases.Add(scriptParameters);                
+                testFixtureExecutionScriptParameters.TestCases.Add(scriptParameters);
             }
 
-            var results = _testExecutorScriptEngine.RunTestFixture(compiledTestFixtureInfo.AllReferences,
-                testFixtureExecutionScriptParameters);
+            var results = _testExecutorScriptEngine.RunTestFixture(compiledTestFixtureInfo.AllReferences, testFixtureExecutionScriptParameters);
+
+            return GetCoverage(testFixtureDetails, compiledTestFixtureInfo, testProjectName, results);
+        }
+
+        private static LineCoverage[] GetCoverage(TestFixtureDetails testFixtureDetails,
+            CompiledTestFixtureInfo compiledTestFixtureInfo, string testProjectName, ITestRunResult[] results)
+        {
+            var coverage = new List<LineCoverage>(results.Length);
 
             foreach (var testRunResult in results)
             {
