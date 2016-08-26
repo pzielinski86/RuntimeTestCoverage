@@ -75,7 +75,7 @@ namespace TestCoverage.Tests
             Assert.That(testCases.Cases[0].MethodName, Is.EqualTo("TestSomething1"));
             Assert.That(testCases.Cases[0].Arguments.Length, Is.EqualTo(0));
         }
-
+        
         [Test]
         public void ShouldIgnore_AsyncVoid_Tests()
         {
@@ -439,7 +439,7 @@ namespace TestCoverage.Tests
         }
 
         [Test]
-        public void ShouldNot_ExtractSetupMethodName_When_ItDoesNotExist()
+        public void ShouldNot_ExtractSetUpMethodName_When_ItDoesNotExist()
         {
             // arrange
             const string code = @"public class Tests
@@ -456,11 +456,11 @@ namespace TestCoverage.Tests
             var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
-            Assert.IsNull(testFixtureDetails.SetupMethodName);
+            Assert.IsNull(testFixtureDetails.TestSetUpMethodName);
         }
 
         [Test]
-        public void Should_ExtractSetupMethodName_When_ItExists()
+        public void Should_ExtractTestSetUpMethodName_When_ItExists()
         {
             // arrange
             const string code = @"public class Tests
@@ -478,7 +478,73 @@ namespace TestCoverage.Tests
             var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
 
             // assert
-            Assert.That(testFixtureDetails.SetupMethodName, Is.EqualTo("AnyName"));
+            Assert.That(testFixtureDetails.TestSetUpMethodName, Is.EqualTo("AnyName"));
+        }
+
+        [Test]
+        public void Should_ExtractTestTearDownMethodName_When_ItExists()
+        {
+            // arrange
+            const string code = @"public class Tests
+                        {
+                            [TearDown]
+	                        private void AnyName()
+	                        {
+
+	                        }	
+                        }";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testFixtureDetails.TestTearDownMethodName, Is.EqualTo("AnyName"));
+        }
+
+        [Test]
+        public void Should_ExtractFixtureSetUpMethodName_When_ItExists()
+        {
+            // arrange
+            const string code = @"public class Tests
+                        {
+                            [TestFixtureSetUp]
+	                        private void AnyName()
+	                        {
+
+	                        }	
+                        }";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testFixtureDetails.TestFixtureSetUpMethodName, Is.EqualTo("AnyName"));
+        }
+
+        [Test]
+        public void Should_ExtractFixtureTearDownMethodName_When_ItExists()
+        {
+            // arrange
+            const string code = @"public class Tests
+                        {
+                            [TestFixtureTearDown]
+	                        private void AnyName()
+	                        {
+
+	                        }	
+                        }";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var testFixtureDetails = _sut.GetTestFixtureDetails(tree, _semanticModelMock);
+
+            // assert
+            Assert.That(testFixtureDetails.TestFixtureTearDownMethodName, Is.EqualTo("AnyName"));
         }
     }
 }

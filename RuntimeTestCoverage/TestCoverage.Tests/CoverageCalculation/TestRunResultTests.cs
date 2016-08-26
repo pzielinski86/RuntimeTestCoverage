@@ -15,7 +15,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         {
             // arrange
             var variables = new[] { new AuditVariablePlaceholder("HelloWorldTests.cs", "", 1) };
-            var testResult = new TestRunResult(variables, false, null);
+            var testResult = new TestRunResult("test_name",variables, null);
 
             var testNode = CSharpSyntaxTree.ParseText("");
 
@@ -36,7 +36,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 1),
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 2) };
 
-            var testResult = new TestRunResult(variables, true, "Assertion failed");
+            var testResult = new TestRunResult("test_name",variables, "Assertion failed");
 
 
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
@@ -60,17 +60,18 @@ namespace TestCoverage.Tests.CoverageCalculation
         }
 
         [Test]
-        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_TheyAreInSutDocument()
+        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_ItIsInSutDocument()
         {
             // arrange
             string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
 
             var variables = new[] {
-                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 1),
-                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 2) };
+                new AuditVariablePlaceholder(@"c:\HelloWorld.cs", nodePath, 1),
+                new AuditVariablePlaceholder(@"c:\HelloWorld.cs", nodePath, 2),
+                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 3)};
 
 
-            var testResult = new TestRunResult(variables, true, null);
+            var testResult = new TestRunResult("test_name",variables, "error");
 
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
                                                       " public void TestMethod()" +
@@ -83,11 +84,11 @@ namespace TestCoverage.Tests.CoverageCalculation
             LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
 
             // assert
-            Assert.That(totalCoverage.Length, Is.EqualTo(2));
-            Assert.That(totalCoverage[0].IsSuccess, Is.EqualTo(false));
+            Assert.That(totalCoverage.Length, Is.EqualTo(3));
+            Assert.That(totalCoverage[0].IsSuccess, Is.EqualTo(true));
             Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(false));
 
-            Assert.That(totalCoverage[0].ErrorMessage, Is.EqualTo(testResult.ErrorMessage));
+            Assert.That(totalCoverage[0].ErrorMessage, Is.Null);
             Assert.That(totalCoverage[1].ErrorMessage, Is.EqualTo(testResult.ErrorMessage));
         }
     }

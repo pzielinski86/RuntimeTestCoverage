@@ -11,7 +11,10 @@ namespace TestCoverage.CoverageCalculation
         }
         public List<TestCase> Cases { get; set; }
         public string AssemblyName { get; set; }
-        public string SetupMethodName { get; set; }
+        public string TestSetUpMethodName { get; set; }
+        public string TestTearDownMethodName { get; set; }
+        public string TestFixtureSetUpMethodName { get; set; }
+        public string TestFixtureTearDownMethodName { get; set; }
         public string ClassScriptTypeName => "testFixtureType";
         public string FullClassName { get; set; }
         public string FullQualifiedName => $"{FullClassName},{AssemblyName}";
@@ -23,8 +26,8 @@ namespace TestCoverage.CoverageCalculation
             codeBuilder.AppendLine($"Type {ClassScriptTypeName} = Type.GetType(\"{FullClassName},{AssemblyName}\");");
             codeBuilder.AppendLine($"object {instanceName} = System.Activator.CreateInstance(testFixtureType);");
 
-            if (SetupMethodName != null)
-                codeBuilder.AppendLine($"{ClassScriptTypeName}.GetMethod(\"{SetupMethodName}\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke({instanceName}, null);");
+            if (TestSetUpMethodName != null)
+                codeBuilder.AppendLine($"{ClassScriptTypeName}.GetMethod(\"{TestSetUpMethodName}\",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke({instanceName}, null);");
 
             return codeBuilder.ToString();
         }

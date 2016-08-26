@@ -199,6 +199,7 @@
     <Compile Include="CoverageCalculation\TestExecutionScriptParameters.cs" />
     <Compile Include="CoverageCalculation\TestExecutorScriptEngine.cs" />
     <Compile Include="CoverageCalculation\TestFixtureDetails.cs" />
+    <Compile Include="CoverageCalculation\TestFixtureExecutionScriptParameters.cs" />
     <Compile Include="CoverageCalculation\TestRunner.cs" />
     <Compile Include="CoverageCalculation\TestRunResult.cs" />
     <Compile Include="CoverageResult.cs" />

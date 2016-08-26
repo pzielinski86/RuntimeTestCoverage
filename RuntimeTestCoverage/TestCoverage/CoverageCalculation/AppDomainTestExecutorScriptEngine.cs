@@ -23,9 +23,9 @@ namespace TestCoverage.CoverageCalculation
                 engineType.FullName);
         }
 
-        public ITestRunResult RunTest(string[] references, TestExecutionScriptParameters testExecutionScriptParameters)
+        public ITestRunResult[] RunTestFixture(string[] references, TestFixtureExecutionScriptParameters pars)
         {
-            return _engine.RunTest(references, testExecutionScriptParameters);
+            return _engine.RunTestFixture(references, pars);
         }
 
         public void Dispose()

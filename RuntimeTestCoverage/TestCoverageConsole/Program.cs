@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.MSBuild;
 using TestCoverage;
 using TestCoverage.Extensions;
 
@@ -11,30 +12,37 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\projects\TestingSandox\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
+        private const string TestSubjectSlnPath = @"C:\projects\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
 
         private static void Main(string[] args)
         {
             Config.SetSolution(TestSubjectSlnPath);
-            var engine = new SolutionCoverageEngine();
-            engine.Init(null);
 
-            for (int i = 0; i < 1; i++)
+            var engine = new SolutionCoverageEngine();
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            workspace.OpenSolutionAsync(TestSubjectSlnPath).Wait();
+
+            engine.Init(workspace);
+
+            for (int i = 0; i < 5; i++)
             {
+                Console.WriteLine("***Scenario - START***");
                 TestForAllDocuments(engine);
-               // TestForOneDocument(engine);
+                TestForOneMethod(engine);
+                Console.WriteLine("***Scenario - END***");
+                Console.WriteLine();
             }
         }
 
-        private static void TestForOneDocument(SolutionCoverageEngine engine)
+        private static void TestForOneMethod(SolutionCoverageEngine engine)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             string documentPath =
-                @"../../../../TestSolution/Math.Tests/MathHelperTests.cs";
+                @"C:\projects\RuntimeTestCoverage\RuntimeTestCoverage\TestCoverage.Tests\NUnitTestExtractorTests.cs";
             string documentContent = File.ReadAllText(documentPath);
 
-            var positions = engine.CalculateForDocument("Math.Tests", documentPath, documentContent);
+            var positions = engine.CalculateForDocument("TestCoverage.Tests", documentPath, documentContent);
 
             Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
             Console.WriteLine("Rewrite&run selected method.Time: {0}", stopwatch.ElapsedMilliseconds);
