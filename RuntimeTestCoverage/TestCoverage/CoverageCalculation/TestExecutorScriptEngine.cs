@@ -1,8 +1,7 @@
-using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
+using System.Reflection;
 using TestCoverage.Compilation;
 using TestCoverage.Rewrite;
 
@@ -10,76 +9,156 @@ namespace TestCoverage.CoverageCalculation
 {
     public class TestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine
     {
-        private string[] _references = null;
-        private Script<object> _runnerScript;
-
         public ITestRunResult[] RunTestFixture(string[] references, TestFixtureExecutionScriptParameters pars)
         {
-            if (_references == null || _references.Length != references.Length)
-            {
-                // todo: clean-up code to remove hardcoded dlls like mscorlib.
-                var options = ScriptOptions.Default.
-                    WithReferences(references.Where(x => !x.Contains("mscorlib.dll"))).
-                    AddReferences(typeof(int).Assembly).
-                    AddImports("System", "System.Reflection", "System.Linq");
+            var assemblies = new List<Assembly>(references.Length);
+            assemblies.AddRange(references.Select(Assembly.LoadFrom));
 
-                _references = references;
+            ITestRunResult[] testResults = Run(assemblies, pars); 
 
-                string runnerScriptCode = Resources.TestRunnerScriptCode;
-                _runnerScript = CSharpScript.Create(runnerScriptCode, options, typeof(TestFixtureExecutionScriptParameters));
-            }
-
-            ScriptState state = null;
-
-            try
-            {
-                state = _runnerScript.RunAsync(pars).Result;
-            }
-            catch (CompilationErrorException e)
-            {
-                throw new TestCoverageCompilationException(e.Diagnostics.Select(x => x.GetMessage()).ToArray());
-            }
-
-            var output = (dynamic)state.GetVariable("output").Value;
-            
-            return GetResults(output);
+            return testResults;
         }
-
-        private TestRunResult[] GetResults(dynamic output)
+        
+        private AuditVariablePlaceholder[] GetVariables(AuditVariable[] auditVariables)
         {
-            var results = new List<TestRunResult>(output.Count);
+            var variables = new AuditVariablePlaceholder[auditVariables.Length];
 
-            foreach (var testResult in output)
+            for (int i = 0; i < auditVariables.Length; i++)
             {
-                string testName = testResult.TestName;                
-                string errorMessage = testResult.ErrorMessage;
-                var auditVariables = testResult.Variables;
-
-                var result = new TestRunResult(testName, GetVariables(auditVariables), errorMessage);
-                results.Add(result);
-            }
-
-            return results.ToArray();
-        }
-
-        private AuditVariablePlaceholder[] GetVariables(dynamic dynamicAuditVariables)
-        {
-            var variables = new AuditVariablePlaceholder[dynamicAuditVariables.Count];
-            int i = 0;
-
-            foreach (var dynamicVar in dynamicAuditVariables)
-            {
-                var value = dynamicVar;
+                var value = auditVariables[i];
 
                 var variable = new AuditVariablePlaceholder(value.DocumentPath,
                     value.NodePath,
                     value.Span,
                     value.ExecutionCounter);
 
-                variables[i++] = variable;
+                variables[i] = variable;
             }
 
             return variables;
+        }
+
+        private ITestRunResult[] Run(List<Assembly> assemblies, TestFixtureExecutionScriptParameters args)
+        {
+            var testResults = new List<ITestRunResult>();
+            var assembly = assemblies.First(x => x.GetName().Name == args.TestFixtureAssemblyName);
+
+            Type testFixtureType = assembly.GetType(args.TestFixtureTypeFullName);
+            object testFixture = Activator.CreateInstance(testFixtureType);
+
+            var testFixtureSetupResults = RunTestFixtureSetup(testFixtureType, testFixture, args.TestFixtureSetUpMethodName);
+
+            if (testFixtureSetupResults != null)
+            {
+                testResults.Add(testFixtureSetupResults);
+
+                if (testFixtureSetupResults.ErrorMessage != null)
+                    return testResults.ToArray();
+            }
+
+            var testCasesResults = RunTestCases(args, testFixtureType, testFixture);
+            testResults.AddRange(testCasesResults);
+
+            var testFixtureTearDownResults = RunTestFixtureSetup(testFixtureType, testFixture, args.TestFixtureSetUpMethodName);
+
+            if (testFixtureTearDownResults != null)
+                testResults.Add(testFixtureTearDownResults);
+
+            return testResults.ToArray();
+        }
+
+        private ITestRunResult[] RunTestCases(TestFixtureExecutionScriptParameters args, Type testFixtureType, object testFixture)
+        {
+            var testResults = new List<ITestRunResult>();
+
+            foreach (TestExecutionScriptParameters testCase in args.TestCases)
+            {
+                AuditVariablesAutoGenerated941C.Coverage.Clear();
+
+                var newCoverage = RunTestCase(args, testFixtureType, testFixture, testCase);
+                testResults.Add(newCoverage);
+            }
+
+            return testResults.ToArray();
+        }
+
+        private ITestRunResult RunTestCase(TestFixtureExecutionScriptParameters args, Type testFixtureType, object testFixture, TestExecutionScriptParameters testCase)
+        {
+            string errorMessage = null;
+
+            try
+            {
+                RunMethod(testFixtureType, testFixture, args.TestSetUpMethodName);
+
+                if (testCase.IsAsync)
+                {
+                    dynamic asyncResultsTask = RunMethod(testFixtureType, testFixture, testCase.TestName,
+                        testCase.TestParameters);
+                    asyncResultsTask.Wait();
+                }
+                else
+                {
+                    RunMethod(testFixtureType, testFixture, testCase.TestName, testCase.TestParameters);
+                }
+
+                RunMethod(testFixtureType, testFixture, args.TestTearDownMethodName);
+            }
+            catch (AggregateException e)
+            {
+                errorMessage = e.InnerException.ToString();
+            }
+            catch (TargetInvocationException e)
+            {
+                errorMessage = e.InnerException.ToString();
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.ToString();
+            }
+
+            var newCoverage = new TestRunResult(testCase.TestName,
+                GetVariables(AuditVariablesAutoGenerated941C.Coverage.Values.ToArray()),
+                errorMessage);
+
+            return newCoverage;
+        }
+
+        private object RunMethod(Type testFixtureType, object testFixture, string methodName, params object[] pars)
+        {
+            if (methodName == null)
+                return null;
+
+            return testFixtureType.GetMethod(methodName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Invoke(testFixture, pars);
+        }
+
+        private TestRunResult RunTestFixtureSetup(Type testFixtureType, object testFixture, string methodName)
+        {
+            AuditVariablesAutoGenerated941C.Coverage.Clear();
+
+            if (methodName == null)
+                return null;
+
+            string error = null;
+            TestRunResult testRunResult = null;
+
+            try
+            {
+                RunMethod(testFixtureType, testFixture, methodName);
+            }
+            catch (Exception e)
+            {
+                error = e.ToString();
+                return null;
+            }
+            finally
+            {
+                testRunResult = new TestRunResult(methodName,
+                    GetVariables(AuditVariablesAutoGenerated941C.Coverage.Values.ToArray()),
+                    error);
+            }
+
+            return testRunResult;
         }
     }
 }

@@ -11,6 +11,8 @@ namespace TestCoverage.CoverageCalculation
         public string TestFixtureTypeFullName;
         public string TestFixtureSetUpMethodName { get; set; }
         public string TestFixtureTearDownMethodName { get; set; }
+        public string TestFixtureAssemblyName { get; set; }
+
         public List<TestExecutionScriptParameters> TestCases;
     }
 }

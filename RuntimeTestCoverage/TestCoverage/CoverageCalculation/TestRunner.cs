@@ -105,7 +105,8 @@ namespace TestCoverage.CoverageCalculation
         {
             var testFixtureExecutionScriptParameters = new TestFixtureExecutionScriptParameters
             {
-                TestFixtureTypeFullName = testFixtureDetails.FullQualifiedName,
+                TestFixtureTypeFullName = testFixtureDetails.FullClassName,
+                TestFixtureAssemblyName=testFixtureDetails.AssemblyName,
                 TestCases = new List<TestExecutionScriptParameters>(),
                 TestFixtureSetUpMethodName = testFixtureDetails.TestFixtureSetUpMethodName,
                 TestFixtureTearDownMethodName = testFixtureDetails.TestFixtureTearDownMethodName,
