@@ -3,7 +3,7 @@
   <Metadata>
     <Identity Id="TestDotsCoverageVsPlugin..2dd35ec3-3635-4763-969d-34627a9179d7" Version="1.13" Language="en-US" Publisher="Piotr Zielinski" />
     <DisplayName>TestDotsCoverageVsPlugin</DisplayName>
-    <Description>This is a sample margin extension to the Visual Studio Editor.</Description>
+    <Description xml:space="preserve">Continuous testing plugin. The plugin runs and calculates test coverage in background.</Description>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="14.0" />
