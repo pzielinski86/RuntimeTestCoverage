@@ -79,7 +79,7 @@ namespace TestCoverageVsPlugin
 
             try
             {
-                var task = Task.Factory.StartNew(() => _solutionCoverageEngine.CalculateForAllDocumentsAsync().Result);
+                Task<CoverageResult> task = Task.Factory.StartNew(() => _solutionCoverageEngine.CalculateForAllDocumentsAsync().Result);
                 coverage = await task;
             }
 

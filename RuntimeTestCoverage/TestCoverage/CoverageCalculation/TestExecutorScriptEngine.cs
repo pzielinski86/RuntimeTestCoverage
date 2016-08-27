@@ -64,7 +64,7 @@ namespace TestCoverage.CoverageCalculation
 
         private AuditVariablePlaceholder[] GetVariables(dynamic dynamicAuditVariables)
         {
-            var variables = new AuditVariablePlaceholder[dynamicAuditVariables.Length];
+            var variables = new AuditVariablePlaceholder[dynamicAuditVariables.Count];
             int i = 0;
 
             foreach (var dynamicVar in dynamicAuditVariables)

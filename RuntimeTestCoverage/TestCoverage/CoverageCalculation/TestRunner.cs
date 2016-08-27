@@ -137,7 +137,8 @@ namespace TestCoverage.CoverageCalculation
 
             foreach (var testRunResult in results)
             {
-                var methodSyntaxNode = testFixtureDetails.Cases.First(x => x.MethodName == testRunResult.TestName).SyntaxNode;
+                var methodSyntaxNode = testFixtureDetails.Cases.
+                    FirstOrDefault(x => x.MethodName == testRunResult.TestName)?.SyntaxNode;
 
                 var partialCoverage = testRunResult.GetCoverage(methodSyntaxNode, testProjectName, compiledTestFixtureInfo.TestDocumentPath);
                 coverage.AddRange(partialCoverage);
