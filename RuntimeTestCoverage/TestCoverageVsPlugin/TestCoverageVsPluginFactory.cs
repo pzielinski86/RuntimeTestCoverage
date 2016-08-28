@@ -36,7 +36,6 @@ namespace TestCoverageVsPlugin
         private VsSolutionTestCoverage _vsSolutionTestCoverage;
         private IVsStatusbar _statusBar;
         private DTE _dte;
-        private readonly ProjectItemsEvents _projectItemsEvents;
         private Workspace _myWorkspace;
         private readonly SolutionEvents _solutionEvents;
 
@@ -52,8 +51,6 @@ namespace TestCoverageVsPlugin
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.Opened += SolutionEvents_Opened;
             _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
-            _projectItemsEvents = ((Events2)_dte.Events).ProjectItemsEvents;
-            _projectItemsEvents.ItemAdded += ProjectItemAdded;
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
             LogFactory.CurrentLogger = new VisualStudioLogger(serviceProvider);
 
@@ -98,17 +95,6 @@ namespace TestCoverageVsPlugin
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             LogFactory.CurrentLogger.Error(e.ExceptionObject.ToString());
-        }
-
-        private void ProjectItemAdded(ProjectItem projectItem)
-        {
-            var project = projectItem.ContainingProject;
-            if (project.Saved == false)
-            {
-                project.Save();
-            }
-
-            InitSolutionCoverageEngine();
         }
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)

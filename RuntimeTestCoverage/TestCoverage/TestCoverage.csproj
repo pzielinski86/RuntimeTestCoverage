@@ -251,9 +251,9 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TestRunner\TestRunner.csproj">
-      <Project>{65adc1eb-2dc4-4962-ac3c-a63af637005f}</Project>
-      <Name>TestRunner</Name>
+    <ProjectReference Include="..\Internals.AuditVariables\Internals.AuditVariables.csproj">
+      <Project>{844CD721-0AEC-481D-A281-645BE1CF7DBF}</Project>
+      <Name>Internals.AuditVariables</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
