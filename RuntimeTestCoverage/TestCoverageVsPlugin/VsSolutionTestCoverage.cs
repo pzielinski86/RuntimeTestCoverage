@@ -136,6 +136,9 @@ namespace TestCoverageVsPlugin
 
         private void RemoveByPath(string filePath)
         {
+            if(!SolutionCoverageByDocument.ContainsKey(filePath))
+                return;
+
             var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();    
 
             SolutionCoverageByDocument.Remove(filePath);

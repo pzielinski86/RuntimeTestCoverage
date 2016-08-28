@@ -57,7 +57,8 @@ namespace TestCoverage.Storage
             string folder = GetProjectFolder(projectName);
             string path = Path.Combine(folder, docName);
 
-            File.Delete(path);
+            if(File.Exists(path))
+                File.Delete(path);
         }
 
         private string GetDocumentFileName(string solutionPath, string docPath)

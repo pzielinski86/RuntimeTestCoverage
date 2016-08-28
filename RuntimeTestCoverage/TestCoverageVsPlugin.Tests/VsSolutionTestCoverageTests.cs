@@ -333,5 +333,19 @@ namespace TestCoverageVsPlugin.Tests
             Assert.IsFalse(_sut.SolutionCoverageByDocument.ContainsKey("Tests.cs"));
             Assert.That(_sut.SolutionCoverageByDocument["Sut.cs"].Count,Is.EqualTo(0));
         }
+
+        [Test]
+        public void RemoveByFilePath_ShouldNot_ChangeAnything_If_FileDoesNotExist()
+        {
+            // arrange
+            _sut.SolutionCoverageByDocument.Add("Tests.cs",
+                new List<LineCoverage>() { new LineCoverage() { DocumentPath = "Tests.cs", TestPath = "Tests.Method" } });
+
+            // act
+            _solutionWatcherMock.DocumentRemoved += Raise.EventWith(null, new DocumentRemovedEventArgs("NotExistingDocument.cs"));
+
+            // assert
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(1));
+        }
     }
 }
