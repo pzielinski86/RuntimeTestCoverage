@@ -309,6 +309,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Internals.AuditVariables\Internals.AuditVariables.csproj">
+      <Project>{844cd721-0aec-481d-a281-645be1cf7dbf}</Project>
+      <Name>Internals.AuditVariables</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestCoverage\TestCoverage.csproj">
       <Project>{4F81EDF0-7537-427A-A093-668E2123DECF}</Project>
       <Name>TestCoverage</Name>
