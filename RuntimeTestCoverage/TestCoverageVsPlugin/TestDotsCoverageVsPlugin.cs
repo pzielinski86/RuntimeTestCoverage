@@ -35,6 +35,7 @@ namespace TestCoverageVsPlugin
         private string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
         private bool _isDisposed = false;
+        private int _currentNumberOfLines;
         private string _projectName;
 
         public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage,
@@ -49,16 +50,25 @@ namespace TestCoverageVsPlugin
             _textView = textView;
             _statusBar = statusBar;
             _solution = solution;
-            _textView.ViewportHeightChanged += TextViewViewportHeightChanged;
-            _textView.LayoutChanged += TextViewLayoutChanged;
+            
+            _textView.ViewportHeightChanged += (s, e) => Redraw();
+            _textView.LayoutChanged += LayoutChanged;
             this.Width = 20;
             this.ClipToBounds = true;
             this.Background = new SolidColorBrush(Colors.White);
             Children.Add(_canvas);
             textView.TextBuffer.Changed += TextBuffer_Changed;
-                        
-            _taskCoverageManager.CoverageTaskEvent += TaskCoverageManagerCoverageTaskEvent;
 
+            _taskCoverageManager.CoverageTaskEvent += TaskCoverageManagerCoverageTaskEvent;
+        }  
+
+        private void LayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        {
+            if (e.VerticalTranslation||_currentNumberOfLines != _textView.TextViewLines.Count)
+            {
+                Redraw();
+                _currentNumberOfLines = _textView.TextViewLines.Count;
+            }
         }
 
         private void TaskCoverageManagerCoverageTaskEvent(object sender, CoverageTaskArgsBase e)
@@ -89,7 +99,7 @@ namespace TestCoverageVsPlugin
                     _textView.TextBuffer,
                     _documentPath);
 
-            if (!foundMethod&& e.Changes.Any(x => x.AnyCodeChanges()))
+            if (!foundMethod && e.Changes.Any(x => x.AnyCodeChanges()))
             {
                 _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, _documentPath);
             }
@@ -125,16 +135,6 @@ namespace TestCoverageVsPlugin
             if (_textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out textDocument))
                 return textDocument;
             return null;
-        }
-
-        private void TextViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
-        {
-            Redraw();
-        }
-
-        private void TextViewViewportHeightChanged(object sender, EventArgs e)
-        {
-            Redraw();
         }
 
         private void Redraw()
