@@ -23,7 +23,7 @@ namespace TestCoverage.Rewrite
             ExecutionCounter = executionCounter;
         }
 
-        public string GetKey() => $"{DocumentPath}_{SpanStart}";
+        public string GetKey() => $"{NodePath}_{SpanStart}";
         public string GetInitializationCode()
         {
             string initVarCode = $"new AuditVariable()" +
