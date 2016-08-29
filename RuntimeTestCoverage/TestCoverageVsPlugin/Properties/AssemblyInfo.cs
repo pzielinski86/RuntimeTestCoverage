@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using Microsoft.VisualStudio.Shell;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.VisualStudio.Shell;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -31,7 +31,7 @@ using Microsoft.VisualStudio.Shell;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly:ProvideBindingRedirection(AssemblyName = "System.Diagnostics.StackTrace", NewVersion = "4.0.1.0")]
+[assembly: ProvideBindingRedirection(AssemblyName = "System.Diagnostics.StackTrace", NewVersion = "4.0.1.0")]
 [assembly: ProvideBindingRedirection(AssemblyName = "System.IO.FileSystem", NewVersion = "4.0.1.0")]
 [assembly: ProvideBindingRedirection(AssemblyName = "System.IO.FileSystem.Primitives", NewVersion = "4.0.1.0")]
 [assembly: ProvideBindingRedirection(AssemblyName = "System.Collections.Immutable", NewVersion = "1.2.0.0")]

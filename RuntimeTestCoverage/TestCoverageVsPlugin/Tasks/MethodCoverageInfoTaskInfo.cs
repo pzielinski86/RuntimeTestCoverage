@@ -1,12 +1,13 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Text;
-using TestCoverageVsPlugin.Tasks.Events;
+using System.Linq;
+using System.Threading.Tasks;
+using TestCoverage.Tasks;
+using TestCoverage.Tasks.Events;
 
 namespace TestCoverageVsPlugin.Tasks
 {
-    class MethodCoverageInfoTaskInfo : ITaskCoverageInfo
+    public class MethodCoverageInfoTaskInfo : IDocumentBasedTaskCoverageInfo
     {
         public string ProjectName { get; }
         public MethodDeclarationSyntax Method { get; }

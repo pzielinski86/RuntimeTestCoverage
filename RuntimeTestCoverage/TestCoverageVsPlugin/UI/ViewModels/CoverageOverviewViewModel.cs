@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using TestCoverage;
 using TestCoverage.Storage;
+using TestCoverage.Tasks;
 using TestCoverageVsPlugin.Annotations;
 
 namespace TestCoverageVsPlugin.UI.ViewModels

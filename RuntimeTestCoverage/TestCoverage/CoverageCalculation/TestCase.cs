@@ -1,6 +1,4 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Text;
-using TestCoverage.Rewrite;
 
 namespace TestCoverage.CoverageCalculation
 {

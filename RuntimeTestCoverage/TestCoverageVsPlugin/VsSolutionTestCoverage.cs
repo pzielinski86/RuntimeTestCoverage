@@ -1,22 +1,16 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.VisualStudio.Shell;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
-using TestCoverage.Extensions;
-using TestCoverage.Monitors;
 using TestCoverage.Storage;
-using TestCoverageVsPlugin.Annotations;
+using TestCoverage.Tasks;
 using TestCoverageVsPlugin.Extensions;
 using TestCoverageVsPlugin.Logging;
 using Task = System.Threading.Tasks.Task;
@@ -37,22 +31,18 @@ namespace TestCoverageVsPlugin
 
         public VsSolutionTestCoverage(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
-            ICoverageStore coverageStore,
-            ISolutionWatcher solutionWatcher)
+            ICoverageStore coverageStore)
         {
             MyWorkspace = myWorkspace;
             _solutionCoverageEngine = solutionCoverageEngine;
             _coverageStore = coverageStore;
-            solutionWatcher.Start();
-            solutionWatcher.DocumentRemoved += SolutionWatcher_DocumentRemoved;
 
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
         }  
 
         public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, 
             ISolutionCoverageEngine solutionCoverageEngine, 
-            ICoverageStore coverageStore, 
-            ISolutionWatcher solutionWatcher)
+            ICoverageStore coverageStore)
         {
             if (_vsSolutionTestCoverage == null)
             {
@@ -60,7 +50,7 @@ namespace TestCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore,solutionWatcher);
+                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore);
                         _vsSolutionTestCoverage.Reinit();
                         _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }
@@ -70,7 +60,7 @@ namespace TestCoverageVsPlugin
             return _vsSolutionTestCoverage;
         }
 
-        public async Task CalculateForAllDocumentsAsync()
+        public async Task<bool> CalculateForAllDocumentsAsync()
         {
             LogFactory.CurrentLogger.Info("Calculating coverage for all documents");
 
@@ -87,10 +77,12 @@ namespace TestCoverageVsPlugin
             {
                 SolutionCoverageByDocument.Clear();
                 LogFactory.CurrentLogger.Error(e.ToString());
-                return;
+                return false;
             }
 
             SolutionCoverageByDocument = coverage.CoverageByDocument.ToDictionary(x => x.Key, x => x.Value.ToList());
+
+            return true;
         }
 
         public Task<bool> CalculateForSelectedMethodAsync(string projectName, MethodDeclarationSyntax method)
@@ -134,7 +126,7 @@ namespace TestCoverageVsPlugin
             return Task.Run(() => CalculateForDocument(projectName, documentPath, documentContent));
         }
 
-        private void RemoveByPath(string filePath)
+        public void RemoveByPath(string filePath)
         {
             if(!SolutionCoverageByDocument.ContainsKey(filePath))
                 return;
@@ -147,12 +139,7 @@ namespace TestCoverageVsPlugin
             {
                 documentCoverage.RemoveAll(x => allTestPaths.Contains(x.TestPath));
             }
-        }
-
-        private void SolutionWatcher_DocumentRemoved(object sender, DocumentRemovedEventArgs e)
-        {
-            RemoveByPath(e.DocumentPath);
-        }
+        }  
 
         private bool CalculateForDocument(string projectName, string documentPath, string documentContent)
         {

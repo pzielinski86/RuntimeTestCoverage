@@ -1,16 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Options;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Linq;
+using EnvDTE;
 using TestCoverage.Monitors;
 using TestCoverage.Storage;
+using TestCoverage.Tasks;
 using TestCoverage.Tests.Utilities;
+using Document = EnvDTE.Document;
 
 namespace TestCoverage.Tests.Monitors
 {
@@ -19,16 +18,67 @@ namespace TestCoverage.Tests.Monitors
     {
         private RoslynSolutionWatcher _sut;
         private ICoverageStore _coverageStoreMock;
+        private ITaskCoverageManager _testCoverageManagerMock;
         private IRewrittenDocumentsStorage _rewrittenDocumentsStorageMock;
         private AdhocWorkspace _workspace;
+        private DTE _dteMock;
 
         [SetUp]
         public void Setup()
         {
             _workspace = new AdhocWorkspace();
+            _dteMock = Substitute.For<DTE>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
             _rewrittenDocumentsStorageMock = Substitute.For<IRewrittenDocumentsStorage>();
-            _sut = new RoslynSolutionWatcher(_workspace, _coverageStoreMock, _rewrittenDocumentsStorageMock);
+            _testCoverageManagerMock = Substitute.For<ITaskCoverageManager>();
+
+            _sut = new RoslynSolutionWatcher(_dteMock, _workspace, _coverageStoreMock, _rewrittenDocumentsStorageMock, _testCoverageManagerMock);
+        }
+
+        [Test]
+        public void ChangingDocument_ShouldNotEnqueueResyncAllTask_WhenTheChangedDocumentIsActive()
+        {
+            // arrange
+            var documentMock = Substitute.For<Document>();
+            documentMock.FullName.Returns("Code.cs");
+
+            _dteMock.ActiveDocument.Returns(documentMock);
+            var testsProject = _workspace.AddProject("Tests", LanguageNames.CSharp);
+            
+            var doc1 = _workspace.AddDocument(CreateDocumentInfo(testsProject.Id, "Code.cs"));
+
+            _sut.Start();
+            var eventWaiter = VerifyWorkspaceChangedEvent(_workspace);
+
+            // act
+            var updatedDocument = doc1.WithText(SourceText.From("test"));
+            _workspace.TryApplyChanges(updatedDocument.Project.Solution);
+            eventWaiter.WaitForEventToFire();
+
+            // assert
+            _testCoverageManagerMock.Received(0).ResyncAll();
+        }
+
+        [Test]
+        public void ChangingDocument_ShouldEnqueueResyncAllTask_When_TheChangedDocumentIsActive()
+        {
+            // arrange
+            var documentMock = Substitute.For<Document>();
+            documentMock.FullName.Returns("Code.cs");
+
+            var testsProject = _workspace.AddProject("Tests", LanguageNames.CSharp);            
+            var doc1 = _workspace.AddDocument(CreateDocumentInfo(testsProject.Id, "Code.cs"));
+
+            _sut.Start();
+            var eventWaiter = VerifyWorkspaceChangedEvent(_workspace);
+
+            // act
+            var updatedDocument = doc1.WithText(SourceText.From("test"));
+            _workspace.TryApplyChanges(updatedDocument.Project.Solution);
+            eventWaiter.WaitForEventToFire();
+            
+            // assert
+            _testCoverageManagerMock.Received(1).ResyncAll();
         }
 
         [Test]

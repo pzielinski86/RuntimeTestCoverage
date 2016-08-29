@@ -1,14 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Text;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestCoverage.Tasks;
 using TestCoverageVsPlugin.Tasks;
 
 namespace TestCoverageVsPlugin.Tests
@@ -237,6 +234,21 @@ namespace TestCoverageVsPlugin.Tests
             // assert
             _vsSolutionTestCoverageMock.Received(1).CalculateForSelectedMethodAsync(projectName,
                 Arg.Is<MethodDeclarationSyntax>(x => x.Identifier.ValueText == "Test1"));
+        }
+
+        [Test]
+        public void ResyncAll_ShouldRemvoeAnyOtherTasks()
+        {
+            // arrange
+            _sut.Tasks.Add(new DocumentCoverageInfoTaskInfo("","",null));
+            _sut.Tasks.Add(new MethodCoverageInfoTaskInfo(null, null, null));
+
+            // act
+            _sut.ResyncAll();    
+
+            // assert
+            Assert.That(_sut.Tasks.Count, Is.EqualTo(1));
+            Assert.That(_sut.Tasks[0],Is.InstanceOf<ResyncAllTaskInfo>());
         }
 
         [Test]

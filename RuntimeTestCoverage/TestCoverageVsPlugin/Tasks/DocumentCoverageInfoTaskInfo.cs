@@ -1,10 +1,11 @@
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
-using TestCoverageVsPlugin.Tasks.Events;
+using System.Threading.Tasks;
+using TestCoverage.Tasks;
+using TestCoverage.Tasks.Events;
 
 namespace TestCoverageVsPlugin.Tasks
 {
-    public class DocumentCoverageInfoTaskInfo : ITaskCoverageInfo
+    public class DocumentCoverageInfoTaskInfo : IDocumentBasedTaskCoverageInfo
     {
         public DocumentCoverageInfoTaskInfo(string projectName, string documentPath, ITextBuffer textBuffer)
         {
@@ -31,7 +32,7 @@ namespace TestCoverageVsPlugin.Tasks
             var finalTask = task.ContinueWith((finishedTask, y) =>
             {
                 if (finishedTask.Result)
-                    taskCoverageManager.Tasks.RemoveAll(t => t.DocumentPath == DocumentPath);
+                    taskCoverageManager.Tasks.RemoveAll(t => IsTaskInDocument(t, DocumentPath));
                 else
                     taskCoverageManager.ReportTaskToRetry(this);
 
@@ -41,6 +42,14 @@ namespace TestCoverageVsPlugin.Tasks
             }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
 
             return finalTask;
+        }
+
+        private bool IsTaskInDocument(ITaskCoverageInfo taskCoverageInfo, string documentPath)
+        {
+            if (taskCoverageInfo is IDocumentBasedTaskCoverageInfo)
+                return ((IDocumentBasedTaskCoverageInfo)taskCoverageInfo).DocumentPath == documentPath;
+
+            return false;
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Microsoft.VisualStudio.Text;
+﻿using Microsoft.VisualStudio.Text;
+using System.Linq;
 
 namespace TestCoverageVsPlugin.Extensions
 {

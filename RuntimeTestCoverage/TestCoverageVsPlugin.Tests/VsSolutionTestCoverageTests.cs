@@ -1,18 +1,16 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using TestCoverage;
 using TestCoverage.Compilation;
 using TestCoverage.CoverageCalculation;
 using TestCoverage.Extensions;
-using TestCoverage.Monitors;
 using TestCoverage.Storage;
 
 namespace TestCoverageVsPlugin.Tests
@@ -23,23 +21,19 @@ namespace TestCoverageVsPlugin.Tests
         private VsSolutionTestCoverage _sut;
         private ISolutionCoverageEngine _solutionCoverageEngineMock;
         private ICoverageStore _coverageStoreMock;
-        private ISolutionWatcher _solutionWatcherMock;
 
         [SetUp]
         public void Setup()
         {
             _solutionCoverageEngineMock = Substitute.For<ISolutionCoverageEngine>();
             _coverageStoreMock = Substitute.For<ICoverageStore>();
-            _solutionWatcherMock = Substitute.For<ISolutionWatcher>();
 
             Workspace workspace = new AdhocWorkspace();
-            _sut = new VsSolutionTestCoverage(workspace, 
-                _solutionCoverageEngineMock, 
-                _coverageStoreMock, 
-                _solutionWatcherMock);
+            _sut = new VsSolutionTestCoverage(workspace,
+                _solutionCoverageEngineMock,
+                _coverageStoreMock);
         }
-
-
+        
         [Test]
         public void LoadCurrentCoverage_Should_LoadDataForAllDocuments()
         {
@@ -311,7 +305,7 @@ namespace TestCoverageVsPlugin.Tests
             _sut.SolutionCoverageByDocument.Add("Tests.cs", new List<LineCoverage>() { new LineCoverage() { DocumentPath = "Tests.cs" } });
 
             // act
-            _solutionWatcherMock.DocumentRemoved+=Raise.EventWith(null,new DocumentRemovedEventArgs("Tests.cs"));
+            _sut.RemoveByPath("Tests.cs");
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
@@ -327,7 +321,7 @@ namespace TestCoverageVsPlugin.Tests
                 new List<LineCoverage>() {new LineCoverage() {TestDocumentPath = "Tests.cs", TestPath = "Tests.Method"}});
 
             // act
-            _solutionWatcherMock.DocumentRemoved += Raise.EventWith(null, new DocumentRemovedEventArgs("Tests.cs"));
+            _sut.RemoveByPath("Tests.cs");
 
             // assert
             Assert.IsFalse(_sut.SolutionCoverageByDocument.ContainsKey("Tests.cs"));
@@ -342,7 +336,7 @@ namespace TestCoverageVsPlugin.Tests
                 new List<LineCoverage>() { new LineCoverage() { DocumentPath = "Tests.cs", TestPath = "Tests.Method" } });
 
             // act
-            _solutionWatcherMock.DocumentRemoved += Raise.EventWith(null, new DocumentRemovedEventArgs("NotExistingDocument.cs"));
+            _sut.RemoveByPath("NotExistingDocument.cs");
 
             // assert
             Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(1));

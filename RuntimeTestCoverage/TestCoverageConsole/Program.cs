@@ -1,12 +1,8 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.MSBuild;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.MSBuild;
 using TestCoverage;
-using TestCoverage.Extensions;
 
 namespace TestCoverageConsole
 {

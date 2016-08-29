@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell.Interop;
+using System;
 using System.Diagnostics;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TestCoverageVsPlugin.Logging
 {

@@ -1,20 +1,18 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Microsoft.CodeAnalysis;
 using TestCoverage.CoverageCalculation;
+using TestCoverage.Tasks;
+using TestCoverage.Tasks.Events;
 using TestCoverageVsPlugin.Extensions;
 using TestCoverageVsPlugin.Tasks;
-using TestCoverageVsPlugin.Tasks.Events;
 using Solution = EnvDTE.Solution;
 
 namespace TestCoverageVsPlugin
@@ -39,12 +37,13 @@ namespace TestCoverageVsPlugin
         private string _projectName;
 
         public TestDotsCoverageVsPlugin(VsSolutionTestCoverage vsSolutionTestCoverage,
+            ITaskCoverageManager taskCoverageManager,
             IWpfTextView textView,
             IVsStatusbar statusBar,
             Solution solution)
         {
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
-            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), new RoslynDocumentProvider(), _vsSolutionTestCoverage);
+            _taskCoverageManager = taskCoverageManager;
 
             _canvas = new Canvas();
             _textView = textView;
@@ -77,15 +76,20 @@ namespace TestCoverageVsPlugin
             {
                 var startedEvent = (MethodCoverageTaskStartedArgs)e;
                 _statusBar.SetText(
-                    $"Calculating coverage for the method {System.IO.Path.GetFileName(e.DocPath)}_{startedEvent.MethodName}");
+                    $"Calculating coverage for the method {System.IO.Path.GetFileName(startedEvent.DocPath)}_{startedEvent.MethodName}");
             }
             else if (e is DocumentCoverageTaskStartedArgs)
             {
+                var startedEvent = (DocumentCoverageTaskStartedArgs)e;
                 _statusBar.SetText(
-                    $"Calculating coverage for the document {System.IO.Path.GetFileName(e.DocPath)}");
+                    $"Calculating coverage for the document {System.IO.Path.GetFileName(startedEvent.DocPath)}");
+            }
+            else if (e is ResyncAllStarted)
+            {
+                _statusBar.SetText("Resyncing all...");
             }
 
-            else if (e is MethodCoverageTaskCompletedArgs || e is DocumentCoverageTaskCompletedArgs)
+            else if (e is MethodCoverageTaskCompletedArgs || e is DocumentCoverageTaskCompletedArgs|| e is ResyncAllCompleted)
             {
                 _statusBar.SetText("");
                 Redraw();

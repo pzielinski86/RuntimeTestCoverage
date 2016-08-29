@@ -1,21 +1,21 @@
-﻿using System;
-using EnvDTE;
-using EnvDTE80;
+﻿using EnvDTE;
+using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
+using System;
 using System.ComponentModel.Composition;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.LanguageServices;
 using TestCoverage;
 using TestCoverage.Monitors;
 using TestCoverage.Storage;
+using TestCoverage.Tasks;
 using TestCoverageVsPlugin.Logging;
+using TestCoverageVsPlugin.Tasks;
 
 namespace TestCoverageVsPlugin
 {
@@ -34,10 +34,12 @@ namespace TestCoverageVsPlugin
     {
         private readonly SVsServiceProvider _serviceProvider;
         private VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private ITaskCoverageManager _taskCoverageManager;
         private IVsStatusbar _statusBar;
         private DTE _dte;
         private Workspace _myWorkspace;
         private readonly SolutionEvents _solutionEvents;
+        private RoslynSolutionWatcher _roslynSolutionWatcher;
 
 
         [ImportingConstructor]
@@ -69,11 +71,6 @@ namespace TestCoverageVsPlugin
             _vsSolutionTestCoverage = null;
         }
 
-        private void SolutionEvents_Opened()
-        {
-            InitSolutionCoverageEngine();
-        }
-
         private void InitSolutionCoverageEngine()
         {
             InitMyWorkspace(_serviceProvider);
@@ -85,11 +82,27 @@ namespace TestCoverageVsPlugin
             Config.SetSolution(solutionPath);
 
             var sqlCompactCoverageStore = new SqlCompactCoverageStore();
-            _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_myWorkspace,
-               new SolutionCoverageEngine(),
-                sqlCompactCoverageStore,
-                new RoslynSolutionWatcher(_myWorkspace,sqlCompactCoverageStore,new RewrittenDocumentsStorage()));
+            var rewrittenDocumentsStorage = new RewrittenDocumentsStorage();
 
+            _vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(_myWorkspace,
+                new SolutionCoverageEngine(),
+                sqlCompactCoverageStore);
+
+            _taskCoverageManager = new TaskCoverageManager(new VsDispatchTimer(), new RoslynDocumentProvider(), _vsSolutionTestCoverage);
+            _roslynSolutionWatcher = new RoslynSolutionWatcher(_dte, _myWorkspace,
+                sqlCompactCoverageStore, rewrittenDocumentsStorage, _taskCoverageManager);
+            _roslynSolutionWatcher.DocumentRemoved += _roslynSolutionWatcher_DocumentRemoved;
+            _roslynSolutionWatcher.Start();
+        }
+
+        private void _roslynSolutionWatcher_DocumentRemoved(object sender, DocumentRemovedEventArgs e)
+        {
+            _vsSolutionTestCoverage.RemoveByPath(e.DocumentPath);
+        }
+
+        private void SolutionEvents_Opened()
+        {
+            InitSolutionCoverageEngine();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -101,7 +114,11 @@ namespace TestCoverageVsPlugin
         {
             InitSolutionCoverageEngine();
 
-            return new TestDotsCoverageVsPlugin(_vsSolutionTestCoverage, textViewHost.TextView, _statusBar, _dte.Solution);
+            return new TestDotsCoverageVsPlugin(_vsSolutionTestCoverage,
+                _taskCoverageManager,
+                textViewHost.TextView,
+                _statusBar,
+                _dte.Solution);
         }
     }
     #endregion

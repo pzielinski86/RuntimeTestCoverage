@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using System.Collections.Generic;
 using TestCoverage.CoverageCalculation;
 using TestCoverageVsPlugin.Extensions;
 

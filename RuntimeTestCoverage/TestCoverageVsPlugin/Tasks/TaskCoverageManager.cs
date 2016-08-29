@@ -1,14 +1,12 @@
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.Text;
 using TestCoverage.Extensions;
+using TestCoverage.Tasks;
+using TestCoverage.Tasks.Events;
 
 namespace TestCoverageVsPlugin.Tasks
 {
@@ -19,7 +17,7 @@ namespace TestCoverageVsPlugin.Tasks
         private readonly IDocumentProvider _documentProvider;
         private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
         private readonly List<ITaskCoverageInfo> _tasks;
-        private readonly Dictionary<string, ITaskCoverageInfo> _unsuccessfulDocumentTasks=new Dictionary<string, ITaskCoverageInfo>();
+        private readonly Dictionary<string, ITaskCoverageInfo> _unsuccessfulDocumentTasks = new Dictionary<string, ITaskCoverageInfo>();
 
         public event EventHandler<CoverageTaskArgsBase> CoverageTaskEvent;
 
@@ -32,7 +30,7 @@ namespace TestCoverageVsPlugin.Tasks
             CoverageTaskEvent?.Invoke(this, args);
         }
 
-        public void ReportTaskToRetry(ITaskCoverageInfo task)
+        public void ReportTaskToRetry(IDocumentBasedTaskCoverageInfo task)
         {
             _unsuccessfulDocumentTasks.Add(task.DocumentPath, task);
         }
@@ -47,17 +45,25 @@ namespace TestCoverageVsPlugin.Tasks
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
         }
 
-        public List<ITaskCoverageInfo> Tasks => _tasks; 
+        public List<ITaskCoverageInfo> Tasks => _tasks;
+        public void ResyncAll()
+        {
+            Tasks.Clear();
+
+            var task = new ResyncAllTaskInfo();
+            _tasks.Add(task);
+
+            _timer.Schedule(ExecutionDelayInMilliseconds, ExecuteTask);
+        }
 
         public void EnqueueDocumentTask(string projectName, ITextBuffer textBuffer, string documentPath)
         {
-            
             var existingTask = _tasks.OfType<DocumentCoverageInfoTaskInfo>().
                 FirstOrDefault(x => x.DocumentPath == documentPath);
-            
+
             if (existingTask == null)
             {
-                var task = new DocumentCoverageInfoTaskInfo(projectName,documentPath, textBuffer);
+                var task = new DocumentCoverageInfoTaskInfo(projectName, documentPath, textBuffer);
                 _tasks.Add(task);
             }
 
@@ -106,10 +112,12 @@ namespace TestCoverageVsPlugin.Tasks
             {
                 if (finishedTask.Result)
                 {
-                    if (_unsuccessfulDocumentTasks.ContainsKey(taskInfo.DocumentPath))
+                    var documentBasedTask = taskInfo as IDocumentBasedTaskCoverageInfo;
+
+                    if (documentBasedTask != null && _unsuccessfulDocumentTasks.ContainsKey(documentBasedTask.DocumentPath))
                     {
-                        Tasks.Add(_unsuccessfulDocumentTasks[taskInfo.DocumentPath]);
-                        _unsuccessfulDocumentTasks.Remove(taskInfo.DocumentPath);
+                        Tasks.Add(_unsuccessfulDocumentTasks[documentBasedTask.DocumentPath]);
+                        _unsuccessfulDocumentTasks.Remove(documentBasedTask.DocumentPath);
                     }
                 }
 

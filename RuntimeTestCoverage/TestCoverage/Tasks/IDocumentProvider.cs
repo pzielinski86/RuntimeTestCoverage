@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 
-namespace TestCoverageVsPlugin.Tasks
+namespace TestCoverage.Tasks
 {
     public interface IDocumentProvider
     {

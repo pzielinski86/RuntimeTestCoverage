@@ -4,11 +4,10 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System.Threading.Tasks;
 using EnvDTE;
+using System.Threading.Tasks;
 using TestCoverage;
 using TestCoverage.CoverageCalculation;
-using TestCoverage.Monitors;
 using TestCoverage.Storage;
 using TestCoverageVsPlugin.Logging;
 using TestCoverageVsPlugin.UI.ViewModels;
@@ -64,8 +63,7 @@ namespace TestCoverageVsPlugin.UI
 
                 var vsSolutionTestCoverage = VsSolutionTestCoverage.CreateInstanceIfDoesNotExist(myWorkspace,
                     new SolutionCoverageEngine(),
-                    xmlCoverageStore,
-                    new RoslynSolutionWatcher(myWorkspace, coverageStore, rewrittenDocumentsStorage));
+                    xmlCoverageStore);
 
                 var coverageOverviewViewModel = new CoverageOverviewViewModel(testExplorer, settingsStore,
                     vsSolutionTestCoverage);

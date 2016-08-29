@@ -4,14 +4,12 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.LanguageServices;
 
 namespace TestCoverageVsPlugin.UI
 {

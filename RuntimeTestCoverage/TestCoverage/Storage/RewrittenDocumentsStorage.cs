@@ -1,14 +1,10 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlServerCe;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
-using Dapper;
-using ErikEJ.SqlCe;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace TestCoverage.Storage
 {
