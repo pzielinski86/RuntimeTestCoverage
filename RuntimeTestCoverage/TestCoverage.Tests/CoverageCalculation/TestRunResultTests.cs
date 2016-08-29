@@ -15,7 +15,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         {
             // arrange
             var variables = new[] { new AuditVariablePlaceholder("HelloWorldTests.cs", "", 1) };
-            var testResult = new TestRunResult("test_name",variables, null);
+            var testResult = new TestRunResult("test_name",variables, null,false);
 
             var testNode = CSharpSyntaxTree.ParseText("");
 
@@ -28,7 +28,7 @@ namespace TestCoverage.Tests.CoverageCalculation
         }
 
         [Test]
-        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_TheyAreInTestDocument()
+        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_WeAreInTestDocument()
         {
             // arrange
             string testNodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorldTests.TestMethod";
@@ -36,7 +36,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 1),
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", testNodePath, 2) };
 
-            var testResult = new TestRunResult("test_name",variables, "Assertion failed");
+            var testResult = new TestRunResult("test_name",variables, "Assertion failed",false);
 
 
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
@@ -58,11 +58,11 @@ namespace TestCoverage.Tests.CoverageCalculation
             Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(false));
             Assert.That(totalCoverage[1].ErrorMessage, Is.EqualTo(testResult.ErrorMessage)); 
         }
-
+        
         [Test]
-        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_ItIsInSutDocument()
+        public void GetCoverage_ShouldMarkAllSutAsFailed_When_AssertionFailed_ButNoOtherExceptionWasThrown()
         {
-            // arrange
+            // arrange 
             string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
 
             var variables = new[] {
@@ -71,7 +71,67 @@ namespace TestCoverage.Tests.CoverageCalculation
                 new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 3)};
 
 
-            var testResult = new TestRunResult("test_name",variables, "error");
+            var testResult = new TestRunResult("test_name", variables, "assertion error", true);
+
+            var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
+                                                      " public void TestMethod()" +
+                                                      "{}" +
+                                                      "}");
+
+            var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+
+            // act
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
+
+            // assert
+            Assert.That(totalCoverage.Length, Is.EqualTo(3));
+            Assert.That(totalCoverage[0].IsSuccess, Is.EqualTo(false));
+            Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(false));
+        }
+
+        [Test]
+        public void GetCoverage_ShouldMarkInTestFile_OnlyAssertionLineAsFailed_When_AssertionFailed_ButNoOtherExceptionWasThrown()
+        {
+            // arrange 
+            string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
+
+            var variables = new[] {
+                new AuditVariablePlaceholder(@"c:\HelloWorld.cs", nodePath, 1),
+                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 2),
+                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 3)};
+
+
+            var testResult = new TestRunResult("test_name", variables, "assertion error", true);
+
+            var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
+                                                      " public void TestMethod()" +
+                                                      "{}" +
+                                                      "}");
+
+            var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+
+            // act
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
+
+            // assert
+            Assert.That(totalCoverage.Length, Is.EqualTo(3));
+            Assert.That(totalCoverage[1].IsSuccess, Is.EqualTo(true));
+            Assert.That(totalCoverage[2].IsSuccess, Is.EqualTo(false));
+        }
+
+        [Test]
+        public void GetCoverage_Should_MarkOnlyLastLine_As_FailedOne_When_ExceptionWasThrown_And_WeAreInSutDocument()
+        {
+            // arrange 
+            string nodePath = "SampleHelloWorldTests.HelloWorldTests.HelloWorld.Method";
+
+            var variables = new[] {
+                new AuditVariablePlaceholder(@"c:\HelloWorld.cs", nodePath, 1),
+                new AuditVariablePlaceholder(@"c:\HelloWorld.cs", nodePath, 2),
+                new AuditVariablePlaceholder(@"c:\HelloWorldTests.cs", nodePath, 3)};
+
+
+            var testResult = new TestRunResult("test_name",variables, "error",false);
 
             var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
                                                       " public void TestMethod()" +

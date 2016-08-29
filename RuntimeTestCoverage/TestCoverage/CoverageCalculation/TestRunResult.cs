@@ -10,13 +10,15 @@ namespace TestCoverage.CoverageCalculation
     [Serializable]
     public class TestRunResult : ITestRunResult
     {
+        private readonly bool _assertionFailed;
         public string TestName { get; private set; }
         public AuditVariablePlaceholder[] AuditVariables { get; }
         public bool ThrownException => ErrorMessage != null;
         public string ErrorMessage { get; }
 
-        public TestRunResult(string testName, AuditVariablePlaceholder[] auditVariables, string errorMessage)
+        public TestRunResult(string testName, AuditVariablePlaceholder[] auditVariables, string errorMessage, bool assertionFailed)
         {
+            _assertionFailed = assertionFailed;
             TestName = testName;
             AuditVariables = auditVariables;
             ErrorMessage = errorMessage;
@@ -54,7 +56,7 @@ namespace TestCoverage.CoverageCalculation
                             lineCoverage.ErrorMessage = ErrorMessage;
                         }
                     }
-                    else if (variable == lastAuditVariableInSut)
+                    else if (_assertionFailed || variable == lastAuditVariableInSut)
                     {
                         lineCoverage.IsSuccess = false;
                         lineCoverage.ErrorMessage = ErrorMessage;
