@@ -29,29 +29,6 @@ namespace TestCoverage.Tests.Rewrite
             _solutionRewriter = new SolutionRewriter(_rewrittenDocumentsStorageMock, _auditVariablesRewriterMock);
         }
 
-        [Test]
-        public void Should_ReturnValidDocumentPathAndRewrittenSyntaxTree()
-        {
-            // arrange
-            const string sourceCode = "class SampleClass{" +
-                                         "public void Test(int a){}" +
-                                      "}";
-
-            const string documentPath = "documentPath";
-
-            SyntaxNode rewrittenNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
-            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(rewrittenNode);
-
-            var workspace = new AdhocWorkspace();
-            var project = workspace.AddProject("projectName", LanguageNames.CSharp);
-
-            // act
-            RewrittenDocument rewrittenDocument = _solutionRewriter.RewriteDocumentWithAssemblyInfo(project, new Project[0], documentPath, sourceCode);
-
-            // assert
-            Assert.That(rewrittenDocument.DocumentPath, Is.EqualTo(documentPath));
-            Assert.That(rewrittenDocument.SyntaxTree, Is.EqualTo(rewrittenNode.SyntaxTree));
-        }
 
         [Test]
         public void Should_RewriteOneDocument()
@@ -68,7 +45,8 @@ namespace TestCoverage.Tests.Rewrite
             Document document = workspace.AddDocument(documentInfo);
 
 
-            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), documentPath, Arg.Any<SyntaxNode>()).
+                Returns(new RewrittenDocument(node.SyntaxTree, null, false));
 
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
@@ -77,9 +55,7 @@ namespace TestCoverage.Tests.Rewrite
             Assert.That(result.Items.Count, Is.EqualTo(1));
             Assert.That(result.Items.Keys.First().Id, Is.EqualTo(project.Id));
 
-            Assert.That(result.Items.Values.First().Count, Is.EqualTo(1));
-            Assert.That(result.Items.Values.First().First().DocumentPath, Is.EqualTo(document.FilePath));
-            Assert.That(result.Items.Values.First().First().SyntaxTree.ToString(), Is.EqualTo(node.SyntaxTree.ToString()));
+            Assert.That(result.Items.Values.First().Count, Is.EqualTo(1));            
         }
 
         [Test]
@@ -99,14 +75,13 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).
+                Returns(new RewrittenDocument(node.SyntaxTree, null,false));
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
             Assert.That(result.Items.Count, Is.EqualTo(1));
             Assert.That(result.Items.Values.First().Count, Is.EqualTo(2));
-            Assert.That(result.Items.Values.First().First().DocumentPath, Is.EqualTo(documentInfo1.FilePath));
-            Assert.That(result.Items.Values.First().Last().DocumentPath, Is.EqualTo(documentInfo2.FilePath));
         }
 
         [Test]
@@ -127,7 +102,8 @@ namespace TestCoverage.Tests.Rewrite
             workspace.AddDocument(documentInfo1);
             workspace.AddDocument(documentInfo2);
 
-            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).
+                Returns(new RewrittenDocument(node.SyntaxTree, null, false));
 
             RewriteResult result = _solutionRewriter.RewriteAllClasses(workspace.CurrentSolution.Projects);
 
@@ -154,7 +130,8 @@ namespace TestCoverage.Tests.Rewrite
 
             var solution = workspace.CurrentSolution.AddProjectReference(testsProject.Id, new ProjectReference(referencedProject1.Id));
 
-            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(node);
+            _auditVariablesRewriterMock.Rewrite(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).
+                Returns(new RewrittenDocument(node.SyntaxTree, null, false));
 
             // act
             RewriteResult result = _solutionRewriter.RewriteAllClasses(solution.Projects);

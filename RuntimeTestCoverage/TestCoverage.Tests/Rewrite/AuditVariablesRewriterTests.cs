@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NSubstitute;
 using NUnit.Framework;
 using System.Linq;
+using TestCoverage.CoverageCalculation;
 using TestCoverage.Rewrite;
 
 namespace TestCoverage.Tests.Rewrite
@@ -12,13 +13,16 @@ namespace TestCoverage.Tests.Rewrite
     public class AuditVariablesRewriterTests
     {
         private IAuditVariablesWalker _auditVariablesWalkerMock;
+        private ITestsExtractor _testsExtractorMock;
         private AuditVariablesRewriter _rewriter;
 
         [SetUp]
         public void Setup()
         {
             _auditVariablesWalkerMock = Substitute.For<IAuditVariablesWalker>();
-            _rewriter = new AuditVariablesRewriter(_auditVariablesWalkerMock);
+            _testsExtractorMock = Substitute.For<ITestsExtractor>();
+
+            _rewriter = new AuditVariablesRewriter(_auditVariablesWalkerMock, _testsExtractorMock);
         }
 
         [Test]
@@ -84,10 +88,10 @@ namespace TestCoverage.Tests.Rewrite
                 .Returns(auditVariablePlaceholders);
 
             // act
-            var rewrittenNode=_rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
+            var rewrittenDoc=_rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
             
             // assert
-            var ifStatement = rewrittenNode.DescendantNodes().OfType<IfStatementSyntax>().Single();
+            var ifStatement = rewrittenDoc.SyntaxTree.GetRoot().DescendantNodes().OfType<IfStatementSyntax>().Single();
             var statements =
                 ifStatement.ChildNodes()
                     .OfType<BlockSyntax>()
@@ -125,10 +129,11 @@ namespace TestCoverage.Tests.Rewrite
                 .Returns(auditVariablePlaceholders);
 
             // act
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
+            var rewrittenDoc = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
             // assert
-            var whileStatement = rewrittenNode.DescendantNodes().OfType<WhileStatementSyntax>().Single();
+            var whileStatement = rewrittenDoc.SyntaxTree.GetRoot().
+                DescendantNodes().OfType<WhileStatementSyntax>().Single();
             var statements =
                 whileStatement.ChildNodes()
                     .OfType<BlockSyntax>()
@@ -169,10 +174,11 @@ namespace TestCoverage.Tests.Rewrite
                 .Returns(auditVariablePlaceholders);
 
             // act
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
+            var rewrittenDoc = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
             // assert
-            var ifStatement = rewrittenNode.DescendantNodes().OfType<IfStatementSyntax>().Single();
+            var ifStatement = rewrittenDoc.SyntaxTree.GetRoot().
+                DescendantNodes().OfType<IfStatementSyntax>().Single();
             var statements =
                 ifStatement.Else.ChildNodes()
                     .OfType<BlockSyntax>()
@@ -206,9 +212,11 @@ namespace TestCoverage.Tests.Rewrite
             auditVariablePlaceholders[0] = new AuditVariablePlaceholder(null, null, 0);
             _auditVariablesWalkerMock.Walk(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<SyntaxNode>()).Returns(auditVariablePlaceholders);
 
-            var rewrittenNode = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
+            var rewrittenDoc = _rewriter.Rewrite("projectName", "documentPath", tree.GetRoot());
 
-            SyntaxNode originalNode = rewrittenNode.DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().Last();
+            SyntaxNode originalNode = rewrittenDoc.SyntaxTree.
+                GetRoot().
+                DescendantNodes().OfType<BlockSyntax>().First().ChildNodes().Last();
 
             Assert.That(originalNode.ToString().Trim(), Is.EqualTo("int a=4;"));
         }

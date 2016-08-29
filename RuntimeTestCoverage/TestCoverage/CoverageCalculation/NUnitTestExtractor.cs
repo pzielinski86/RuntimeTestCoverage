@@ -8,6 +8,8 @@ namespace TestCoverage.CoverageCalculation
 {
     public class NUnitTestExtractor : ITestsExtractor
     {
+        private const string TestFixtureName = "TestFixture";
+
         public TestFixtureDetails GetTestFixtureDetails(ClassDeclarationSyntax fixtureNode, ISemanticModel semanticModel)
         {
             var fixture = ExtractTests(fixtureNode, semanticModel);
@@ -16,10 +18,21 @@ namespace TestCoverage.CoverageCalculation
             return fixture;
         }
 
+        public bool IsAttributeTestFixture(AttributeSyntax node)
+        {
+            return node.Name.ToString() == TestFixtureName;
+        }
+
+        public bool ContainsTests(SyntaxNode node)
+        {
+            return node.DescendantNodes().OfType<AttributeSyntax>()
+                .Any(a => a.Name.ToString() == TestFixtureName);
+        }
+
         public ClassDeclarationSyntax[] GetTestClasses(SyntaxNode root)
         {
             return root.DescendantNodes().OfType<AttributeSyntax>()
-                .Where(a => a.Name.ToString() == "TestFixture")
+                .Where(a => a.Name.ToString() ==TestFixtureName)
                 .Select(a => a.Parent.Parent).OfType<ClassDeclarationSyntax>().ToArray();
         }
 

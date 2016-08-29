@@ -35,14 +35,14 @@ namespace TestCoverage.Rewrite
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(documentContent, CSharpParseOptions.Default.WithPreprocessorSymbols("FRAMEWORK"));
             SyntaxNode syntaxNode = syntaxTree.GetRoot();
 
-            var rewrittenNode = (CompilationUnitSyntax)_auditVariablesRewriter.Rewrite(project.Name, documentPath, syntaxNode);
+            var rewrittenDocument = _auditVariablesRewriter.Rewrite(project.Name, documentPath, syntaxNode);
 
             if (attrs != null)
-                rewrittenNode = rewrittenNode.AddAttributeLists(attrs);
+                rewrittenDocument.AddAttributeLists(attrs);
 
-            _rewrittenDocumentsStorage.Store(project.Solution.FilePath, project.Name, documentPath, rewrittenNode);
+            _rewrittenDocumentsStorage.Store(project.Solution.FilePath, project.Name, documentPath, rewrittenDocument.SyntaxTree.GetRoot());
 
-            return new RewrittenDocument(rewrittenNode.SyntaxTree, documentPath);
+            return rewrittenDocument;
         }
 
         public RewriteResult RewriteAllClasses(IEnumerable<Project> projects)

@@ -20,11 +20,12 @@ namespace TestCoverage
 
         public void Init(Workspace myWorkspace)
         {
+            var nUnitTestExtractor = new NUnitTestExtractor();
             _solutionExplorer = new SolutionExplorer(new RewrittenDocumentsStorage(), myWorkspace);
-            _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker());
+            _auditVariablesRewriter = new AuditVariablesRewriter(new AuditVariablesWalker(), nUnitTestExtractor);
             _coverageStore = new SqlCompactCoverageStore();
             var settingsStore = new XmlCoverageSettingsStore();
-            _testExplorer = new TestExplorer(_solutionExplorer, new NUnitTestExtractor(), _coverageStore, settingsStore);
+            _testExplorer = new TestExplorer(_solutionExplorer, nUnitTestExtractor, _coverageStore, settingsStore);
 
         }
 

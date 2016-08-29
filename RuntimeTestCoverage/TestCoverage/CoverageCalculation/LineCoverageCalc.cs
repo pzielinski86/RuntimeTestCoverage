@@ -33,6 +33,9 @@ namespace TestCoverage.CoverageCalculation
             {
                 foreach (RewrittenDocument rewrittenItem in rewritenResult.Items[project])
                 {
+                    if (!rewrittenItem.ContainsTest)
+                        continue;
+
                     var testProjectCompiltedItem = compiledItems.Single(x => x.Project == project);
                     ISemanticModel semanticModel = testProjectCompiltedItem.GetSemanticModel(rewrittenItem.SyntaxTree);
 

@@ -53,7 +53,7 @@ namespace TestCoverage.Tests
             _coverageStoreMock.ReadAll().Returns(new[] { lineCoverage });
             _solutionExplorerMock.OpenFile(lineCoverage.TestDocumentPath).Returns(testTree);
 
-            var document = new RewrittenDocument( tree, @"c:\MathHelper.cs");
+            var document = new RewrittenDocument( tree, @"c:\MathHelper.cs",false);
 
             // act
             RewrittenDocument[] output = _sut.GetReferencedTests(document, "Math");

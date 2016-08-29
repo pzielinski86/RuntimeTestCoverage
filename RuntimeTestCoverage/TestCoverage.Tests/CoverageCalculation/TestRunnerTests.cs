@@ -52,7 +52,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 .Returns(new[] { testClass });
             _testExtractorMock.GetTestFixtureDetails(testClass, Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
 
-            var rewrittenDocument = new RewrittenDocument(testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null, false);
 
             // act
             _sut.RunAllTestsInDocument(rewrittenDocument, null, project, new string[0]);
@@ -82,7 +82,7 @@ namespace TestCoverage.Tests.CoverageCalculation
             _testExtractorMock.GetTestClasses(Arg.Any<CSharpSyntaxNode>())
                 .Returns(new[] { testClass });
             _testExtractorMock.GetTestFixtureDetails(testClass, Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
-            var rewrittenDocument = new RewrittenDocument(testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null, false);
 
 
             // act
@@ -105,7 +105,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                                              "{}" +
                                              "}");
 
-            var rewrittenDocument = new RewrittenDocument(testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null, false);
 
             // act
             _sut.RunAllTestsInDocument(rewrittenDocument, null, project, new string[0]);
@@ -135,7 +135,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 .Returns(new[] { testClass });
 
             _testExtractorMock.GetTestFixtureDetails(Arg.Any<ClassDeclarationSyntax>(), Arg.Any<ISemanticModel>()).Returns(fixtureDetails);
-            var rewrittenDocument = new RewrittenDocument(testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null, false);
 
 
             // act
@@ -176,7 +176,7 @@ namespace TestCoverage.Tests.CoverageCalculation
                 Returns(new[] { testRunResultMock });
 
             var project = CreateProject("SampleTestsProject");
-            var rewrittenDocument = new RewrittenDocument(testNode, null);
+            var rewrittenDocument = new RewrittenDocument(testNode, null, false);
 
             // act
             LineCoverage[] output = _sut.RunAllTestsInDocument(rewrittenDocument, null, project, new string[0]);

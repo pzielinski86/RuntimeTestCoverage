@@ -2,23 +2,33 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using TestCoverage.CoverageCalculation;
 
 namespace TestCoverage.Rewrite
 {
     public class AuditVariablesRewriter : CSharpSyntaxRewriter, IAuditVariablesRewriter
     {
         private readonly IAuditVariablesWalker _auditVariablesWalker;
+        private readonly ITestsExtractor _testsExtractor;
+        private bool _foundTestFixture;
         private int _auditIndex;
         private AuditVariablePlaceholder[] _auditVariablePlaceholders;
 
-        public AuditVariablesRewriter(IAuditVariablesWalker auditVariablesWalker)
+        public AuditVariablesRewriter(IAuditVariablesWalker auditVariablesWalker,ITestsExtractor testsExtractor)
         {
             _auditVariablesWalker = auditVariablesWalker;
+            _testsExtractor = testsExtractor;
         }
 
         public void Init()
         {
             _auditIndex = 0;
+        }
+
+        public override SyntaxNode VisitAttribute(AttributeSyntax node)
+        {
+            _foundTestFixture |= _testsExtractor.IsAttributeTestFixture(node);
+            return base.VisitAttribute(node);
         }
 
         public override SyntaxNode VisitBlock(BlockSyntax node)
@@ -107,12 +117,15 @@ namespace TestCoverage.Rewrite
             return null;
         }
 
-        public SyntaxNode Rewrite(string projectName, string documentPath, SyntaxNode root)
+        public RewrittenDocument Rewrite(string projectName, string documentPath, SyntaxNode root)
         {
+            _foundTestFixture = false;
             _auditVariablePlaceholders = _auditVariablesWalker.Walk(projectName, documentPath, root);
             Init();
 
-            return Visit(root);
+            var node= Visit(root);
+
+            return new RewrittenDocument(node.SyntaxTree,documentPath,_foundTestFixture);
         }
         private StatementSyntax CreateLineAuditNode()
         {

@@ -4,6 +4,6 @@ namespace TestCoverage.Rewrite
 {
     public interface IAuditVariablesRewriter
     {
-        SyntaxNode Rewrite(string projectName, string documentPath, SyntaxNode root);
+        RewrittenDocument Rewrite(string projectName, string documentPath, SyntaxNode root);
     }
 }

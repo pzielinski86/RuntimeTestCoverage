@@ -51,6 +51,53 @@ namespace TestCoverage.Tests
         }
 
         [Test]
+        public void ContainsTests_Should_Return_True_If_ClassIsTextFixture()
+        {
+            // arrange
+            const string code = @"namespace Code{
+                            [TestFixture]
+                            public class Tests
+                            {
+	                            [Test]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var result = _sut.ContainsTests(tree);
+
+            // assert
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void ContainsTests_Should_Return_False_If_ClassIsNotTextFixture()
+        {
+            // arrange
+            const string code = @"namespace Code{                
+                            public class Tests
+                            {
+	                            [Test]
+	                            public void TestSomething1()
+	                            {
+
+	                            }	
+                            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(code).GetRoot().GetClassDeclarationSyntax();
+
+            // act
+            var result = _sut.ContainsTests(tree);
+
+            // assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
         public void ShouldExtract_PublicTests()
         {
             // arrange
