@@ -102,7 +102,7 @@ namespace TestCoverageVsPlugin
                     string path = NodePathBuilder.BuildPath(method,
                         Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
-                    SolutionCoverageByDocument.MarkAsCompilationError(path,e.ToString());
+                    SolutionCoverageByDocument.MarkMethodAsCompilationError(path,e.ToString());
                     LogFactory.CurrentLogger.Error(e.ToString());
                     return false;
                 }
@@ -151,7 +151,7 @@ namespace TestCoverageVsPlugin
             }
             catch (TestCoverageCompilationException e)
             {
-                SolutionCoverageByDocument.Clear();
+                SolutionCoverageByDocument.MarkDocumentAsCompilationError(documentPath,e.ToString());
                 LogFactory.CurrentLogger.Error(e.ToString());
                 return false;
             }
