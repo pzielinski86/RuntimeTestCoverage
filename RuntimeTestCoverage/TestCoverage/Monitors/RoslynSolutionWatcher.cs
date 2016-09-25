@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.IO;
 using System.Linq;
 using EnvDTE;
 using TestCoverage.Storage;
@@ -53,7 +54,7 @@ namespace TestCoverage.Monitors
                 {
                     string activeDocumentPath = _dte.ActiveDocument.FullName;
 
-                    if (newChangedDoc.FilePath != activeDocumentPath)
+                    if (!string.Equals(newChangedDoc.FilePath,activeDocumentPath,StringComparison.OrdinalIgnoreCase))
                         _taskCoverageManager.ResyncAll();
                 }
             }

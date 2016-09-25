@@ -18,7 +18,6 @@ namespace TestCoverage.Tests.CoverageCalculation
             var testResult = new TestRunResult("test_name",variables, null,false);
 
             var testNode = CSharpSyntaxTree.ParseText("");
-
             // act
             LineCoverage[] totalCoverage = testResult.GetCoverage(testNode.GetRoot(), "SampleHelloWorldTests", "HelloWorldTests.cs");
 
