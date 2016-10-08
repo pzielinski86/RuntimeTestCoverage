@@ -29,17 +29,20 @@ namespace TestCoverage.Compilation
 
             string dllName = Compilation.AssemblyName;
             var dllPath = Path.Combine(Config.WorkingDirectory, dllName);
-           
-            using (var stream = File.Open(dllPath,FileMode.OpenOrCreate))
-            {
-                EmitResult emitResult = Compilation.Emit(stream);
 
-                if (!emitResult.Success)
-                {
-                    throw new TestCoverageCompilationException(
-                        emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
-                }
+            EmitResult emitResult;
+
+            using (var stream = File.Open(dllPath, FileMode.OpenOrCreate))
+            {
+                emitResult = Compilation.Emit(stream);
             }
+
+            if (!emitResult.Success)
+            {
+                      throw new TestCoverageCompilationException(
+                    emitResult.Diagnostics.Select(d => d.GetMessage()).ToArray());
+            }
+
 
             DllPath = dllPath;
             IsEmitted = true;
@@ -49,7 +52,7 @@ namespace TestCoverage.Compilation
 
         public ISemanticModel GetSemanticModel(SyntaxTree syntaxTree)
         {
-            return new RoslynSemanticModel(Compilation.GetSemanticModel(syntaxTree,false));
+            return new RoslynSemanticModel(Compilation.GetSemanticModel(syntaxTree, false));
         }
     }
 }

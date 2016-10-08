@@ -150,5 +150,27 @@ namespace TestCoverage.Tests.CoverageCalculation
             Assert.That(totalCoverage[0].ErrorMessage, Is.Null);
             Assert.That(totalCoverage[1].ErrorMessage, Is.EqualTo(testResult.ErrorMessage));
         }
+
+        [Test]
+        public void GetCoverage_ShouldReturnEmptyCoverage_When_ThereAreNoAuditVariables()
+        {
+            // arrange 
+            var variables = new AuditVariablePlaceholder[0];
+
+            var testResult = new TestRunResult("test_name", variables, "error", false);
+
+            var testNode = CSharpSyntaxTree.ParseText("class HelloWorldTests{" +
+                                                      " public void TestMethod()" +
+                                                      "{}" +
+                                                      "}");
+
+            var testMethodNode = testNode.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+
+            // act
+            LineCoverage[] totalCoverage = testResult.GetCoverage(testMethodNode, "SampleHelloWorldTests", @"c:\HelloWorldTests.cs");
+
+            // assert
+            Assert.That(totalCoverage.Length, Is.EqualTo(0));
+        }
     }
 }

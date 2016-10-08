@@ -31,6 +31,9 @@ namespace TestCoverage.CoverageCalculation
         {
             List<LineCoverage> coverage = new List<LineCoverage>();
 
+            if (AuditVariables.Length == 0)
+                return coverage.ToArray();
+
             string testDocName = Path.GetFileNameWithoutExtension(testDocumentPath);
 
             var variablesSortedByExecutionOrder = AuditVariables.OrderBy(x => x.ExecutionCounter);

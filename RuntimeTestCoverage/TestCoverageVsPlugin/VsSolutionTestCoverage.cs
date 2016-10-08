@@ -38,10 +38,10 @@ namespace TestCoverageVsPlugin
             _coverageStore = coverageStore;
 
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
-        }  
+        }
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace, 
-            ISolutionCoverageEngine solutionCoverageEngine, 
+        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace,
+            ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore)
         {
             if (_vsSolutionTestCoverage == null)
@@ -102,7 +102,7 @@ namespace TestCoverageVsPlugin
                     string path = NodePathBuilder.BuildPath(method,
                         Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
-                    SolutionCoverageByDocument.MarkMethodAsCompilationError(path,e.ToString());
+                    SolutionCoverageByDocument.MarkMethodAsCompilationError(path, e.ToString());
                     LogFactory.CurrentLogger.Error(e.ToString());
                     return false;
                 }
@@ -128,10 +128,10 @@ namespace TestCoverageVsPlugin
 
         public void RemoveByPath(string filePath)
         {
-            if(!SolutionCoverageByDocument.ContainsKey(filePath))
+            if (!SolutionCoverageByDocument.ContainsKey(filePath))
                 return;
 
-            var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();    
+            var allTestPaths = SolutionCoverageByDocument[filePath].Select(x => x.TestPath).ToArray();
 
             SolutionCoverageByDocument.Remove(filePath);
 
@@ -139,7 +139,7 @@ namespace TestCoverageVsPlugin
             {
                 documentCoverage.RemoveAll(x => allTestPaths.Contains(x.TestPath));
             }
-        }  
+        }
 
         private bool CalculateForDocument(string projectName, string documentPath, string documentContent)
         {
@@ -151,22 +151,14 @@ namespace TestCoverageVsPlugin
             }
             catch (TestCoverageCompilationException e)
             {
-                SolutionCoverageByDocument.MarkDocumentAsCompilationError(documentPath,e.ToString());
+                SolutionCoverageByDocument.MarkDocumentAsCompilationError(documentPath, e.ToString());
                 LogFactory.CurrentLogger.Error(e.ToString());
                 return false;
             }
 
-            UpdateSolutionCoverage(coverage);
+            SolutionCoverageByDocument.UpdateDocumentCoverage(documentPath, coverage);
 
             return true;
-        }
-
-        private void UpdateSolutionCoverage(CoverageResult coverage)
-        {
-            foreach (string docPath in coverage.CoverageByDocument.Keys)
-            {
-                SolutionCoverageByDocument[docPath] = coverage.CoverageByDocument[docPath].ToList();
-            }
         }
 
         public void Dispose()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TestCoverage;
 using TestCoverage.CoverageCalculation;
 
 namespace TestCoverageVsPlugin.Extensions
@@ -40,6 +41,26 @@ namespace TestCoverageVsPlugin.Extensions
                         documentCoverage[i].ErrorMessage = errorMsg;
                     }
                 }
+            }
+        }
+
+        public static void UpdateDocumentCoverage(this Dictionary<string, List<LineCoverage>> source, string recalculatedDocument, CoverageResult result)
+        {
+            foreach (var documentCoverage in source.Values)
+            {
+                for (int i = 0; i < documentCoverage.Count; i++)
+                {
+                    if (documentCoverage[i].DocumentPath == recalculatedDocument || documentCoverage[i].TestDocumentPath == recalculatedDocument)
+                    {
+                        documentCoverage.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+
+            foreach (string docPath in result.CoverageByDocument.Keys)
+            {
+                source[docPath] = result.CoverageByDocument[docPath].ToList();
             }
         }
 
