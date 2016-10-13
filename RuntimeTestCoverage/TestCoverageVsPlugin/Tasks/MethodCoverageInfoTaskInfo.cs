@@ -23,8 +23,7 @@ namespace TestCoverageVsPlugin.Tasks
         }
 
         public Task<bool> ExecuteAsync(ITaskCoverageManager taskCoverageManager, IVsSolutionTestCoverage vsSolutionTestCoverage, IDocumentProvider documentProvider)
-        {
-          
+        {          
             string methodName = Method.Identifier.ValueText;
             RaiseTaskStartedEvent(taskCoverageManager);
 
@@ -41,6 +40,9 @@ namespace TestCoverageVsPlugin.Tasks
 
             var finalTask = task.ContinueWith((x, y) =>
             {
+                if(!x.Result)
+                    taskCoverageManager.ReportTaskToRetry(this);
+
                 RaiseTasCompletedEvent(taskCoverageManager);
                 return x.Result;
 

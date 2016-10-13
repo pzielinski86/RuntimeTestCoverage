@@ -32,7 +32,7 @@ namespace TestCoverageVsPlugin.Tasks
 
         public void ReportTaskToRetry(IDocumentBasedTaskCoverageInfo task)
         {
-            _unsuccessfulDocumentTasks.Add(task.DocumentPath, task);
+            _unsuccessfulDocumentTasks[task.DocumentPath]= task;
         }
 
         public TaskCoverageManager(ITimer timer,
@@ -114,15 +114,22 @@ namespace TestCoverageVsPlugin.Tasks
                 {
                     var documentBasedTask = taskInfo as IDocumentBasedTaskCoverageInfo;
 
-                    if (documentBasedTask != null && _unsuccessfulDocumentTasks.ContainsKey(documentBasedTask.DocumentPath))
-                    {
-                        Tasks.Add(_unsuccessfulDocumentTasks[documentBasedTask.DocumentPath]);
-                        _unsuccessfulDocumentTasks.Remove(documentBasedTask.DocumentPath);
-                    }
+                    if (documentBasedTask != null)
+                        RerunFailedDocuments();
                 }
 
                 ExecuteTask();
             }, null, TaskSchedulerManager.Current.FromSynchronizationContext());
+        }
+
+        private void RerunFailedDocuments()
+        {
+            foreach (var unsuccessfulDocumentTask in _unsuccessfulDocumentTasks)
+            {
+                Tasks.Add(_unsuccessfulDocumentTasks[unsuccessfulDocumentTask.Key]);
+            }
+
+            _unsuccessfulDocumentTasks.Clear();
         }
     }
 }

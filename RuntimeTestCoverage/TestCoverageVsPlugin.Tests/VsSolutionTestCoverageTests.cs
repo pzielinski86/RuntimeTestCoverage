@@ -254,7 +254,7 @@ namespace TestCoverageVsPlugin.Tests
             await _sut.CalculateForDocumentAsync("CurrentProject", "test.xml", string.Empty);
 
             // assert
-            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(0));
+            Assert.That(_sut.SolutionCoverageByDocument.Count, Is.EqualTo(1));
         }
 
         [Test]
