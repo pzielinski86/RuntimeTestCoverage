@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 
 namespace TestCoverage.CoverageCalculation
 {
-    public sealed class AppDomainTestExecutorScriptEngine : ITestExecutorScriptEngine, IDisposable
+    public sealed class AppDomainTestExecutorScriptEngine : MarshalByRefObject, ITestExecutorScriptEngine, IDisposable
     {
         private AppDomain _appDomain;
         private readonly TestExecutorScriptEngine _engine;
@@ -11,7 +12,6 @@ namespace TestCoverage.CoverageCalculation
         public AppDomainTestExecutorScriptEngine()
         {
             var appDomainSetup = new AppDomainSetup { LoaderOptimization = LoaderOptimization.MultiDomain };
-
             _appDomain = AppDomain.CreateDomain("testing_sandbox", null, appDomainSetup);
             Type engineType = typeof(TestExecutorScriptEngine);
 

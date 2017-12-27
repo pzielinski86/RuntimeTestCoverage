@@ -31,7 +31,7 @@ namespace Math.Tests
             decimal result = helper.Divide(a, b);
             
             Assert.That(result, Is.EqualTo(c));
-
+            Assert.AreEqual(false, true);
 
 
             //jj

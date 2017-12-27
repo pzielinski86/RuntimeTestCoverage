@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage", "TestCoverage\TestCoverage.csproj", "{4F81EDF0-7537-427A-A093-668E2123DECF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageConsole", "TestCoverageConsole\TestCoverageConsole.csproj", "{CE123755-F631-4245-B9E5-73860F18080C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin", "TestCoverageVsPlugin\TestCoverageVsPlugin.csproj", "{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.Tests", "TestCoverage.Tests\TestCoverage.Tests.csproj", "{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverageVsPlugin.Tests", "TestCoverageVsPlugin.Tests\TestCoverageVsPlugin.Tests.csproj", "{B770038F-42C0-47FB-BB7A-37C3E184A019}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Internals.AuditVariables", "Internals.AuditVariables\Internals.AuditVariables.csproj", "{844CD721-0AEC-481D-A281-645BE1CF7DBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveCoverageVsPlugin", "LiveCoverageVsPlugin\LiveCoverageVsPlugin.csproj", "{BDFFC868-0145-435C-B11A-8F5292E3FB7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveCoverageVsPlugin.Tests", "LiveCoverageVsPlugin.Tests\LiveCoverageVsPlugin.Tests.csproj", "{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,28 +31,31 @@ Global
 		{CE123755-F631-4245-B9E5-73860F18080C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE123755-F631-4245-B9E5-73860F18080C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE123755-F631-4245-B9E5-73860F18080C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7751184E-AD8D-429D-ADAD-C7C1BE5FE00F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B770038F-42C0-47FB-BB7A-37C3E184A019}.Release|Any CPU.Build.0 = Release|Any CPU
 		{844CD721-0AEC-481D-A281-645BE1CF7DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{844CD721-0AEC-481D-A281-645BE1CF7DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{844CD721-0AEC-481D-A281-645BE1CF7DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{844CD721-0AEC-481D-A281-645BE1CF7DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDFFC868-0145-435C-B11A-8F5292E3FB7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDFFC868-0145-435C-B11A-8F5292E3FB7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDFFC868-0145-435C-B11A-8F5292E3FB7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDFFC868-0145-435C-B11A-8F5292E3FB7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CC960CBC-66FF-48B6-A5EF-02E9BD212D8D} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
-		{B770038F-42C0-47FB-BB7A-37C3E184A019} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
+		{55F61AA9-CEBC-4D5B-8CE6-0FE067A21C97} = {3EFC8DF7-9308-4827-A8EE-D0D73B2E1027}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A634D40C-361E-4CEC-9F2A-09ABA212F83F}
 	EndGlobalSection
 EndGlobal

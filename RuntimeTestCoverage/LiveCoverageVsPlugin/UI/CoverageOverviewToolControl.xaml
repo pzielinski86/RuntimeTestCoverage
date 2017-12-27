@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="LiveCoverageVsPlugin.UI.CoverageOverviewToolControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Name="MyToolWindow">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <TextBlock  Text="{Binding Title, FallbackValue=Info not available}"></TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding RefreshCmd}" Margin="10" Width="60" Height="25" HorizontalAlignment="Left">Refresh</Button>
+                <Button Command="{Binding ResyncCmd}" Margin="10" Width="60" Height="25" HorizontalAlignment="Left">Resync</Button>
+            </StackPanel>
+            <TreeView ItemsSource="{Binding TestProjects}" x:Name="treeView">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding TestFixtures}">
+                        <TextBlock Text="{Binding TestProjectSettings.Name}">
+                            <TextBlock.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem  Header="{Binding FlagProjectCoverageSettingsCmdText}" Command="{Binding FlagProjectCoverageSettingsCmd}"/>
+                                </ContextMenu>
+                            </TextBlock.ContextMenu>
+                        </TextBlock>
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,247 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using EnvDTE;
+using LiveCoverageVsPlugin.Extensions;
+using LiveCoverageVsPlugin.Tasks;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using TestCoverage.CoverageCalculation;
+using TestCoverage.Tasks;
+using TestCoverage.Tasks.Events;
+
+namespace LiveCoverageVsPlugin
+{
+    /// <summary>
+    /// Margin's canvas and visual definition including both size and content
+    /// </summary>
+    internal class LiveCoverageMargin : Canvas, IWpfTextViewMargin
+    {
+        public const string MarginName = "TestDotsCoverageVsPlugin";
+
+        private readonly IWpfTextView _textView;
+        private readonly IVsStatusbar _statusBar;
+        private readonly Solution _solution;
+        private readonly Canvas _canvas;
+        private readonly ITaskCoverageManager _taskCoverageManager;
+
+        private string _documentPath;
+        private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private bool _isDisposed = false;
+        private int _currentNumberOfLines;
+        private string _projectName;
+
+        public LiveCoverageMargin(VsSolutionTestCoverage vsSolutionTestCoverage,
+            ITaskCoverageManager taskCoverageManager,
+            IWpfTextView textView,
+            IVsStatusbar statusBar,
+            Solution solution)
+        {
+            _vsSolutionTestCoverage = vsSolutionTestCoverage;
+            _taskCoverageManager = taskCoverageManager;
+
+            _canvas = new Canvas();
+            _textView = textView;
+            _statusBar = statusBar;
+            _solution = solution;
+
+            _textView.ViewportHeightChanged += (s, e) => Redraw();
+            _textView.LayoutChanged += LayoutChanged;
+            this.Width = 20;
+            this.ClipToBounds = true;
+            this.Background = new SolidColorBrush(Colors.White);
+            Children.Add(_canvas);
+            textView.TextBuffer.Changed += TextBuffer_Changed;
+
+            _taskCoverageManager.CoverageTaskEvent += TaskCoverageManagerCoverageTaskEvent;
+        }
+
+        private void LayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        {
+            if (e.VerticalTranslation || _currentNumberOfLines != _textView.TextViewLines.Count)
+            {
+                Redraw();
+                _currentNumberOfLines = _textView.TextViewLines.Count;
+            }
+        }
+
+        private void TaskCoverageManagerCoverageTaskEvent(object sender, CoverageTaskArgsBase e)
+        {
+            if (e is MethodCoverageTaskStartedArgs)
+            {
+                var startedEvent = (MethodCoverageTaskStartedArgs)e;
+                _statusBar.SetText(
+                    $"Calculating coverage for the method {System.IO.Path.GetFileName(startedEvent.DocPath)}_{startedEvent.MethodName}");
+            }
+            else if (e is DocumentCoverageTaskStartedArgs)
+            {
+                var startedEvent = (DocumentCoverageTaskStartedArgs)e;
+                _statusBar.SetText(
+                    $"Calculating coverage for the document {System.IO.Path.GetFileName(startedEvent.DocPath)}");
+            }
+            else if (e is ResyncAllStarted)
+            {
+                _statusBar.SetText("Resyncing all...");
+            }
+
+            else if (e is MethodCoverageTaskCompletedArgs || e is DocumentCoverageTaskCompletedArgs || e is ResyncAllCompleted)
+            {
+                _statusBar.SetText("");
+                Redraw();
+            }
+        }
+
+        private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
+        {
+            bool foundMethod = _taskCoverageManager.EnqueueMethodTask(_projectName,
+                    _textView.Caret.Position.BufferPosition.Position,
+                    _textView.TextBuffer,
+                    _documentPath);
+
+            if (!foundMethod && e.Changes.Any(x => x.AnyCodeChanges()))
+            {
+                _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, _documentPath);
+            }
+        }
+
+        private bool InitProperties()
+        {
+            if (_documentPath != null)
+                return true;
+            var textDocument = GetTextDocument();
+
+            if (textDocument == null)
+                return false;
+
+            var docPath = textDocument.FilePath;
+            var projectItem = _solution.FindProjectItem(docPath);
+
+            if (projectItem != null)
+            {
+                _projectName = projectItem.ContainingProject.Name;
+                _documentPath = docPath;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private ITextDocument GetTextDocument()
+        {
+            ITextDocument textDocument = null;
+
+            if (_textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out textDocument))
+                return textDocument;
+            return null;
+        }
+
+        private void Redraw()
+        {
+            if (!InitProperties())
+                return;
+
+            _canvas.Children.Clear();
+
+            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
+
+            List<LineCoverage> lineCoverage;
+            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
+                lineCoverage = new List<LineCoverage>();
+            else
+                lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
+
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, System.IO.Path.GetFileNameWithoutExtension(_documentPath));
+
+            int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
+
+            foreach (CoverageDot dotCoverage in coverageDotDrawer.Draw(positions, _taskCoverageManager.AreJobsPending, _projectName))
+            {
+                Ellipse ellipse = new Ellipse
+                {
+                    Fill = dotCoverage.Color,
+                    ToolTip = dotCoverage.Tooltip,
+                    Cursor = System.Windows.Input.Cursors.Arrow
+                };
+                ellipse.Width = ellipse.Height = 15;
+
+                SetTop(ellipse, _textView.TextViewLines[dotCoverage.LineNumber].TextTop - _textView.ViewportTop);
+                _canvas.Children.Add(ellipse);
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+                throw new ObjectDisposedException(MarginName);
+        }
+
+        #region IWpfTextViewMargin Members
+
+        /// <summary>
+        /// The <see FrameworkElementlement"/> that implements the visual representation
+        /// of the margin.
+        /// </summary>
+        public System.Windows.FrameworkElement VisualElement
+        {
+            // Since this margin implements Canvas, this is the object which renders
+            // the margin.
+            get
+            {
+                ThrowIfDisposed();
+                return this;
+            }
+        }
+
+        #endregion
+
+        #region ITextViewMargin Members
+
+        public double MarginSize
+        {
+            // Since this is a horizontal margin, its width will be bound to the width of the text view.
+            // Therefore, its size is its height.
+            get
+            {
+                ThrowIfDisposed();
+                return this.ActualHeight;
+            }
+        }
+
+        public bool Enabled
+        {
+            // The margin should always be enabled
+            get
+            {
+                ThrowIfDisposed();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Returns an instance of the margin if this is the margin that has been requested.
+        /// </summary>
+        /// <param name="marginName">The name of the margin requested</param>
+        /// <returns>An instance of TestDotsCoverageVsPlugin or null</returns>
+        public ITextViewMargin GetTextViewMargin(string marginName)
+        {
+            return (marginName == MarginName) ? (IWpfTextViewMargin)this : null;
+        }
+
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                GC.SuppressFinalize(this);
+                _isDisposed = true;
+            }
+        }
+        #endregion
+    }
+}
+
