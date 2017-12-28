@@ -17,7 +17,9 @@ namespace Math
                 throw new ArgumentOutOfRangeException();
             }
 
-            return a / b;
+
+
+            return 2;
         }
 
 
@@ -42,6 +44,8 @@ namespace Math
             else
             {
                 int ab = 4;
+
+
 
 
 

@@ -101,7 +101,7 @@ namespace TestCoverage.Tests.Rewrite
                     .ToArray();
 
             Assert.That(statements.Length, Is.EqualTo(2));
-            Assert.That(statements[0].ToFullString(),Is.StringContaining("IfNode"));
+            Assert.That(statements[0].ToFullString(),Does.Contain("IfNode"));
         }
 
         [Test]
@@ -143,7 +143,7 @@ namespace TestCoverage.Tests.Rewrite
                     .ToArray();
 
             Assert.That(statements.Length, Is.EqualTo(2));
-            Assert.That(statements[0].ToFullString(), Is.StringContaining("WhileNode"));
+            Assert.That(statements[0].ToFullString(), Does.Contain("WhileNode"));
         }
 
         [Test]
@@ -188,7 +188,7 @@ namespace TestCoverage.Tests.Rewrite
                     .ToArray();
 
             Assert.That(statements.Length, Is.EqualTo(2));
-            Assert.That(statements[0].ToFullString(), Is.StringContaining("ElseNode"));
+            Assert.That(statements[0].ToFullString(), Does.Contain("ElseNode"));
         }
 
       

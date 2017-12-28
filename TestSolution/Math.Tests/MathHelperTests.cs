@@ -21,20 +21,15 @@ namespace Math.Tests
     public class MathHelperTests
     {
         [TestCase(20,10,2)]
-        [TestCase(20, 10, 2)]
+        [TestCase(30, 10, 3)]
         public void DivideTest(int a,int b,int c)
         {
-         
-                                 
-            ///////ak55kkkllklkjklmhgjghjg
+
             MathHelper helper = new MathHelper();
             decimal result = helper.Divide(a, b);
             
             Assert.That(result, Is.EqualTo(c));
-            Assert.AreEqual(false, true);
 
-
-            //jj
         }
 
 
