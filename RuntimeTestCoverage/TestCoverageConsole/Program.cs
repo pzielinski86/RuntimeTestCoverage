@@ -2,13 +2,14 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using TestCoverage;
 
 namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\projects\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
+        private const string TestSubjectSlnPath = @"C:\projects\new\TestSolution\TestSolution.sln";
 
         private static void Main(string[] args)
         {
@@ -16,11 +17,14 @@ namespace TestCoverageConsole
 
             var engine = new SolutionCoverageEngine();
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
             workspace.OpenSolutionAsync(TestSubjectSlnPath).Wait();
+     
+        
 
             engine.Init(workspace);
-
-            for (int i = 0; i < 5; i++)
+            
+            for (int i = 0; i < 1; i++)
             {
                 Console.WriteLine("***Scenario - START***");
                 TestForAllDocuments(engine);
@@ -28,6 +32,12 @@ namespace TestCoverageConsole
                 Console.WriteLine("***Scenario - END***");
                 Console.WriteLine();
             }
+        }
+
+        private static void Workspace_WorkspaceFailed(object sender, Microsoft.CodeAnalysis.WorkspaceDiagnosticEventArgs e)
+        {
+            Console.WriteLine(e.Diagnostic.ToString());
+            Console.WriteLine();
         }
 
         private static void TestForOneMethod(SolutionCoverageEngine engine)
@@ -53,7 +63,7 @@ namespace TestCoverageConsole
 
             Console.WriteLine("Documents: {0}", positions.CoverageByDocument.Count);
             Console.WriteLine("Rewrite&run all projects.Time: {0}", stopwatch.ElapsedMilliseconds);
-            Console.WriteLine("Memory: {0}", (GC.GetTotalMemory(false) - memoryBefore)/1024/1024);
+            Console.WriteLine("Memory: {0}", (GC.GetTotalMemory(false) - memoryBefore) / 1024 / 1024);
         }
     }
 }

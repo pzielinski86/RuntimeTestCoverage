@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using LiveCoverageVsPlugin.Annotations;
 using TestCoverage.Storage;
 
 namespace LiveCoverageVsPlugin.UI.ViewModels
@@ -35,7 +34,6 @@ namespace LiveCoverageVsPlugin.UI.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("LiveCoverageVsPlugin.Tests")]
+[assembly: AssemblyTitle("TestSolution")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LiveCoverageVsPlugin.Tests")]
+[assembly: AssemblyProduct("TestSolution")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8e2b91ea-181c-402e-a99f-ba636d93b182")]
+[assembly: Guid("1bc76a5a-a845-4d56-9cad-1c67e7470b55")]
 
 // Version information for an assembly consists of the following four values:
 //

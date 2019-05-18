@@ -24,7 +24,7 @@ namespace LiveCoverageVsPlugin
     /// </summary>
     [Export(typeof(IWpfTextViewMarginProvider))]
     [Name(LiveCoverageMargin.MarginName)]
-    [Order(After = PredefinedMarginNames.LeftSelection)]  // Ensure that the margin occurs below the horizontal scrollbar
+    [Order(After = PredefinedMarginNames.HorizontalScrollBar)]  // Ensure that the margin occurs below the horizontal scrollbar
     [MarginContainer(PredefinedMarginNames.LeftSelection)]             // Set the container to the bottom of the editor window
     [ContentType("text")]                                       // Show this margin for all text-based types
     [TextViewRole(PredefinedTextViewRoles.Interactive)]
@@ -38,7 +38,6 @@ namespace LiveCoverageVsPlugin
         private Workspace _myWorkspace;
         private readonly SolutionEvents _solutionEvents;
         private RoslynSolutionWatcher _roslynSolutionWatcher;
-
 
         [ImportingConstructor]
         public LiveCoverageMarginFactory([Import]SVsServiceProvider serviceProvider)
@@ -56,7 +55,6 @@ namespace LiveCoverageVsPlugin
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
-
         private void InitMyWorkspace(SVsServiceProvider serviceProvider)
         {
             var componentModel = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));

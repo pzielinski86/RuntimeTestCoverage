@@ -22,7 +22,10 @@ namespace LiveCoverageVsPlugin
     /// </summary>
     internal class LiveCoverageMargin : Canvas, IWpfTextViewMargin
     {
-        public const string MarginName = "TestDotsCoverageVsPlugin";
+        /// <summary>
+        /// Margin name.
+        /// </summary>
+        public const string MarginName = "LiveCoverageMargin";
 
         private readonly IWpfTextView _textView;
         private readonly IVsStatusbar _statusBar;
@@ -32,15 +35,15 @@ namespace LiveCoverageVsPlugin
 
         private string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
-        private bool _isDisposed = false;
+        private bool isDisposed = false;
         private int _currentNumberOfLines;
         private string _projectName;
 
         public LiveCoverageMargin(VsSolutionTestCoverage vsSolutionTestCoverage,
-            ITaskCoverageManager taskCoverageManager,
-            IWpfTextView textView,
-            IVsStatusbar statusBar,
-            Solution solution)
+             ITaskCoverageManager taskCoverageManager,
+             IWpfTextView textView,
+             IVsStatusbar statusBar,
+             Solution solution)
         {
             _vsSolutionTestCoverage = vsSolutionTestCoverage;
             _taskCoverageManager = taskCoverageManager;
@@ -175,73 +178,102 @@ namespace LiveCoverageVsPlugin
             }
         }
 
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed)
-                throw new ObjectDisposedException(MarginName);
-        }
-
-        #region IWpfTextViewMargin Members
+        #region IWpfTextViewMargin
 
         /// <summary>
-        /// The <see FrameworkElementlement"/> that implements the visual representation
-        /// of the margin.
+        /// Gets the <see cref="Sytem.Windows.FrameworkElement"/> that implements the visual representation of the margin.
         /// </summary>
-        public System.Windows.FrameworkElement VisualElement
+        /// <exception cref="ObjectDisposedException">The margin is disposed.</exception>
+        public FrameworkElement VisualElement
         {
             // Since this margin implements Canvas, this is the object which renders
             // the margin.
             get
             {
-                ThrowIfDisposed();
+                this.ThrowIfDisposed();
                 return this;
             }
         }
 
         #endregion
 
-        #region ITextViewMargin Members
+        #region ITextViewMargin
 
+        /// <summary>
+        /// Gets the size of the margin.
+        /// </summary>
+        /// <remarks>
+        /// For a horizontal margin this is the height of the margin,
+        /// since the width will be determined by the <see cref="ITextView"/>.
+        /// For a vertical margin this is the width of the margin,
+        /// since the height will be determined by the <see cref="ITextView"/>.
+        /// </remarks>
+        /// <exception cref="ObjectDisposedException">The margin is disposed.</exception>
         public double MarginSize
         {
-            // Since this is a horizontal margin, its width will be bound to the width of the text view.
-            // Therefore, its size is its height.
             get
             {
-                ThrowIfDisposed();
+                this.ThrowIfDisposed();
+
+                // Since this is a horizontal margin, its width will be bound to the width of the text view.
+                // Therefore, its size is its height.
                 return this.ActualHeight;
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the margin is enabled.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">The margin is disposed.</exception>
         public bool Enabled
         {
-            // The margin should always be enabled
             get
             {
-                ThrowIfDisposed();
+                this.ThrowIfDisposed();
+
+                // The margin should always be enabled
                 return true;
             }
         }
 
         /// <summary>
-        /// Returns an instance of the margin if this is the margin that has been requested.
+        /// Gets the <see cref="ITextViewMargin"/> with the given <paramref name="marginName"/> or null if no match is found
         /// </summary>
-        /// <param name="marginName">The name of the margin requested</param>
-        /// <returns>An instance of TestDotsCoverageVsPlugin or null</returns>
+        /// <param name="marginName">The name of the <see cref="ITextViewMargin"/></param>
+        /// <returns>The <see cref="ITextViewMargin"/> named <paramref name="marginName"/>, or null if no match is found.</returns>
+        /// <remarks>
+        /// A margin returns itself if it is passed its own name. If the name does not match and it is a container margin, it
+        /// forwards the call to its children. Margin name comparisons are case-insensitive.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="marginName"/> is null.</exception>
         public ITextViewMargin GetTextViewMargin(string marginName)
         {
-            return (marginName == MarginName) ? (IWpfTextViewMargin)this : null;
+            return string.Equals(marginName, LiveCoverageMargin.MarginName, StringComparison.OrdinalIgnoreCase) ? this : null;
         }
 
+        /// <summary>
+        /// Disposes an instance of <see cref="LiveCoverageMargin"/> class.
+        /// </summary>
         public void Dispose()
         {
-            if (!_isDisposed)
+            if (!this.isDisposed)
             {
                 GC.SuppressFinalize(this);
-                _isDisposed = true;
+                this.isDisposed = true;
             }
         }
+
         #endregion
+
+        /// <summary>
+        /// Checks and throws <see cref="ObjectDisposedException"/> if the object is disposed.
+        /// </summary>
+        private void ThrowIfDisposed()
+        {
+            if (this.isDisposed)
+            {
+                throw new ObjectDisposedException(MarginName);
+            }
+        }
     }
 }
-
