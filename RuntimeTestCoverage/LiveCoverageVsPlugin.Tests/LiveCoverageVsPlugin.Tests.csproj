@@ -46,6 +46,9 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.Workspaces.3.0.0\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.EditorFeatures.Text, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.EditorFeatures.Text.3.0.0\lib\net472\Microsoft.CodeAnalysis.EditorFeatures.Text.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeAnalysis.VisualBasic, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeAnalysis.VisualBasic.3.0.0\lib\netstandard2.0\Microsoft.CodeAnalysis.VisualBasic.dll</HintPath>
     </Reference>
