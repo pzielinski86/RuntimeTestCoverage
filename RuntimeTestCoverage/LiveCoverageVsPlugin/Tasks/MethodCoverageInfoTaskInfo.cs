@@ -1,3 +1,5 @@
+using LiveCoverageVsPlugin.Logging;
+using log4net;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Text;
 using System.Linq;
@@ -9,12 +11,14 @@ namespace LiveCoverageVsPlugin.Tasks
 {
     public class MethodCoverageInfoTaskInfo : IDocumentBasedTaskCoverageInfo
     {
+        private ILog logger = LogFactory.GetLogger(System.Reflection.MethodBase.GetCurrentMethod());
+
         public string ProjectName { get; }
         public MethodDeclarationSyntax Method { get; }
         public ITextBuffer TextBuffer { get; set; }
         public string DocumentPath => Method.SyntaxTree.FilePath;
         public string MethodName => Method.Identifier.ValueText;
-
+       
         public MethodCoverageInfoTaskInfo(string projectName, MethodDeclarationSyntax method, ITextBuffer textBuffer)
         {
             ProjectName = projectName;

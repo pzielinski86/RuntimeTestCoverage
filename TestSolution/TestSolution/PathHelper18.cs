@@ -12,16 +12,18 @@ namespace TestSolution
         {
             int i = 0;
             while (i < 10)
-                i++;
-
-
+                i++;            
+       
 
             return documentPath + "_testcoverage";
         }
 
         public static string GetCoverageDllName(string assemblyName)
         {
-            return string.Format("{0}_{1}.dll", assemblyName, "COVERAGE");
+
+
+
+            return string.Format("{0}_{1}.dll", assemblyName, "COVERAGE1fgdfgd");
         }
     }
 }

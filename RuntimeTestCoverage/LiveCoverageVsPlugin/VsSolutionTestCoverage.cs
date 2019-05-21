@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiveCoverageVsPlugin.Extensions;
 using LiveCoverageVsPlugin.Logging;
+using log4net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestCoverage;
@@ -21,6 +22,8 @@ namespace LiveCoverageVsPlugin
     {
         // Singleton
         private static VsSolutionTestCoverage _vsSolutionTestCoverage;
+
+        private ILog logger = LogFactory.GetLogger(System.Reflection.MethodBase.GetCurrentMethod());
 
         public string SolutionPath => MyWorkspace.CurrentSolution.FilePath;
         public Workspace MyWorkspace { get; }
@@ -62,21 +65,19 @@ namespace LiveCoverageVsPlugin
 
         public async Task<bool> CalculateForAllDocumentsAsync()
         {
-            LogFactory.CurrentLogger.Info("Calculating coverage for all documents");
+            logger.Info("Calculating coverage for all documents");
 
             CoverageResult coverage;
             Reinit();
 
             try
             {
-                Task<CoverageResult> task = Task.Factory.StartNew(() => _solutionCoverageEngine.CalculateForAllDocumentsAsync().Result);
-                coverage = await task;
+                coverage = await _solutionCoverageEngine.CalculateForAllDocumentsAsync();
             }
-
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.Clear();
-                LogFactory.CurrentLogger.Error(e.ToString());
+                logger.Error(e);
                 return false;
             }
 
@@ -87,7 +88,7 @@ namespace LiveCoverageVsPlugin
 
         public Task<bool> CalculateForSelectedMethodAsync(string projectName, MethodDeclarationSyntax method)
         {
-            var task = Task.Factory.StartNew<bool>(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 List<LineCoverage> coverage;
 
@@ -103,7 +104,7 @@ namespace LiveCoverageVsPlugin
                         Path.GetFileNameWithoutExtension(method.SyntaxTree.FilePath), projectName);
 
                     SolutionCoverageByDocument.MarkMethodAsCompilationError(path, e.ToString());
-                    LogFactory.CurrentLogger.Error(e.ToString());
+                    logger.Error(e);
                     return false;
                 }
 
@@ -152,7 +153,7 @@ namespace LiveCoverageVsPlugin
             catch (TestCoverageCompilationException e)
             {
                 SolutionCoverageByDocument.MarkDocumentAsCompilationError(documentPath, e.ToString());
-                LogFactory.CurrentLogger.Error(e.ToString());
+                logger.Error(e);
                 return false;
             }
 

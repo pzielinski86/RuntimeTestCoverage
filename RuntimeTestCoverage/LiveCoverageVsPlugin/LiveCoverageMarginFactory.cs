@@ -16,6 +16,9 @@ using TestCoverage;
 using TestCoverage.Monitors;
 using TestCoverage.Storage;
 using TestCoverage.Tasks;
+using System.IO;
+using log4net.Config;
+using log4net;
 
 namespace LiveCoverageVsPlugin
 {
@@ -30,6 +33,7 @@ namespace LiveCoverageVsPlugin
     [TextViewRole(PredefinedTextViewRoles.Interactive)]
     internal sealed class LiveCoverageMarginFactory : IWpfTextViewMarginProvider
     {
+        private ILog logger = LogFactory.GetLogger(System.Reflection.MethodBase.GetCurrentMethod());
         private readonly SVsServiceProvider _serviceProvider;
         private VsSolutionTestCoverage _vsSolutionTestCoverage;
         private ITaskCoverageManager _taskCoverageManager;
@@ -51,11 +55,11 @@ namespace LiveCoverageVsPlugin
             _solutionEvents.Opened += SolutionEvents_Opened;
             _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
             _statusBar = serviceProvider.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
-            LogFactory.CurrentLogger = new VisualStudioLogger(serviceProvider);
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
-        private void InitMyWorkspace(SVsServiceProvider serviceProvider)
+
+         private void InitMyWorkspace(SVsServiceProvider serviceProvider)
         {
             var componentModel = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));
             _myWorkspace = componentModel.GetService<VisualStudioWorkspace>();
@@ -103,7 +107,7 @@ namespace LiveCoverageVsPlugin
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            LogFactory.CurrentLogger.Error(e.ExceptionObject.ToString());
+            logger.Error(e.ExceptionObject);
         }
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)

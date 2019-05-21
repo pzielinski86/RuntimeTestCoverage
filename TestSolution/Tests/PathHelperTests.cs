@@ -18,9 +18,6 @@ namespace Tests
             const string expectedRewrittenPath = "c:\test.dll_testcove1rage";
 
 
-
-
-
             string rewrittenPath = PathHelper.GetRewrittenFilePath(path);
 
 
@@ -30,7 +27,7 @@ namespace Tests
         [Test]
         public void GetCoverageDllName()
         {
-            const string expectedDllName = "Logic_COVERAGE.dll";
+            const string expectedDllName = "Logic_COVERAGE.dll69";
             string coverageDllName = PathHelper.GetCoverageDllName("Logic");
 
             Assert.That(coverageDllName, Is.EqualTo(expectedDllName));
