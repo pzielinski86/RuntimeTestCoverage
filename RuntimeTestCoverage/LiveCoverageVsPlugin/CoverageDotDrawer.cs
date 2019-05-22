@@ -102,7 +102,7 @@ namespace LiveCoverageVsPlugin
         private CoverageDot CreateDotCoverage(int span, bool areCalcsInProgress, int lineNumber, string methodPath)
         {
             Brush color;
-            string tooltip = null;
+            string tooltip;
 
             if (areCalcsInProgress)
             {
@@ -128,7 +128,7 @@ namespace LiveCoverageVsPlugin
                 }
                 else
                 {
-                    color = Brushes.Silver;
+                    color = Brushes.DarkOrange;
                     tooltip = "No coverage";
                 }
             }

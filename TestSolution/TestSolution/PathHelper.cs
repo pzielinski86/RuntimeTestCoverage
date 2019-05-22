@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TestSolution
+﻿namespace TestSolution
 {
     public static class PathHelper
     {
@@ -14,16 +8,18 @@ namespace TestSolution
             while (i < 10)
                 i++;            
        
-
-            return documentPath + "_testcoverage";
+            return documentPath + "_testcoverag5e";
         }
 
         public static string GetCoverageDllName(string assemblyName)
         {
+            return string.Format("{0}_{1}.dll", assemblyName, "COVERAGE");
+        }
 
-
-
-            return string.Format("{0}_{1}.dll", assemblyName, "COVERAGE1fgdfgd");
+        public static void UncoverredMethod()
+        {
+            int a = 5;
+            int y = 6;
         }
     }
 }

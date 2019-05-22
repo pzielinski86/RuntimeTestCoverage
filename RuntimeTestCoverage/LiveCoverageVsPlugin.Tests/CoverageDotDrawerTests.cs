@@ -137,7 +137,7 @@ namespace LiveCoverageVsPlugin.Tests
 
             // assert
             Assert.That(dots.Length, Is.EqualTo(1));
-            Assert.That(dots.First().Color, Is.EqualTo(Brushes.Silver));
+            Assert.That(dots.First().Color, Is.EqualTo(Brushes.DarkOrange));
         }
 
         [Test]

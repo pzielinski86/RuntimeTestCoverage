@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -19,6 +20,8 @@ namespace TestCoverage.CoverageCalculation
             string path = Path.Combine(currentDir, engineType.Assembly.ManifestModule.Name);
             _engine = (TestExecutorScriptEngine)_appDomain.CreateInstanceFromAndUnwrap(path,
                 engineType.FullName);
+
+
         }
 
         public ITestRunResult[] RunTestFixture(string[] references, TestFixtureExecutionScriptParameters pars)
@@ -31,5 +34,7 @@ namespace TestCoverage.CoverageCalculation
             AppDomain.Unload(_appDomain);
             _appDomain = null;
         }
+
+      
     }
 }

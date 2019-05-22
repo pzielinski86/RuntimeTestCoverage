@@ -17,11 +17,6 @@ namespace TestCoverage
         {
             _rewrittenDocumentsStorage = rewrittenDocumentsStorage;
             _myWorkspace = myWorkspace;
-            var props = new Dictionary<string, string>();
-            props["CheckForSystemRuntimeDependency"] = "true";
-
-            var workspace = MSBuildWorkspace.Create(props);
-            // TODO: Get rid of blocking a thread
         }
 
         public string[] GetAllProjectReferences(string projectName)
@@ -36,16 +31,9 @@ namespace TestCoverage
 
         private void PopulateWithReferences(HashSet<MetadataReference> allReferences, Project project)
         {
-            foreach (var reference in project.MetadataReferences)
-            {
+            foreach (MetadataReference reference in project.MetadataReferences)
+            {                
                 allReferences.Add(reference);
-            }
-
-            foreach (ProjectReference projectReference in project.ProjectReferences)
-            {
-                var referencedProject = Solution.Projects.First(x => x.Id == projectReference.ProjectId);
-
-                PopulateWithReferences(allReferences, referencedProject);
             }
         }
 
