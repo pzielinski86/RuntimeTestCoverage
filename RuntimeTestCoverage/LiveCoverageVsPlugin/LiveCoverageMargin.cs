@@ -32,12 +32,13 @@ namespace LiveCoverageVsPlugin
         private readonly Solution _solution;
         private readonly Canvas _canvas;
         private readonly ITaskCoverageManager _taskCoverageManager;
-
-        private string _documentPath;
         private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
+
         private bool isDisposed = false;
         private int _currentNumberOfLines;
         private string _projectName;
+        private ITextDocument textDocument;
+        private string DocumentPath => textDocument?.FilePath;
 
         public LiveCoverageMargin(VsSolutionTestCoverage vsSolutionTestCoverage,
              ITaskCoverageManager taskCoverageManager,
@@ -104,19 +105,19 @@ namespace LiveCoverageVsPlugin
             bool foundMethod = _taskCoverageManager.EnqueueMethodTask(_projectName,
                     _textView.Caret.Position.BufferPosition.Position,
                     _textView.TextBuffer,
-                    _documentPath);
+                    DocumentPath);
 
             if (!foundMethod && e.Changes.Any(x => x.AnyCodeChanges()))
             {
-                _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, _documentPath);
+                _taskCoverageManager.EnqueueDocumentTask(_projectName, _textView.TextBuffer, DocumentPath);
             }
         }
 
         private bool InitProperties()
         {
-            if (_documentPath != null)
+            if (DocumentPath != null)
                 return true;
-            var textDocument = GetTextDocument();
+            this.textDocument = GetTextDocument();
 
             if (textDocument == null)
                 return false;
@@ -127,8 +128,7 @@ namespace LiveCoverageVsPlugin
             if (projectItem != null)
             {
                 _projectName = projectItem.ContainingProject.Name;
-                _documentPath = docPath;
-
+                
                 return true;
             }
 
@@ -137,10 +137,9 @@ namespace LiveCoverageVsPlugin
 
         private ITextDocument GetTextDocument()
         {
-            ITextDocument textDocument = null;
-
-            if (_textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out textDocument))
+            if (_textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument textDocument))
                 return textDocument;
+
             return null;
         }
 
@@ -154,12 +153,12 @@ namespace LiveCoverageVsPlugin
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
             List<LineCoverage> lineCoverage;
-            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(_documentPath))
+            if (!_vsSolutionTestCoverage.SolutionCoverageByDocument.ContainsKey(DocumentPath))
                 lineCoverage = new List<LineCoverage>();
             else
-                lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[_documentPath];
+                lineCoverage = _vsSolutionTestCoverage.SolutionCoverageByDocument[DocumentPath];
 
-            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, System.IO.Path.GetFileNameWithoutExtension(_documentPath));
+            var coverageDotDrawer = new CoverageDotDrawer(lineCoverage, text, System.IO.Path.GetFileNameWithoutExtension(DocumentPath));
 
             int[] positions = _textView.TextViewLines.Select(x => x.Start.Position).ToArray();
 
