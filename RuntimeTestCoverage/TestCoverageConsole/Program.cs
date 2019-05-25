@@ -24,7 +24,7 @@ namespace TestCoverageConsole
 
             engine.Init(workspace);
             
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 5; i++)
             {
                 Console.WriteLine("***Scenario - START***");
                 TestForAllDocuments(engine);
@@ -45,7 +45,7 @@ namespace TestCoverageConsole
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             string documentPath =
-                @"C:\projects\RuntimeTestCoverage\RuntimeTestCoverage\TestCoverage.Tests\NUnitTestExtractorTests.cs";
+                @"C:\projects\new\RuntimeTestCoverage\RuntimeTestCoverage\TestCoverage.Tests\NUnitTestExtractorTests.cs";
             string documentContent = File.ReadAllText(documentPath);
 
             var positions = engine.CalculateForDocument("TestCoverage.Tests", documentPath, documentContent);

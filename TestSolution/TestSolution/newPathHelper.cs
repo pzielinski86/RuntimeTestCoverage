@@ -1,6 +1,6 @@
 ﻿namespace TestSolution
 {
-    public static class PathHelper
+    public static class newPathHelper
     {
         public static string GetRewrittenFilePath(string documentPath)
         {

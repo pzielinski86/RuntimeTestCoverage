@@ -53,6 +53,8 @@
     <Compile Include="LiveCoverageMargin.cs" />
     <Compile Include="LiveCoverageMarginFactory.cs" />
     <Compile Include="Logging\LogFactory.cs" />
+    <Compile Include="Performance\Benchmark.cs" />
+    <Compile Include="Performance\PerformanceMetric.cs" />
     <Compile Include="PriorityScheduler .cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LiveCoverageVsPluginPackage.cs" />
