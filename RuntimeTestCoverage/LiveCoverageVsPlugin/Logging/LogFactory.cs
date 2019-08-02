@@ -1,4 +1,5 @@
 ﻿using log4net.Config;
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -16,6 +17,15 @@ namespace LiveCoverageVsPlugin.Logging
             return log4net.LogManager.GetLogger(currentMethod.DeclaringType);
 
         }
+
+        public static log4net.ILog GetLogger(string name)
+        {
+            InitLogs();
+
+            return log4net.LogManager.GetLogger(name);
+
+        }
+
         private static void InitLogs()
         {
             if (!_isLoaded)

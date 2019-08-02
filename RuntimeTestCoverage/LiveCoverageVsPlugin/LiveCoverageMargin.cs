@@ -32,7 +32,7 @@ namespace LiveCoverageVsPlugin
         private readonly Solution _solution;
         private readonly Canvas _canvas;
         private readonly ITaskCoverageManager _taskCoverageManager;
-        private readonly VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private readonly IVsSolutionTestCoverage _vsSolutionTestCoverage;
 
         private bool isDisposed = false;
         private int _currentNumberOfLines;
@@ -40,7 +40,7 @@ namespace LiveCoverageVsPlugin
         private ITextDocument textDocument;
         private string DocumentPath => textDocument?.FilePath;
 
-        public LiveCoverageMargin(VsSolutionTestCoverage vsSolutionTestCoverage,
+        public LiveCoverageMargin(IVsSolutionTestCoverage vsSolutionTestCoverage,
              ITaskCoverageManager taskCoverageManager,
              IWpfTextView textView,
              IVsStatusbar statusBar,

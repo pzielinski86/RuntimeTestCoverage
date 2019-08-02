@@ -1,39 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using LiveCoverageVsPlugin.Logging;
+using log4net;
+using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LiveCoverageVsPlugin.Performance
 {
-    class Benchmark
+    public class Benchmark : IDisposable
     {
-        private const string CATEGORY_NAME = "LiveCoverageVsPlugin";
-        private const string CALCULATE_ALL_COUNTER_NAME = "LiveCoverageVsPlugin.Performance.CalculateAllDocuments";
+        private ILog logger;
+        private Stopwatch stopwatch;
+        private readonly string metricName;
 
-        private Dictionary<PerformanceMetric, PerformanceCounter> performanceCounters = new Dictionary<PerformanceMetric, PerformanceCounter>();
-
-        public Benchmark()
+        public Benchmark(string metricName)
         {
-            InitCounters()
+            logger = LogFactory.GetLogger("PERFORMANCE_LOGGER");
+            Start();
+            this.metricName = metricName;
         }
 
-        public void Increment(PerformanceMetric metric, long value)
+        public void Start()
         {
-            performanceCounters[metric].Increment(value);
+            stopwatch = Stopwatch.StartNew();
         }
-        private void InitCounters(string counterName)
+
+        public void Stop()
         {
-            if (!PerformanceCounterCategory.Exists(CATEGORY_NAME))
+            logger.Debug(string.Format("{0} {1}", metricName, stopwatch.ElapsedMilliseconds));
+        }
+ 
+        public void Dispose()
+        {
+            Stop();
+        }
+
+        public static void Profile(string metricName, Action method)
+        {
+            using (new Benchmark(metricName))
             {
-                string categoryHelp = "LiveCoverageVsPlugin related real time statistics";
-
-                PerformanceCounterCategory.Create(CATEGORY_NAME, null);
-                PerformanceCounterCategory customCategory = new PerformanceCounterCategory(CATEGORY_NAME);
+                method();
             }
-
-            PerformanceCounterCategory.Create(CATEGORY_NAME, null, PerformanceCounterCategoryType.SingleInstance, CALCULATE_ALL_COUNTER_NAME, null);
         }
-    }
+    } 
 }

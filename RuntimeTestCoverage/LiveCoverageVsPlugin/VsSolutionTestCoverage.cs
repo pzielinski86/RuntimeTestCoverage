@@ -21,7 +21,7 @@ namespace LiveCoverageVsPlugin
     public sealed class VsSolutionTestCoverage : IVsSolutionTestCoverage, IDisposable
     {
         // Singleton
-        private static VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private static IVsSolutionTestCoverage _vsSolutionTestCoverage;
 
         private ILog logger = LogFactory.GetLogger(System.Reflection.MethodBase.GetCurrentMethod());
 
@@ -43,7 +43,7 @@ namespace LiveCoverageVsPlugin
             SolutionCoverageByDocument = new Dictionary<string, List<LineCoverage>>();
         }
 
-        public static VsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace,
+        public static IVsSolutionTestCoverage CreateInstanceIfDoesNotExist(Workspace myWorkspace,
             ISolutionCoverageEngine solutionCoverageEngine,
             ICoverageStore coverageStore)
         {
@@ -53,7 +53,7 @@ namespace LiveCoverageVsPlugin
                 {
                     if (_vsSolutionTestCoverage == null)
                     {
-                        _vsSolutionTestCoverage = new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore);
+                        _vsSolutionTestCoverage = new ProfiledVsSolutionTestCoverage(new VsSolutionTestCoverage(myWorkspace, solutionCoverageEngine, coverageStore));
                         _vsSolutionTestCoverage.Reinit();
                         _vsSolutionTestCoverage.LoadCurrentCoverage();
                     }

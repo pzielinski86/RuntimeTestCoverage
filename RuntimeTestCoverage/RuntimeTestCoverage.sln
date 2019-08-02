@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCoverage.Tests", "TestC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveCoverageVsPlugin.Tests", "LiveCoverageVsPlugin.Tests\LiveCoverageVsPlugin.Tests.csproj", "{8E2B91EA-181C-402E-A99F-BA636D93B182}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{27A39F63-3914-45C9-ADE1-B4F2EF0E7445}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceMetricsParser", "PerformanceMetricsParser\PerformanceMetricsParser.csproj", "{1446BE56-5DFB-408D-B8DC-75A57F71DF72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +49,16 @@ Global
 		{8E2B91EA-181C-402E-A99F-BA636D93B182}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E2B91EA-181C-402E-A99F-BA636D93B182}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E2B91EA-181C-402E-A99F-BA636D93B182}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1446BE56-5DFB-408D-B8DC-75A57F71DF72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1446BE56-5DFB-408D-B8DC-75A57F71DF72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1446BE56-5DFB-408D-B8DC-75A57F71DF72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1446BE56-5DFB-408D-B8DC-75A57F71DF72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1446BE56-5DFB-408D-B8DC-75A57F71DF72} = {27A39F63-3914-45C9-ADE1-B4F2EF0E7445}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2A5F539F-6B18-4804-9704-EBE9F2AF1CFA}

@@ -35,7 +35,7 @@ namespace LiveCoverageVsPlugin
     {
         private ILog logger = LogFactory.GetLogger(System.Reflection.MethodBase.GetCurrentMethod());
         private readonly SVsServiceProvider _serviceProvider;
-        private VsSolutionTestCoverage _vsSolutionTestCoverage;
+        private IVsSolutionTestCoverage _vsSolutionTestCoverage;
         private ITaskCoverageManager _taskCoverageManager;
         private IVsStatusbar _statusBar;
         private DTE _dte;
@@ -112,6 +112,11 @@ namespace LiveCoverageVsPlugin
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost textViewHost, IWpfTextViewMargin containerMargin)
         {
+            if (!_dte.Solution.IsOpen)
+            {
+                return null;
+            }
+
             InitSolutionCoverageEngine();
 
             return new LiveCoverageMargin(_vsSolutionTestCoverage,

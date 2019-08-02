@@ -54,8 +54,8 @@
     <Compile Include="LiveCoverageMarginFactory.cs" />
     <Compile Include="Logging\LogFactory.cs" />
     <Compile Include="Performance\Benchmark.cs" />
-    <Compile Include="Performance\PerformanceMetric.cs" />
     <Compile Include="PriorityScheduler .cs" />
+    <Compile Include="ProfiledVsSolutionTestCoverage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LiveCoverageVsPluginPackage.cs" />
     <Compile Include="Tasks\DocumentCoverageInfoTaskInfo.cs" />
@@ -76,6 +76,7 @@
     <Compile Include="UI\ViewModels\CoverageOverviewViewModel.cs" />
     <Compile Include="UI\ViewModels\TestFixtureViewModel.cs" />
     <Compile Include="UI\ViewModels\TestProjectViewModel.cs" />
+    <Compile Include="Utils\EnumHelper.cs" />
     <Compile Include="VsDispatchTimer.cs" />
     <Compile Include="VsSolutionTestCoverage.cs" />
   </ItemGroup>
