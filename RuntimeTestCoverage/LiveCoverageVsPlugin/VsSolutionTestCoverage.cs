@@ -168,7 +168,7 @@ namespace LiveCoverageVsPlugin
         }
 
         public void LoadCurrentCoverage()
-        {
+        {  
             LineCoverage[] coverage = _coverageStore.ReadAll();
 
             SolutionCoverageByDocument = coverage.GroupBy(x => x.DocumentPath).ToDictionary(x => x.Key, x => x.ToList());

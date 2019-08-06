@@ -27,7 +27,7 @@ namespace LiveCoverageVsPlugin
 
         public Task<bool> CalculateForAllDocumentsAsync()
         {
-            Benchmark benchmark = new Benchmark("CALCULATE_ALL_DOCUMENTS");
+            Benchmark benchmark = new Benchmark("ProfiledVsSolutionTestCoverage.CalculateForAllDocuments");
 
             return vsSolutionTestCoverage.CalculateForAllDocumentsAsync().ContinueWith((task) =>
             {
