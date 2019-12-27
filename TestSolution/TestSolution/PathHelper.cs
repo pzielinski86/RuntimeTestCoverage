@@ -1,6 +1,6 @@
 ﻿namespace TestSolution
 {
-    public static class newPathHelper
+    public static class PathHelper
     {
         public static string GetRewrittenFilePath(string documentPath)
         {
@@ -8,7 +8,7 @@
             while (i < 10)
                 i++;            
        
-            return documentPath + "_testcoverag5e";
+            return documentPath + "_testcoverage";
         }
 
         public static string GetCoverageDllName(string assemblyName)

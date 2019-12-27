@@ -45,7 +45,7 @@ namespace TestCoverageConsole
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             string documentPath =
-                @"C:\projects\new\RuntimeTestCoverage\RuntimeTestCoverage\TestCoverage.Tests\NUnitTestExtractorTests.cs";
+                @"C:\Users\Piotr\Documents\GitHub\RuntimeTestCoverage\RuntimeTestCoverage\TestCoverage.Tests\NUnitTestExtractorTests.cs";
             string documentContent = File.ReadAllText(documentPath);
 
             var positions = engine.CalculateForDocument("TestCoverage.Tests", documentPath, documentContent);
