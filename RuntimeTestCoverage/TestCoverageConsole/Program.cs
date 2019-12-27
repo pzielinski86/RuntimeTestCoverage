@@ -9,7 +9,7 @@ namespace TestCoverageConsole
 {
     internal class Program
     {
-        private const string TestSubjectSlnPath = @"C:\projects\new\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
+        private const string TestSubjectSlnPath = @"C:\Users\Piotr\Documents\GitHub\RuntimeTestCoverage\RuntimeTestCoverage\RuntimeTestCoverage.sln";
 
         private static void Main(string[] args)
         {
